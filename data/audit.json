@@ -1,0 +1,54 @@
+[
+  {
+    "restaurantSlug": "terra-fresh",
+    "actorRole": "client",
+    "actorName": "client",
+    "action": "reservation_created",
+    "targetType": "reservation",
+    "targetId": "reservation-n90zk3fh",
+    "details": "Andrei Lucaciu · 2026-06-03 19:00",
+    "id": "audit-h8gyrotk",
+    "createdAt": "2026-06-08T19:27:04.126Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "actorRole": "client",
+    "actorName": "client",
+    "action": "reservation_created",
+    "targetType": "reservation",
+    "targetId": "reservation-073lyaok",
+    "details": "Andrei Lucaciu · 2026-06-03 19:00",
+    "id": "audit-lkh66bd8",
+    "createdAt": "2026-06-08T19:54:38.376Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "actorRole": "staff",
+    "actorName": "user",
+    "action": "reservation_confirmed",
+    "targetType": "reservation",
+    "targetId": "reservation-6say5f1j",
+    "id": "audit-jnhh53jv",
+    "createdAt": "2026-06-08T21:44:15.194Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "actorRole": "staff",
+    "actorName": "user",
+    "action": "reservation_deleted",
+    "targetType": "reservation",
+    "targetId": "reservation-n90zk3fh",
+    "id": "audit-k2wdifq1",
+    "createdAt": "2026-06-08T22:20:30.128Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "actorRole": "staff",
+    "actorName": "user",
+    "action": "reservation_cancelled",
+    "targetType": "reservation",
+    "targetId": "reservation-073lyaok",
+    "id": "audit-acxhdrj4",
+    "createdAt": "2026-06-08T22:20:32.990Z"
+  }
+]
