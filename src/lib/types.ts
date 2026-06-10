@@ -110,6 +110,10 @@ export type Restaurant = {
   heroImage: string;
   address: string;
   phone: string;
+  whatsappNumber: string;
+  googleRating: number;
+  googleReviewsCount: number;
+  googleReviewsUrl: string;
   openingHours: string;
   tableCount: number;
   seatsPerTable: number;
@@ -180,6 +184,10 @@ export function createBlankRestaurant(): Restaurant {
       "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
     address: "12 Rue Exemple, Paris",
     phone: "+33 1 00 00 00 00",
+    whatsappNumber: "+33 1 00 00 00 00",
+    googleRating: 4.8,
+    googleReviewsCount: 128,
+    googleReviewsUrl: "",
     openingHours: "Lundi - Dimanche, 12:00 - 23:00",
     tableCount: 12,
     seatsPerTable: 4,
@@ -248,6 +256,16 @@ export function normalizeRestaurant(restaurant: Restaurant): Restaurant {
     heroImage: restaurant.heroImage.trim(),
     address: restaurant.address.trim(),
     phone: restaurant.phone.trim(),
+    whatsappNumber: (restaurant.whatsappNumber ?? restaurant.phone ?? "").trim(),
+    googleRating:
+      Number.isFinite(restaurant.googleRating) && restaurant.googleRating > 0
+        ? Math.round(restaurant.googleRating * 10) / 10
+        : 4.8,
+    googleReviewsCount:
+      Number.isFinite(restaurant.googleReviewsCount) && restaurant.googleReviewsCount >= 0
+        ? Math.floor(restaurant.googleReviewsCount)
+        : 0,
+    googleReviewsUrl: (restaurant.googleReviewsUrl ?? "").trim(),
     openingHours: restaurant.openingHours.trim(),
     tableCount: Number.isFinite(restaurant.tableCount) && restaurant.tableCount > 0
       ? Math.floor(restaurant.tableCount)

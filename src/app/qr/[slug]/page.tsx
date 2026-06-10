@@ -46,7 +46,7 @@ export default async function QrPage({ params }: Props) {
   }
 
   const origin = await getOrigin();
-  const publicUrl = `${origin}/r/${restaurant.slug}?lang=fr`;
+  const publicUrl = `${origin}/pdf/${restaurant.slug}?lang=fr`;
   const displayRestaurant = translateRestaurant(restaurant, "fr");
 
   return (
@@ -60,9 +60,9 @@ export default async function QrPage({ params }: Props) {
             {displayRestaurant.name}
           </h1>
           <p className="max-w-2xl text-base leading-7 text-black/70">
-            Ce code ouvre le menu en français par défaut. Depuis la page du menu,
-            le client peut changer de langue vers l&apos;anglais, l&apos;italien ou
-            l&apos;espagnol.
+            Ce code ouvre directement le PDF A3 du menu en français par défaut.
+            Depuis la page PDF, le client peut passer à l&apos;anglais, à l&apos;italien
+            ou à l&apos;espagnol.
           </p>
 
           <div className="rounded-[1.75rem] border border-black/8 bg-black/3 p-4">
@@ -78,7 +78,7 @@ export default async function QrPage({ params }: Props) {
             {locales.map((locale) => (
               <a
                 key={locale}
-                href={`/r/${restaurant.slug}?lang=${locale}`}
+                href={`/pdf/${restaurant.slug}?lang=${locale}`}
                 className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black"
               >
                 {locale.toUpperCase()}
@@ -90,7 +90,7 @@ export default async function QrPage({ params }: Props) {
         <div className="flex flex-col items-center justify-center gap-4">
           <QrBlock value={publicUrl} />
           <p className="text-center text-sm text-black/55">
-            Scannez avec votre téléphone pour ouvrir le menu.
+            Scannez avec votre téléphone pour ouvrir le PDF A3 du menu.
           </p>
         </div>
       </section>

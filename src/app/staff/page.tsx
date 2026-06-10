@@ -37,8 +37,12 @@ export default async function StaffPage() {
           <StaffLogoutButton label="Déconnexion" />
         </div>
       </div>
-      <StaffClient restaurantSlug={restaurant.slug} restaurantName={restaurant.name} locale="fr" />
+      <StaffClient
+        restaurantSlug={restaurant.slug}
+        restaurantName={restaurant.name}
+        whatsappNumber={restaurant.whatsappNumber}
+        locale="fr"
+      />
     </main>
   );
 }
-

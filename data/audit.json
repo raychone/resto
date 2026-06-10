@@ -50,5 +50,27 @@
     "targetId": "reservation-073lyaok",
     "id": "audit-acxhdrj4",
     "createdAt": "2026-06-08T22:20:32.990Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "actorRole": "staff",
+    "actorName": "user",
+    "action": "reservation_created",
+    "targetType": "reservation",
+    "targetId": "reservation-ovx2he20",
+    "details": "Andrei Lucaciu · 2026-06-30 15:30",
+    "id": "audit-eu3otqe1",
+    "createdAt": "2026-06-09T13:21:19.610Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "actorRole": "manager",
+    "actorName": "raych",
+    "action": "reservation_created",
+    "targetType": "reservation",
+    "targetId": "reservation-cj3n3i30",
+    "details": "a a · 2026-06-30 12:00",
+    "id": "audit-wzvod66z",
+    "createdAt": "2026-06-10T14:16:39.257Z"
   }
 ]

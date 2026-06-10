@@ -33,5 +33,39 @@
     "date": "2026-06-03",
     "time": "19:00",
     "guestCount": 10
+  },
+  {
+    "id": "reservation-ovx2he20",
+    "restaurantSlug": "terra-fresh",
+    "tablesNeeded": 2,
+    "status": "pending",
+    "createdAt": "2026-06-09T13:21:19.606Z",
+    "firstName": "Andrei",
+    "lastName": "Lucaciu",
+    "name": "Andrei Lucaciu",
+    "phone": "0123456789",
+    "email": "ceva@ceva.com",
+    "note": "",
+    "locale": "es",
+    "date": "2026-06-30",
+    "time": "15:30",
+    "guestCount": 5
+  },
+  {
+    "id": "reservation-cj3n3i30",
+    "restaurantSlug": "terra-fresh",
+    "tablesNeeded": 2,
+    "status": "pending",
+    "createdAt": "2026-06-10T14:16:39.255Z",
+    "firstName": "a",
+    "lastName": "a",
+    "name": "a a",
+    "phone": "43234234",
+    "email": "ceva@ceva.com",
+    "note": "drdrdrdrddss",
+    "locale": "fr",
+    "date": "2026-06-30",
+    "time": "12:00",
+    "guestCount": 8
   }
 ]

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   createBlankRestaurant,
   createId,
@@ -11,6 +11,11 @@ import {
   type Restaurant,
   type WeeklyHour,
 } from "@/lib/types";
+import {
+  buildWhatsAppReservationMessage,
+  buildWhatsAppUrl,
+  buildGoogleReviewsUrl,
+} from "@/lib/contact-links";
 
 type Props = {
   initialRestaurants: Restaurant[];
@@ -87,6 +92,44 @@ function formatReservationDate(date: string) {
   }).format(new Date(`${date}T12:00:00`));
 }
 
+function formatReservationDateShort(date: string) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "long",
+  }).format(new Date(`${date}T12:00:00`));
+}
+
+function formatTodayKey() {
+  return new Intl.DateTimeFormat("fr-CA").format(new Date());
+}
+
+function statusMeta(status: Reservation["status"]) {
+  if (status === "confirmed") {
+    return {
+      label: "CONFIRMÉE",
+      className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    };
+  }
+
+  if (status === "cancelled") {
+    return {
+      label: "ANNULÉE",
+      className: "bg-rose-50 text-rose-700 border-rose-200",
+    };
+  }
+
+  return {
+    label: "EN ATTENTE",
+    className: "bg-amber-50 text-amber-800 border-amber-200",
+  };
+}
+
+function statusRank(status: Reservation["status"]) {
+  if (status === "pending") return 0;
+  if (status === "confirmed") return 1;
+  return 2;
+}
+
 function buildConfirmationMessage(reservation: Reservation, restaurantName: string) {
   const fullName = `${reservation.firstName} ${reservation.lastName}`.trim() || reservation.name;
   return `Bonjour ${fullName},\n\nVotre réservation au restaurant ${restaurantName} est confirmée.\n\nDate: ${formatReservationDate(reservation.date)}\nHeure: ${reservation.time}\nNombre de personnes: ${reservation.guestCount}\n\nNous vous attendons.\n`;
@@ -109,11 +152,47 @@ export function DashboardClient({
   const [notice, setNotice] = useState<string | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loadingReservations, setLoadingReservations] = useState(false);
+  const [reservationFilter, setReservationFilter] = useState<
+    "all" | "pending" | "confirmed" | "cancelled" | "today"
+  >("all");
 
   const currentRestaurant =
     restaurants.find((restaurant) => restaurant.slug === activeSlug) ??
     restaurants[0] ??
     null;
+
+  const todayKey = formatTodayKey();
+
+  const reservationStats = useMemo(() => {
+    const pending = reservations.filter((reservation) => reservation.status === "pending").length;
+    const confirmed = reservations.filter((reservation) => reservation.status === "confirmed").length;
+    const cancelled = reservations.filter((reservation) => reservation.status === "cancelled").length;
+    const today = reservations.filter((reservation) => reservation.date === todayKey).length;
+
+    return { pending, confirmed, cancelled, today };
+  }, [reservations, todayKey]);
+
+  const visibleReservations = useMemo(() => {
+    const sorted = [...reservations].sort((left, right) => {
+      const statusDelta = statusRank(left.status) - statusRank(right.status);
+      if (statusDelta !== 0) return statusDelta;
+
+      const dateDelta = left.date.localeCompare(right.date);
+      if (dateDelta !== 0) return dateDelta;
+
+      return left.time.localeCompare(right.time);
+    });
+
+    if (reservationFilter === "all") {
+      return sorted;
+    }
+
+    if (reservationFilter === "today") {
+      return sorted.filter((reservation) => reservation.date === todayKey);
+    }
+
+    return sorted.filter((reservation) => reservation.status === reservationFilter);
+  }, [reservations, reservationFilter, todayKey]);
 
   async function reloadRestaurants(nextSelectedSlug?: string) {
     const response = await fetch("/api/restaurants", {
@@ -533,6 +612,61 @@ export function DashboardClient({
                     className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
                   />
                 </Field>
+                <Field label="Numéro WhatsApp">
+                  <input
+                    value={draft.whatsappNumber}
+                    onChange={(event) => updateField("whatsappNumber", event.target.value)}
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                  />
+                </Field>
+                <Field label="Google rating">
+                  <input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    max={5}
+                    value={draft.googleRating}
+                    onChange={(event) =>
+                      updateField("googleRating", Number(event.target.value) as Restaurant["googleRating"])
+                    }
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                  />
+                </Field>
+                <Field label="Google avis">
+                  <input
+                    type="number"
+                    min={0}
+                    value={draft.googleReviewsCount}
+                    onChange={(event) =>
+                      updateField(
+                        "googleReviewsCount",
+                        Number(event.target.value) as Restaurant["googleReviewsCount"],
+                      )
+                    }
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                  />
+                </Field>
+                <Field label="URL Google reviews">
+                  <div className="flex gap-3">
+                    <input
+                      value={draft.googleReviewsUrl}
+                      onChange={(event) => updateField("googleReviewsUrl", event.target.value)}
+                      className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                    />
+                    <a
+                      href={buildGoogleReviewsUrl({
+                        reviewsUrl: draft.googleReviewsUrl,
+                        restaurantName: draft.name,
+                        address: draft.address,
+                      })}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-black px-4 py-3 text-sm font-medium text-white"
+                    >
+                      Tester
+                    </a>
+                  </div>
+                </Field>
                 <Field label="Monnaie">
                   <input
                     value={draft.currency}
@@ -878,11 +1012,11 @@ export function DashboardClient({
                                 className="w-full rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
                               />
                             </Field>
-                            <Field label="Recette / note">
-                              <textarea
-                                value={item.recipe}
-                                onChange={(event) =>
-                                  updateItemField(
+                <Field label="Interne / note cuisine">
+                  <textarea
+                    value={item.recipe}
+                    onChange={(event) =>
+                      updateItemField(
                                     categoryIndex,
                                     itemIndex,
                                     "recipe",
@@ -985,6 +1119,9 @@ export function DashboardClient({
                   avec réservations et messages clients activés.
                 </p>
                 <p>
+                  Note Google: {draft.googleRating.toFixed(1)} ⭐ • {draft.googleReviewsCount} avis.
+                </p>
+                <p>
                   Prix en {draft.currency}, images modifiables et allergènes affichés
                   directement sur le menu public.
                 </p>
@@ -999,18 +1136,54 @@ export function DashboardClient({
                   </p>
                   <h3 className="mt-2 text-2xl font-semibold">Inbox staff</h3>
                 </div>
-                <span className="rounded-full border border-black/10 bg-black/3 px-3 py-1 text-xs font-medium text-black/60">
-                  {loadingReservations ? "Chargement..." : `${reservations.length}`}
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
+                    {reservationStats.pending} en attente
+                  </span>
+                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    {reservationStats.confirmed} confirmées
+                  </span>
+                  <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
+                    {reservationStats.cancelled} annulées
+                  </span>
+                  <span className="rounded-full border border-black/10 bg-black/3 px-3 py-1 text-xs font-medium text-black/60">
+                    {loadingReservations ? "Chargement..." : `${reservations.length}`}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {[
+                  { key: "all", label: "Tous" },
+                  { key: "pending", label: "Pending" },
+                  { key: "confirmed", label: "Confirmées" },
+                  { key: "cancelled", label: "Annulées" },
+                  { key: "today", label: "Aujourd'hui" },
+                ].map((filter) => (
+                  <button
+                    key={filter.key}
+                    type="button"
+                    onClick={() =>
+                      setReservationFilter(filter.key as typeof reservationFilter)
+                    }
+                    className={`rounded-full border px-3 py-2 text-xs font-medium transition ${
+                      reservationFilter === filter.key
+                        ? "border-black bg-black text-white"
+                        : "border-black/10 bg-white text-black hover:bg-black/3"
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
               </div>
 
               <div className="mt-4 space-y-3">
-                {reservations.length === 0 ? (
+                {visibleReservations.length === 0 ? (
                   <p className="text-sm text-black/55">
                     Aucune réservation pour le moment.
                   </p>
                 ) : (
-                  reservations.map((reservation) => {
+                  visibleReservations.map((reservation) => {
                     const mailSubject = encodeURIComponent(
                       `Confirmation réservation - ${currentRestaurant?.name ?? draft.name}`,
                     );
@@ -1023,6 +1196,17 @@ export function DashboardClient({
                     const mailto = reservation.email
                       ? `mailto:${encodeURIComponent(reservation.email)}?subject=${mailSubject}&body=${mailBody}`
                       : "";
+                    const whatsappUrl = buildWhatsAppUrl(
+                      currentRestaurant?.whatsappNumber ?? draft.whatsappNumber,
+                      buildWhatsAppReservationMessage({
+                        restaurantName: currentRestaurant?.name ?? draft.name,
+                        firstName: reservation.firstName,
+                        lastName: reservation.lastName,
+                        guestCount: reservation.guestCount,
+                        time: reservation.time,
+                        dateLabel: formatReservationDateShort(reservation.date),
+                      }),
+                    );
 
                     return (
                       <article
@@ -1040,9 +1224,13 @@ export function DashboardClient({
                             <p className="text-xs text-black/55">
                               {reservation.guestCount} personnes · {reservation.tablesNeeded} table(s)
                             </p>
-                            <p className="text-xs uppercase tracking-[0.22em] text-black/45">
-                              {reservation.status}
-                            </p>
+                            <span
+                              className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${
+                                statusMeta(reservation.status).className
+                              }`}
+                            >
+                              {statusMeta(reservation.status).label}
+                            </span>
                           </div>
                           <div className="text-right text-xs text-black/55">
                             <p>{reservation.phone}</p>
@@ -1057,13 +1245,15 @@ export function DashboardClient({
                         ) : null}
 
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => changeReservationStatus(reservation.id, "confirmed")}
-                            className="rounded-full border border-black/10 bg-black px-3 py-2 text-xs font-medium text-white"
-                          >
-                            Confirmer
-                          </button>
+                          {reservation.status !== "confirmed" ? (
+                            <button
+                              type="button"
+                              onClick={() => changeReservationStatus(reservation.id, "confirmed")}
+                              className="rounded-full border border-black/10 bg-black px-3 py-2 text-xs font-medium text-white"
+                            >
+                              Confirmer
+                            </button>
+                          ) : null}
                           <button
                             type="button"
                             onClick={() => changeReservationStatus(reservation.id, "cancelled")}
@@ -1078,6 +1268,16 @@ export function DashboardClient({
                             >
                               Envoyer au client
                             </a>
+                          ) : null}
+                          {whatsappUrl ? (
+                            <a
+                              href={whatsappUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="rounded-full border border-black/10 bg-[#25D366] px-3 py-2 text-xs font-medium text-white"
+                            >
+                              WhatsApp
+                              </a>
                           ) : null}
                         </div>
                       </article>

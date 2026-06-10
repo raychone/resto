@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { BookingOpenButton } from "@/components/booking-open-button";
+import { HoursOpenButton } from "@/components/hours-open-button";
 import type { Locale } from "@/lib/types";
 
 const localeLabels: Record<Locale, string> = {
@@ -16,33 +17,28 @@ const navLabels: Record<
   Locale,
   {
     menu: string;
-    about: string;
-    hours: string;
+    program: string;
     reserve: string;
   }
 > = {
   fr: {
     menu: "Menu",
-    about: "À propos",
-    hours: "Horaires",
+    program: "Programme",
     reserve: "Réserver",
   },
   en: {
     menu: "Menu",
-    about: "About",
-    hours: "Hours",
+    program: "Program",
     reserve: "Book a table",
   },
   it: {
     menu: "Menù",
-    about: "Info",
-    hours: "Orari",
+    program: "Programma",
     reserve: "Prenota",
   },
   es: {
     menu: "Menú",
-    about: "Sobre",
-    hours: "Horario",
+    program: "Programa",
     reserve: "Reservar",
   },
 };
@@ -126,12 +122,9 @@ export function PublicNavbar({
             <Link href="#menu" className="text-sm font-medium text-black/65 transition hover:text-black">
               {labels.menu}
             </Link>
-            <Link href="#about" className="text-sm font-medium text-black/65 transition hover:text-black">
-              {labels.about}
-            </Link>
-            <Link href="#hours" className="text-sm font-medium text-black/65 transition hover:text-black">
-              {labels.hours}
-            </Link>
+            <HoursOpenButton className="text-sm font-medium text-black/65 transition hover:text-black">
+              {labels.program}
+            </HoursOpenButton>
           </div>
 
           <Link
@@ -192,20 +185,11 @@ export function PublicNavbar({
               >
                 {labels.menu}
               </Link>
-              <Link
-                href="#about"
-                onClick={() => setMenuOpen(false)}
-                className="rounded-2xl bg-white px-4 py-3 text-sm font-medium text-black"
+              <HoursOpenButton
+                className="rounded-2xl bg-white px-4 py-3 text-left text-sm font-medium text-black"
               >
-                {labels.about}
-              </Link>
-              <Link
-                href="#hours"
-                onClick={() => setMenuOpen(false)}
-                className="rounded-2xl bg-white px-4 py-3 text-sm font-medium text-black"
-              >
-                {labels.hours}
-              </Link>
+                {labels.program}
+              </HoursOpenButton>
               <BookingOpenButton className="rounded-2xl bg-gradient-to-r from-black to-black/80 px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.2)]">
                 {labels.reserve}
               </BookingOpenButton>
