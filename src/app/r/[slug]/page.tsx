@@ -33,6 +33,19 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   return {
     title: `${localizedRestaurant.name} | Menu digital`,
     description: localizedRestaurant.description,
+    alternates: {
+      canonical: `/r/${restaurant.slug}?lang=${locale}`,
+    },
+    openGraph: {
+      title: `${localizedRestaurant.name} | Menu digital`,
+      description: localizedRestaurant.description,
+      url: `/r/${restaurant.slug}?lang=${locale}`,
+      type: "website",
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
   };
 }
 
@@ -53,4 +66,3 @@ export default async function RestaurantMenuPage({ params, searchParams }: Props
 
   return <PublicMenu restaurant={localizedRestaurant} locale={locale} />;
 }
-

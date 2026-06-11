@@ -1,0 +1,47 @@
+[
+  {
+    "id": "owner-root",
+    "restaurantId": null,
+    "role": "owner",
+    "name": "Owner",
+    "username": "owner",
+    "passwordHash": "2307aa011bc2e3a938a845d2c0972baf143d6c419f60c2eb4f543f0dad51b124",
+    "temporaryPassword": "owner123!",
+    "mustChangePassword": false,
+    "status": "active",
+    "createdAt": "2026-06-10T19:58:33.669Z",
+    "updatedAt": "2026-06-11T12:52:09.156Z",
+    "deletedAt": null,
+    "pinEnabled": false
+  },
+  {
+    "id": "manager-root",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "role": "manager",
+    "name": "Raych",
+    "username": "raych",
+    "passwordHash": "ec588c79dd032c9fe84fb1bf3d6ce32d64acad10ef42ee3eace289b97caba12c",
+    "temporaryPassword": "raychone!",
+    "mustChangePassword": false,
+    "status": "active",
+    "createdAt": "2026-06-10T19:58:33.669Z",
+    "updatedAt": "2026-06-11T12:52:09.156Z",
+    "deletedAt": null,
+    "pinEnabled": false
+  },
+  {
+    "id": "staff-root",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "role": "staff",
+    "name": "User",
+    "username": "user",
+    "passwordHash": "aab1f2ffd6b0ca72489b15ef182ebaff15ff932acf6972995240034e3ba1fc4a",
+    "temporaryPassword": "pass123!",
+    "mustChangePassword": false,
+    "status": "active",
+    "createdAt": "2026-06-10T19:58:33.669Z",
+    "updatedAt": "2026-06-11T12:52:09.156Z",
+    "deletedAt": null,
+    "pinEnabled": false
+  }
+]

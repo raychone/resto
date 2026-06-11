@@ -34,6 +34,19 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   return {
     title: `${localizedRestaurant.name} | Menu A3`,
     description: `Menu A3 imprimable pour ${localizedRestaurant.name}.`,
+    alternates: {
+      canonical: `/a3/${restaurant.slug}?lang=${locale}`,
+    },
+    openGraph: {
+      title: `${localizedRestaurant.name} | Menu A3`,
+      description: `Menu A3 imprimable pour ${localizedRestaurant.name}.`,
+      url: `/a3/${restaurant.slug}?lang=${locale}`,
+      type: "website",
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
   };
 }
 

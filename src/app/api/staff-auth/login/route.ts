@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isValidStaffCredentials, staffDashboardCookieName } from "@/lib/auth";
+import { getValidUserByCredentials, staffDashboardCookieName } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -9,12 +9,14 @@ export async function POST(request: Request) {
     password?: string;
   };
 
-  if (!username || !password || !isValidStaffCredentials(username, password)) {
+  const user = username && password ? await getValidUserByCredentials(username, password) : null;
+
+  if (!user || user.role !== "staff") {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(staffDashboardCookieName, "pass123!", {
+  response.cookies.set(staffDashboardCookieName, user.id, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -24,4 +26,3 @@ export async function POST(request: Request) {
 
   return response;
 }
-

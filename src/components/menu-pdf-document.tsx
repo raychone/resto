@@ -274,11 +274,9 @@ const styles = StyleSheet.create({
 });
 
 function formatPrice(locale: Locale, price: number) {
-  return new Intl.NumberFormat(locale === "fr" ? "fr-FR" : locale === "en" ? "en-GB" : "it-IT", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(price);
+  const rounded = Math.round(price * 100) / 100;
+  const formatted = Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(2);
+  return `${formatted.replace(".", ",")}€`;
 }
 
 export function MenuPdfDocument({ restaurant, locale, logoDataUrl }: MenuPdfDocumentProps) {

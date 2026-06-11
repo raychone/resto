@@ -3,8 +3,8 @@ import Link from "next/link";
 import { DashboardClient } from "@/components/dashboard-client";
 import { DashboardLogin } from "@/components/dashboard-login";
 import { DashboardLogoutButton } from "@/components/dashboard-logout-button";
-import { isDashboardAuthenticated } from "@/lib/auth";
-import { listRestaurants } from "@/lib/restaurant-store";
+import { getDashboardSessionUser, isDashboardAuthenticated } from "@/lib/auth";
+import { getRestaurantById } from "@/lib/restaurant-store";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +32,14 @@ export default async function DashboardPage({ searchParams }: Props) {
     );
   }
 
-  const [restaurants, query] = await Promise.all([listRestaurants(), searchParams]);
+  const [dashboardUser, query] = await Promise.all([getDashboardSessionUser(), searchParams]);
+  const restaurant = dashboardUser?.restaurantId
+    ? await getRestaurantById(dashboardUser.restaurantId)
+    : null;
+
+  if (!restaurant) {
+    return <div>Aucun restaurant configuré.</div>;
+  }
 
   return (
     <main className="min-h-screen w-full">
@@ -54,7 +61,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           <div className="flex flex-wrap gap-3">
             <DashboardLogoutButton endpoint="/api/auth/logout" label="Déconnexion" />
             <Link
-              href={`/r/${query.restaurant ?? restaurants[0]?.slug ?? ""}`}
+              href={`/r/${query.restaurant ?? restaurant.slug}`}
               className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"
             >
               Voir le menu public
@@ -65,8 +72,8 @@ export default async function DashboardPage({ searchParams }: Props) {
 
       <div className="px-0 py-0">
         <DashboardClient
-          initialRestaurants={restaurants}
-          initialSelectedSlug={query.restaurant}
+          initialRestaurants={[restaurant]}
+          initialSelectedSlug={query.restaurant ?? restaurant.slug}
         />
       </div>
     </main>

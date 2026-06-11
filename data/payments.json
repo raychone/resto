@@ -1,0 +1,86 @@
+[
+  {
+    "orderId": "order-3ey9a3h7",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "amount": 478,
+    "method": "cash",
+    "status": "completed",
+    "note": "Paiement cash",
+    "id": "payment-6k4rsekw",
+    "createdAt": "2026-06-10T22:58:18.550Z",
+    "updatedAt": "2026-06-11T11:40:55.873Z",
+    "deletedAt": null
+  },
+  {
+    "orderId": "order-3ey9a3h7",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "amount": 478,
+    "method": "cash",
+    "status": "completed",
+    "note": "Paiement cash",
+    "id": "payment-bhjc8jg7",
+    "createdAt": "2026-06-10T22:58:26.876Z",
+    "updatedAt": "2026-06-11T11:40:55.873Z",
+    "deletedAt": null
+  },
+  {
+    "orderId": "order-3ey9a3h7",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "amount": 478,
+    "method": "card",
+    "status": "completed",
+    "note": "Paiement card",
+    "id": "payment-e449udpf",
+    "createdAt": "2026-06-10T22:58:28.032Z",
+    "updatedAt": "2026-06-11T11:40:55.873Z",
+    "deletedAt": null
+  },
+  {
+    "orderId": "order-3ey9a3h7",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "amount": 478,
+    "method": "cash",
+    "status": "completed",
+    "note": "Paiement cash",
+    "id": "payment-nceuzzdk",
+    "createdAt": "2026-06-10T22:58:37.201Z",
+    "updatedAt": "2026-06-11T11:40:55.873Z",
+    "deletedAt": null
+  },
+  {
+    "orderId": "order-3ey9a3h7",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "amount": 478,
+    "method": "card",
+    "status": "completed",
+    "note": "Paiement card",
+    "id": "payment-gc5bgw0c",
+    "createdAt": "2026-06-10T22:58:38.806Z",
+    "updatedAt": "2026-06-11T11:40:55.873Z",
+    "deletedAt": null
+  },
+  {
+    "orderId": "order-3ey9a3h7",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "amount": 478,
+    "method": "cash",
+    "status": "completed",
+    "note": "Paiement cash",
+    "id": "payment-qy3rty3r",
+    "createdAt": "2026-06-10T22:58:47.524Z",
+    "updatedAt": "2026-06-11T11:40:55.873Z",
+    "deletedAt": null
+  },
+  {
+    "orderId": "order-3ey9a3h7",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "amount": 478,
+    "method": "cash",
+    "status": "completed",
+    "note": "Paiement cash",
+    "id": "payment-xfonuqdk",
+    "createdAt": "2026-06-11T11:07:23.998Z",
+    "updatedAt": "2026-06-11T11:40:55.873Z",
+    "deletedAt": null
+  }
+]

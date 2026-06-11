@@ -1,0 +1,140 @@
+[
+  {
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "tableId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe-table-1",
+    "staffUserId": "staff-root",
+    "source": "table",
+    "status": "paid",
+    "openedAt": "2026-06-10T22:57:24.204Z",
+    "closedAt": "2026-06-11T11:07:24.003Z",
+    "archivedAt": "2026-06-10T22:58:39.633Z",
+    "note": "",
+    "id": "order-3ey9a3h7",
+    "items": [
+      {
+        "menuItemId": "item-umami-bowl",
+        "nameSnapshot": "Umami Bowl",
+        "priceSnapshot": 58,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-epvgv8cs",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:57:25.310Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-umami-bowl",
+        "nameSnapshot": "Umami Bowl",
+        "priceSnapshot": 58,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-632ix35c",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:57:26.824Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-garden-bowl",
+        "nameSnapshot": "Garden Glow",
+        "priceSnapshot": 44,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-bkm10gk2",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:57:33.037Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-chia",
+        "nameSnapshot": "Pudding de chia",
+        "priceSnapshot": 28,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-29bi9p51",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:57:34.345Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-garden-bowl",
+        "nameSnapshot": "Garden Glow",
+        "priceSnapshot": 44,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-5ibjub0x",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:57:41.757Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-garden-bowl",
+        "nameSnapshot": "Garden Glow",
+        "priceSnapshot": 44,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-45hru685",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:57:48.047Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-garden-bowl",
+        "nameSnapshot": "Garden Glow",
+        "priceSnapshot": 44,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-qmhprc0v",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:57:52.121Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-chia",
+        "nameSnapshot": "Pudding de chia",
+        "priceSnapshot": 28,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-ib92xgjg",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:57:56.452Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-chia",
+        "nameSnapshot": "Pudding de chia",
+        "priceSnapshot": 28,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-p30uesrj",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:57:59.431Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-garden-bowl",
+        "nameSnapshot": "Garden Glow",
+        "priceSnapshot": 44,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-fglzi3jj",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:58:01.397Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-umami-bowl",
+        "nameSnapshot": "Umami Bowl",
+        "priceSnapshot": 58,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-j2iwadeb",
+        "orderId": "order-3ey9a3h7",
+        "createdAt": "2026-06-10T22:58:03.912Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-10T22:57:24.206Z",
+    "updatedAt": "2026-06-11T11:40:55.872Z",
+    "deletedAt": null
+  }
+]

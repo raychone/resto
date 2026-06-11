@@ -5,21 +5,27 @@ import { useEffect, useMemo, useState } from "react";
 import {
   createBlankRestaurant,
   createId,
+  getMenuItemEffectivePrice,
   slugify,
+  type HappyHourSchedule,
   weeklyDayLabels,
   type Reservation,
   type Restaurant,
+  type User,
   type WeeklyHour,
 } from "@/lib/types";
+import type { AuditEntry } from "@/lib/audit-store";
 import {
+  buildNotificationLabel,
+  buildNotificationLink,
   buildWhatsAppReservationMessage,
-  buildWhatsAppUrl,
   buildGoogleReviewsUrl,
 } from "@/lib/contact-links";
 
 type Props = {
   initialRestaurants: Restaurant[];
   initialSelectedSlug?: string;
+  allowRestaurantCreate?: boolean;
 };
 
 function cloneRestaurant(restaurant: Restaurant) {
@@ -35,6 +41,18 @@ function splitTags(value: string) {
 
 function joinTags(values: string[]) {
   return values.join(", ");
+}
+
+const happyHourDays: WeeklyHour["day"][] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+function defaultHappyHourSchedule(): HappyHourSchedule {
+  return {
+    enabled: false,
+    label: "Happy Hour",
+    days: [...happyHourDays],
+    start: "18:30",
+    end: "20:30",
+  };
 }
 
 function formatWeeklySummary(weeklyHours: WeeklyHour[]) {
@@ -76,11 +94,16 @@ function summarizeDay(day: WeeklyHour) {
 }
 
 function money(amount: number, currency: string) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  const rounded = Math.round(amount * 100) / 100;
+  const formatted = Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(2);
+  return currency === "EUR"
+    ? `${formatted.replace(".", ",")}€`
+    : new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(rounded);
 }
 
 function formatReservationDate(date: string) {
@@ -118,6 +141,13 @@ function statusMeta(status: Reservation["status"]) {
     };
   }
 
+  if (status === "no_show") {
+    return {
+      label: "NO SHOW",
+      className: "bg-slate-100 text-slate-700 border-slate-200",
+    };
+  }
+
   return {
     label: "EN ATTENTE",
     className: "bg-amber-50 text-amber-800 border-amber-200",
@@ -127,7 +157,9 @@ function statusMeta(status: Reservation["status"]) {
 function statusRank(status: Reservation["status"]) {
   if (status === "pending") return 0;
   if (status === "confirmed") return 1;
-  return 2;
+  if (status === "cancelled") return 2;
+  if (status === "no_show") return 3;
+  return 3;
 }
 
 function buildConfirmationMessage(reservation: Reservation, restaurantName: string) {
@@ -138,6 +170,7 @@ function buildConfirmationMessage(reservation: Reservation, restaurantName: stri
 export function DashboardClient({
   initialRestaurants,
   initialSelectedSlug,
+  allowRestaurantCreate = false,
 }: Props) {
   const [restaurants, setRestaurants] = useState(initialRestaurants);
   const initialSlug = initialSelectedSlug ?? initialRestaurants[0]?.slug ?? "";
@@ -151,10 +184,20 @@ export function DashboardClient({
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([]);
   const [loadingReservations, setLoadingReservations] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingAudit, setLoadingAudit] = useState(false);
   const [reservationFilter, setReservationFilter] = useState<
-    "all" | "pending" | "confirmed" | "cancelled" | "today"
+    "all" | "pending" | "confirmed" | "cancelled" | "no_show" | "today"
   >("all");
+  const [auditOpen, setAuditOpen] = useState(false);
+  const [newStaffUser, setNewStaffUser] = useState({
+    name: "",
+    username: "",
+    temporaryPassword: "",
+  });
 
   const currentRestaurant =
     restaurants.find((restaurant) => restaurant.slug === activeSlug) ??
@@ -167,9 +210,10 @@ export function DashboardClient({
     const pending = reservations.filter((reservation) => reservation.status === "pending").length;
     const confirmed = reservations.filter((reservation) => reservation.status === "confirmed").length;
     const cancelled = reservations.filter((reservation) => reservation.status === "cancelled").length;
+    const noShow = reservations.filter((reservation) => reservation.status === "no_show").length;
     const today = reservations.filter((reservation) => reservation.date === todayKey).length;
 
-    return { pending, confirmed, cancelled, today };
+    return { pending, confirmed, cancelled, noShow, today };
   }, [reservations, todayKey]);
 
   const visibleReservations = useMemo(() => {
@@ -228,12 +272,66 @@ export function DashboardClient({
     setLoadingReservations(false);
   }
 
+  async function loadUsers(slug: string) {
+    if (!slug) return;
+    setLoadingUsers(true);
+
+    const response = await fetch(`/api/restaurants/${slug}/users`, {
+      cache: "no-store",
+    });
+
+    if (response.ok) {
+      const payload = (await response.json()) as { users: User[] };
+      setUsers(payload.users);
+    }
+
+    setLoadingUsers(false);
+  }
+
+  async function loadAudit(slug: string) {
+    if (!slug) return;
+    setLoadingAudit(true);
+
+    const response = await fetch(`/api/restaurants/${slug}/audit`, {
+      cache: "no-store",
+    });
+
+    if (response.ok) {
+      const payload = (await response.json()) as { auditEntries: AuditEntry[] };
+      setAuditEntries(payload.auditEntries);
+    }
+
+    setLoadingAudit(false);
+  }
+
   function updateField<K extends keyof Restaurant>(key: K, value: Restaurant[K]) {
     setDraft((current) => (current ? { ...current, [key]: value } : current));
   }
 
+  function updateFeatureField<K extends keyof Restaurant["features"]>(
+    key: K,
+    value: Restaurant["features"][K],
+  ) {
+    setDraft((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        features: {
+          ...current.features,
+          [key]: value,
+        },
+      };
+    });
+  }
+
   useEffect(() => {
-    void loadReservations(activeSlug);
+    const timeoutId = window.setTimeout(() => {
+      void loadReservations(activeSlug);
+      void loadUsers(activeSlug);
+      void loadAudit(activeSlug);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [activeSlug]);
 
   function updateWeeklyHourField(
@@ -289,6 +387,8 @@ export function DashboardClient({
       | "ingredients"
       | "allergens"
       | "price"
+      | "happyHourEnabled"
+      | "happyHourPrice"
       | "imageUrl"
       | "isSignature",
     value: string | number | boolean,
@@ -308,6 +408,15 @@ export function DashboardClient({
           break;
         case "price":
           item.price = Number(value);
+          break;
+        case "happyHourEnabled":
+          item.happyHourEnabled = Boolean(value);
+          if (!value) {
+            item.happyHourPrice = null;
+          }
+          break;
+        case "happyHourPrice":
+          item.happyHourPrice = String(value).trim() ? Number(value) : null;
           break;
         case "isSignature":
           item.isSignature = Boolean(value);
@@ -438,7 +547,7 @@ export function DashboardClient({
 
   async function changeReservationStatus(
     reservationId: string,
-    status: "confirmed" | "cancelled",
+    status: "confirmed" | "cancelled" | "no_show",
   ) {
     if (!activeSlug) return;
 
@@ -455,8 +564,88 @@ export function DashboardClient({
       return;
     }
 
-    setNotice(status === "confirmed" ? "Réservation confirmée." : "Réservation annulée.");
+    setNotice(
+      status === "confirmed"
+        ? "Réservation confirmée."
+        : status === "cancelled"
+          ? "Réservation annulée."
+          : "Réservation marquée no show.",
+    );
     await loadReservations(activeSlug);
+  }
+
+  async function createStaffUser() {
+    if (!activeSlug || !newStaffUser.name || !newStaffUser.username || !newStaffUser.temporaryPassword) {
+      setNotice("Complète le nom, le username et la mot de passe temporaire.");
+      return;
+    }
+
+    const response = await fetch(`/api/restaurants/${activeSlug}/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newStaffUser),
+    });
+
+    if (!response.ok) {
+      setNotice("Impossible de créer l'utilisateur staff.");
+      return;
+    }
+
+    setNewStaffUser({
+      name: "",
+      username: "",
+      temporaryPassword: "",
+    });
+    setNotice("Utilisateur staff créé.");
+    await loadUsers(activeSlug);
+  }
+
+  async function toggleStaffStatus(user: User) {
+    if (!activeSlug) return;
+
+    const response = await fetch(`/api/restaurants/${activeSlug}/users/${user.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: user.status === "active" ? "disabled" : "active",
+      }),
+    });
+
+    if (!response.ok) {
+      setNotice("Impossible de modifier le statut du staff.");
+      return;
+    }
+
+    setNotice(user.status === "active" ? "Utilisateur désactivé." : "Utilisateur activé.");
+    await loadUsers(activeSlug);
+  }
+
+  async function resetStaffPassword(user: User) {
+    if (!activeSlug) return;
+
+    const temporaryPassword = `Tmp#${createId("pw").slice(-4)}!`;
+    const response = await fetch(`/api/restaurants/${activeSlug}/users/${user.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        resetPassword: true,
+        temporaryPassword,
+      }),
+    });
+
+    if (!response.ok) {
+      setNotice("Impossible de réinitialiser le mot de passe.");
+      return;
+    }
+
+    setNotice(`Mot de passe réinitialisé: ${temporaryPassword}`);
+    await loadUsers(activeSlug);
   }
 
   function startNewRestaurant() {
@@ -484,13 +673,15 @@ export function DashboardClient({
           <h2 className="text-2xl font-semibold">Sélection rapide</h2>
         </div>
 
-        <button
-          type="button"
-          onClick={startNewRestaurant}
-          className="w-full rounded-2xl border border-black/10 bg-black px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
-        >
-          Nouveau restaurant
-        </button>
+        {allowRestaurantCreate ? (
+          <button
+            type="button"
+            onClick={startNewRestaurant}
+            className="w-full rounded-2xl border border-black/10 bg-black px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
+          >
+            Nouveau restaurant
+          </button>
+        ) : null}
 
         <div className="space-y-3">
           {restaurants.map((restaurant) => {
@@ -612,7 +803,7 @@ export function DashboardClient({
                     className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
                   />
                 </Field>
-                <Field label="Numéro WhatsApp">
+                <Field label="Numéro téléphone notifications">
                   <input
                     value={draft.whatsappNumber}
                     onChange={(event) => updateField("whatsappNumber", event.target.value)}
@@ -698,6 +889,170 @@ export function DashboardClient({
                     }
                     className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
                   />
+                </Field>
+                <Field label="Happy hour">
+                  <div className="grid gap-4 rounded-[1.5rem] border border-black/8 bg-black/2 p-4">
+                    <label className="flex items-center justify-between gap-4 rounded-2xl border border-black/8 bg-white px-4 py-3 text-sm">
+                      <span>Activer le happy hour</span>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(draft.happyHourSchedule?.enabled)}
+                        onChange={(event) =>
+                          updateField("happyHourSchedule", {
+                            ...(draft.happyHourSchedule ?? defaultHappyHourSchedule()),
+                            enabled: event.target.checked,
+                          })
+                        }
+                      />
+                    </label>
+
+                    <label className="grid gap-2">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-black/40">
+                        Libellé
+                      </span>
+                      <input
+                        value={draft.happyHourSchedule?.label ?? "Happy Hour"}
+                        onChange={(event) =>
+                          updateField("happyHourSchedule", {
+                            ...(draft.happyHourSchedule ?? defaultHappyHourSchedule()),
+                            label: event.target.value,
+                          })
+                        }
+                        className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                      />
+                    </label>
+
+                    <div className="grid gap-2">
+                      <span className="text-[11px] uppercase tracking-[0.25em] text-black/40">
+                        Jours
+                      </span>
+                      <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-7">
+                        {happyHourDays.map((day) => {
+                          const currentSchedule = draft.happyHourSchedule ?? defaultHappyHourSchedule();
+                          const isSelected = currentSchedule.days.includes(day);
+
+                          return (
+                            <button
+                              key={day}
+                              type="button"
+                              onClick={() => {
+                                const nextDays = isSelected
+                                  ? currentSchedule.days.filter((entry) => entry !== day)
+                                  : [...currentSchedule.days, day];
+                                updateField("happyHourSchedule", {
+                                  ...currentSchedule,
+                                  days: nextDays,
+                                });
+                              }}
+                              className={`rounded-2xl border px-3 py-2 text-sm transition ${
+                                isSelected
+                                  ? "border-black bg-black text-white"
+                                  : "border-black/10 bg-white text-black/70"
+                              }`}
+                            >
+                              {weeklyDayLabels[day]}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <label className="grid gap-1">
+                        <span className="text-[11px] uppercase tracking-[0.25em] text-black/40">
+                          De
+                        </span>
+                        <input
+                          type="time"
+                          value={draft.happyHourSchedule?.start ?? "18:30"}
+                          onChange={(event) =>
+                            updateField("happyHourSchedule", {
+                              ...(draft.happyHourSchedule ?? defaultHappyHourSchedule()),
+                              start: event.target.value,
+                            })
+                          }
+                          className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                        />
+                      </label>
+                      <label className="grid gap-1">
+                        <span className="text-[11px] uppercase tracking-[0.25em] text-black/40">
+                          À
+                        </span>
+                        <input
+                          type="time"
+                          value={draft.happyHourSchedule?.end ?? "20:30"}
+                          onChange={(event) =>
+                            updateField("happyHourSchedule", {
+                              ...(draft.happyHourSchedule ?? defaultHappyHourSchedule()),
+                              end: event.target.value,
+                            })
+                          }
+                          className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </Field>
+                <Field label="Options commerciales">
+                  <div className="grid gap-3 rounded-[1.5rem] border border-black/8 bg-black/2 p-4">
+                    <label className="flex items-center justify-between gap-4 rounded-2xl border border-black/8 bg-white px-4 py-3 text-sm">
+                      <span>Réservation en ligne</span>
+                      <input
+                        type="checkbox"
+                        checked={draft.features.bookingEnabled}
+                        onChange={(event) =>
+                          updateFeatureField("bookingEnabled", event.target.checked)
+                        }
+                      />
+                    </label>
+                    <label className="grid gap-2 rounded-2xl border border-black/8 bg-white px-4 py-3 text-sm">
+                      <span>QR code destination</span>
+                      <select
+                        value={draft.features.qrMode}
+                        onChange={(event) =>
+                          updateFeatureField(
+                            "qrMode",
+                            event.target.value as Restaurant["features"]["qrMode"],
+                          )
+                        }
+                        className="rounded-xl border border-black/10 bg-white px-3 py-2 outline-none"
+                      >
+                        <option value="pdf">PDF A3</option>
+                        <option value="menu">Menu web</option>
+                        <option value="off">Désactivé</option>
+                      </select>
+                    </label>
+                    <label className="flex items-center justify-between gap-4 rounded-2xl border border-black/8 bg-white px-4 py-3 text-sm">
+                      <span>Alertes WhatsApp</span>
+                      <input
+                        type="checkbox"
+                        checked={draft.features.whatsappAlertsEnabled}
+                        onChange={(event) =>
+                          updateFeatureField("whatsappAlertsEnabled", event.target.checked)
+                        }
+                      />
+                    </label>
+                    <label className="flex items-center justify-between gap-4 rounded-2xl border border-black/8 bg-white px-4 py-3 text-sm">
+                      <span>Alertes SMS</span>
+                      <input
+                        type="checkbox"
+                        checked={draft.features.smsAlertsEnabled}
+                        onChange={(event) =>
+                          updateFeatureField("smsAlertsEnabled", event.target.checked)
+                        }
+                      />
+                    </label>
+                    <label className="flex items-center justify-between gap-4 rounded-2xl border border-black/8 bg-white px-4 py-3 text-sm">
+                      <span>Avis Google visibles</span>
+                      <input
+                        type="checkbox"
+                        checked={draft.features.googleReviewsEnabled}
+                        onChange={(event) =>
+                          updateFeatureField("googleReviewsEnabled", event.target.checked)
+                        }
+                      />
+                    </label>
+                  </div>
                 </Field>
                 <Field label="Adresse">
                   <input
@@ -934,6 +1289,40 @@ export function DashboardClient({
                                 className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
                               />
                             </Field>
+                            <Field label="Happy hour">
+                              <label className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3">
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(item.happyHourEnabled)}
+                                  onChange={(event) =>
+                                    updateItemField(
+                                      categoryIndex,
+                                      itemIndex,
+                                      "happyHourEnabled",
+                                      event.target.checked,
+                                    )
+                                  }
+                                />
+                                <span className="text-sm text-black/70">
+                                  Activer le prix happy hour
+                                </span>
+                              </label>
+                            </Field>
+                            <Field label="Prix happy hour">
+                              <input
+                                type="number"
+                                value={item.happyHourPrice ?? ""}
+                                onChange={(event) =>
+                                  updateItemField(
+                                    categoryIndex,
+                                    itemIndex,
+                                    "happyHourPrice",
+                                    event.target.value,
+                                  )
+                                }
+                                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                              />
+                            </Field>
                             <Field label="Image URL">
                               <input
                                 value={item.imageUrl}
@@ -1036,7 +1425,14 @@ export function DashboardClient({
                               className="h-44 w-full rounded-[1.5rem] object-cover"
                             />
                             <p className="text-sm text-black/60">
-                              Preview: {money(item.price, draft.currency)}
+                              Preview: {money(getMenuItemEffectivePrice(item), draft.currency)}
+                              {item.happyHourEnabled &&
+                              Number.isFinite(item.happyHourPrice) &&
+                              Number(item.happyHourPrice) > 0 ? (
+                                <span className="ml-2 text-xs text-black/40 line-through">
+                                  {money(item.price, draft.currency)}
+                                </span>
+                              ) : null}
                             </p>
                             <button
                               type="button"
@@ -1105,6 +1501,168 @@ export function DashboardClient({
             </div>
 
             <div className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
+                    Équipe
+                  </p>
+                  <h3 className="mt-2 text-2xl font-semibold">Utilisateurs staff</h3>
+                </div>
+                <span className="rounded-full border border-black/10 bg-black/3 px-3 py-1 text-xs font-medium text-black/60">
+                  {loadingUsers ? "Chargement..." : `${users.length}`}
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-3">
+                <Field label="Nom complet">
+                  <input
+                    value={newStaffUser.name}
+                    onChange={(event) =>
+                      setNewStaffUser((current) => ({ ...current, name: event.target.value }))
+                    }
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                    placeholder="Vasile"
+                  />
+                </Field>
+                <Field label="Username">
+                  <input
+                    value={newStaffUser.username}
+                    onChange={(event) =>
+                      setNewStaffUser((current) => ({ ...current, username: event.target.value }))
+                    }
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                    placeholder="vasile"
+                  />
+                </Field>
+                <Field label="Mot de passe temporaire">
+                  <input
+                    value={newStaffUser.temporaryPassword}
+                    onChange={(event) =>
+                      setNewStaffUser((current) => ({
+                        ...current,
+                        temporaryPassword: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                    placeholder="Tmp#1234!"
+                  />
+                </Field>
+                <button
+                  type="button"
+                  onClick={createStaffUser}
+                  className="rounded-full border border-black/10 bg-black px-4 py-3 text-sm font-medium text-white"
+                >
+                  Créer un staff
+                </button>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                {users.length === 0 ? (
+                  <p className="text-sm text-black/55">Aucun utilisateur staff.</p>
+                ) : (
+                  users.map((user) => (
+                    <article
+                      key={user.id}
+                      className="rounded-[1.4rem] border border-black/8 bg-black/2 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <p className="text-sm font-semibold">{user.name}</p>
+                          <p className="text-xs text-black/55">@{user.username}</p>
+                          <p className="text-xs text-black/55">
+                            {user.mustChangePassword ? "Mot de passe temporaire" : "Mot de passe fixé"}
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${
+                            user.status === "active"
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                              : "border-rose-200 bg-rose-50 text-rose-700"
+                          }`}
+                        >
+                          {user.status === "active" ? "Active" : "Disabled"}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleStaffStatus(user)}
+                          className="rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-medium text-black"
+                        >
+                          {user.status === "active" ? "Désactiver" : "Activer"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => resetStaffPassword(user)}
+                          className="rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-medium text-black"
+                        >
+                          Réinitialiser le mot de passe
+                        </button>
+                      </div>
+                    </article>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+              <button
+                type="button"
+                onClick={() => setAuditOpen((current) => !current)}
+                className="flex w-full items-center justify-between gap-3 text-left"
+              >
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
+                    Historique
+                  </p>
+                  <h3 className="mt-2 text-2xl font-semibold">Audit manager</h3>
+                </div>
+                <span className="rounded-full border border-black/10 bg-black/3 px-3 py-1 text-xs font-medium text-black/60">
+                  {loadingAudit ? "Chargement..." : `${auditEntries.length}`}
+                </span>
+              </button>
+
+              {auditOpen ? (
+                <div className="mt-4 space-y-2">
+                  {auditEntries.length === 0 ? (
+                    <p className="text-sm text-black/55">Aucune action enregistrée.</p>
+                  ) : (
+                    auditEntries.slice(0, 12).map((entry) => (
+                      <article
+                        key={entry.id}
+                        className="rounded-[1.4rem] border border-black/8 bg-black/2 p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold">{entry.action}</p>
+                            <p className="text-xs text-black/55">
+                              {entry.actorRole} · {entry.actorName}
+                            </p>
+                            <p className="mt-1 text-xs text-black/55">
+                              {entry.targetType} · {entry.targetId}
+                            </p>
+                          </div>
+                          <span className="text-[11px] uppercase tracking-[0.22em] text-black/45">
+                            {new Intl.DateTimeFormat("fr-FR", {
+                              day: "2-digit",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }).format(new Date(entry.createdAt))}
+                          </span>
+                        </div>
+                        {entry.details ? (
+                          <p className="mt-2 text-sm text-black/65">{entry.details}</p>
+                        ) : null}
+                      </article>
+                    ))
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
               <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
                 Résumé
               </p>
@@ -1146,6 +1704,9 @@ export function DashboardClient({
                   <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
                     {reservationStats.cancelled} annulées
                   </span>
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+                    {reservationStats.noShow} no show
+                  </span>
                   <span className="rounded-full border border-black/10 bg-black/3 px-3 py-1 text-xs font-medium text-black/60">
                     {loadingReservations ? "Chargement..." : `${reservations.length}`}
                   </span>
@@ -1158,6 +1719,7 @@ export function DashboardClient({
                   { key: "pending", label: "Pending" },
                   { key: "confirmed", label: "Confirmées" },
                   { key: "cancelled", label: "Annulées" },
+                  { key: "no_show", label: "No show" },
                   { key: "today", label: "Aujourd'hui" },
                 ].map((filter) => (
                   <button
@@ -1196,17 +1758,23 @@ export function DashboardClient({
                     const mailto = reservation.email
                       ? `mailto:${encodeURIComponent(reservation.email)}?subject=${mailSubject}&body=${mailBody}`
                       : "";
-                    const whatsappUrl = buildWhatsAppUrl(
-                      currentRestaurant?.whatsappNumber ?? draft.whatsappNumber,
-                      buildWhatsAppReservationMessage({
-                        restaurantName: currentRestaurant?.name ?? draft.name,
-                        firstName: reservation.firstName,
-                        lastName: reservation.lastName,
-                        guestCount: reservation.guestCount,
-                        time: reservation.time,
-                        dateLabel: formatReservationDateShort(reservation.date),
-                      }),
-                    );
+                    const notificationProvider =
+                      currentRestaurant?.features.notificationProvider ??
+                      draft.features.notificationProvider;
+                    const notificationMessage = buildWhatsAppReservationMessage({
+                      restaurantName: currentRestaurant?.name ?? draft.name,
+                      firstName: reservation.firstName,
+                      lastName: reservation.lastName,
+                      guestCount: reservation.guestCount,
+                      time: reservation.time,
+                      dateLabel: formatReservationDateShort(reservation.date),
+                    });
+                    const notificationUrl = buildNotificationLink({
+                      provider: notificationProvider,
+                      phoneNumber: currentRestaurant?.whatsappNumber ?? draft.whatsappNumber,
+                      message: notificationMessage,
+                    });
+                    const notificationLabel = buildNotificationLabel(notificationProvider);
 
                     return (
                       <article
@@ -1261,6 +1829,15 @@ export function DashboardClient({
                           >
                             Annuler
                           </button>
+                          {reservation.status !== "no_show" ? (
+                            <button
+                              type="button"
+                              onClick={() => changeReservationStatus(reservation.id, "no_show")}
+                              className="rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-medium text-black"
+                            >
+                              No show
+                            </button>
+                          ) : null}
                           {mailto ? (
                             <a
                               href={mailto}
@@ -1269,15 +1846,19 @@ export function DashboardClient({
                               Envoyer au client
                             </a>
                           ) : null}
-                          {whatsappUrl ? (
+                          {notificationProvider === "twilio" ? (
+                            <span className="rounded-full border border-black/10 bg-black/4 px-3 py-2 text-xs font-medium text-black/60">
+                              SMS auto via Twilio
+                            </span>
+                          ) : notificationUrl ? (
                             <a
-                              href={whatsappUrl}
+                              href={notificationUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="rounded-full border border-black/10 bg-[#25D366] px-3 py-2 text-xs font-medium text-white"
+                              className="rounded-full border border-black/10 bg-black px-3 py-2 text-xs font-medium text-white"
                             >
-                              WhatsApp
-                              </a>
+                              {notificationLabel || "Notification"}
+                            </a>
                           ) : null}
                         </div>
                       </article>

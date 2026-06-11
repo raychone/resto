@@ -1,11 +1,13 @@
 import { getAvailabilityForRestaurant } from "@/lib/engagement-store";
 import { buildGoogleReviewsUrl } from "@/lib/contact-links";
-import type { Locale, Restaurant } from "@/lib/types";
+import { getHappyHourStatus, type Locale, type Restaurant } from "@/lib/types";
 import { BookingOpenButton } from "@/components/booking-open-button";
 import { PublicBookingPanel } from "@/components/public-booking-panel";
 import { HoursOpenButton } from "@/components/hours-open-button";
 import { RestaurantHoursModal } from "@/components/restaurant-hours-modal";
 import { PublicNavbar } from "@/components/public-navbar";
+import { PublicMenuCategories } from "@/components/public-menu-categories";
+import { HappyHourCard } from "@/components/happy-hour-card";
 
 const copy: Record<
   Locale,
@@ -19,10 +21,6 @@ const copy: Record<
     price: string;
     allergens: string;
     noAllergen: string;
-    qrReady: string;
-    scanToOpen: string;
-    menuLink: string;
-    qrLink: string;
     capacity: string;
     maps: string;
     waze: string;
@@ -42,10 +40,6 @@ const copy: Record<
     price: "Prix",
     allergens: "Allergènes",
     noAllergen: "Aucun allergène déclaré",
-    qrReady: "QR prêt",
-    scanToOpen: "Scanner pour ouvrir le menu",
-    menuLink: "Lien du menu",
-    qrLink: "QR dédié",
     capacity: "Capacité",
     maps: "Google Maps",
     waze: "Waze",
@@ -64,10 +58,6 @@ const copy: Record<
     price: "Price",
     allergens: "Allergens",
     noAllergen: "No allergens declared",
-    qrReady: "QR ready",
-    scanToOpen: "Scan to open the menu",
-    menuLink: "Menu link",
-    qrLink: "Dedicated QR",
     capacity: "Capacity",
     maps: "Google Maps",
     waze: "Waze",
@@ -86,10 +76,6 @@ const copy: Record<
     price: "Prezzo",
     allergens: "Allergeni",
     noAllergen: "Nessun allergene dichiarato",
-    qrReady: "QR pronto",
-    scanToOpen: "Scansiona per aprire il menu",
-    menuLink: "Link menu",
-    qrLink: "QR dedicato",
     capacity: "Capacità",
     maps: "Google Maps",
     waze: "Waze",
@@ -108,10 +94,6 @@ const copy: Record<
     price: "Precio",
     allergens: "Alérgenos",
     noAllergen: "No hay alérgenos declarados",
-    qrReady: "QR listo",
-    scanToOpen: "Escanea para abrir el menú",
-    menuLink: "Enlace del menú",
-    qrLink: "QR dedicado",
     capacity: "Capacidad",
     maps: "Google Maps",
     waze: "Waze",
@@ -122,20 +104,31 @@ const copy: Record<
   },
 };
 
-function money(amount: number) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 function buildMapsUrl(address: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 }
 
 function buildWazeUrl(address: string) {
   return `https://www.waze.com/ul?q=${encodeURIComponent(address)}&navigate=yes`;
+}
+
+function MapIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z" />
+      <circle cx="12" cy="11" r="2.25" />
+    </svg>
+  );
+}
+
+function WazeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="8" />
+      <path d="M8.5 14.5c1.2 1.1 2.7 1.6 3.5 1.6s2.3-.5 3.5-1.6" />
+      <path d="M10 10h.01M14 10h.01" />
+    </svg>
+  );
 }
 
 export async function PublicMenu({
@@ -160,24 +153,29 @@ export async function PublicMenu({
     restaurantName: restaurant.name,
     address: restaurant.address,
   });
+  const happyHour = getHappyHourStatus(restaurant);
   const text = copy[locale];
 
   return (
     <>
-      <PublicNavbar restaurantSlug={restaurant.slug} locale={locale} />
+      <PublicNavbar
+        restaurantSlug={restaurant.slug}
+        logoUrl={restaurant.logoUrl}
+        locale={locale}
+      />
       <main className="mx-auto min-h-screen w-full max-w-[1440px] px-2 py-3 sm:px-4 lg:px-6 lg:py-4">
       <div className="grid gap-4">
         <div className="space-y-6">
           <section
-            className="relative overflow-hidden rounded-[2rem] border border-white/60 bg-white/85 shadow-[0_30px_120px_rgba(15,23,42,0.12)] backdrop-blur"
+            className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#121212]/95 shadow-[0_30px_120px_rgba(0,0,0,0.34)] backdrop-blur"
             style={{
               borderColor: `${restaurant.accent}33`,
             }}
           >
             <div
-              className="absolute inset-0 opacity-85"
+              className="absolute inset-0 opacity-95"
               style={{
-                background: `radial-gradient(circle at top left, ${restaurant.accent}24, transparent 34%), linear-gradient(135deg, #fffdf8 0%, #fff 100%)`,
+                background: `radial-gradient(circle at top left, ${restaurant.accent}25, transparent 34%), linear-gradient(135deg, #181818 0%, #121212 100%)`,
               }}
             />
 
@@ -185,24 +183,24 @@ export async function PublicMenu({
               <div className="flex flex-col justify-between gap-5">
                 <div className="space-y-4">
                   <div className="space-y-3">
-                    <h1 className="font-display text-4xl leading-none sm:text-5xl lg:text-6xl">
+                    <h1 className="font-display text-4xl leading-none text-[#f5f1ea] sm:text-5xl lg:text-6xl">
                       {restaurant.name}
                     </h1>
-                    <p className="max-w-2xl text-base leading-7 text-black/70 sm:text-lg">
+                    <p className="max-w-2xl text-base leading-7 text-white/70 sm:text-lg">
                       {restaurant.tagline}
                     </p>
                   </div>
                 </div>
 
-                  <div className="grid gap-3 text-sm text-black/70 sm:grid-cols-2">
-                    <div className="rounded-3xl border border-black/8 bg-white/80 p-4">
-                      <p className="text-[11px] uppercase tracking-[0.3em] text-black/40">
+                  <div className="grid gap-3 text-sm text-white/70 sm:grid-cols-2">
+                    <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">
                       {text.address}
                       </p>
                       <p className="mt-2">{restaurant.address}</p>
                     </div>
-                    <div className="rounded-3xl border border-black/8 bg-white/80 p-4">
-                      <p className="text-[11px] uppercase tracking-[0.3em] text-black/40">
+                    <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">
                       {text.phone}
                       </p>
                       <p className="mt-2">{restaurant.phone}</p>
@@ -214,181 +212,110 @@ export async function PublicMenu({
                     href={mapsUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"
+                    aria-label={text.maps}
+                    title={text.maps}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white text-black transition hover:scale-[1.03] hover:bg-white/90"
                   >
-                    {text.maps}
+                    <MapIcon />
                   </a>
                   <a
                     href={wazeUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black"
+                    aria-label={text.waze}
+                    title={text.waze}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black text-white transition hover:scale-[1.03] hover:bg-black/90"
                   >
-                    {text.waze}
+                    <WazeIcon />
                   </a>
-                  <BookingOpenButton className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black">
-                    {text.reserve}
-                  </BookingOpenButton>
-                  <HoursOpenButton className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black">
+                  {restaurant.features.bookingEnabled ? (
+                    <BookingOpenButton className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white">
+                      {text.reserve}
+                    </BookingOpenButton>
+                  ) : null}
+                  <HoursOpenButton className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white">
                     {text.program}
                   </HoursOpenButton>
                 </div>
 
-                <div className="inline-flex w-fit items-center gap-3 rounded-[1.5rem] border border-black/8 bg-white/85 px-4 py-3 shadow-[0_14px_40px_rgba(15,23,42,0.06)]">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">⭐</span>
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.25em] text-black/40">
-                        {text.googleReviews}
-                      </p>
-                      <p className="text-sm font-semibold text-black">
-                        {restaurant.googleRating.toFixed(1)} Google
-                      </p>
+                {restaurant.features.googleReviewsEnabled ? (
+                  <div className="inline-flex w-fit items-center gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3 shadow-[0_14px_40px_rgba(0,0,0,0.18)]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">⭐</span>
+                      <div>
+                        <p className="text-[11px] uppercase tracking-[0.25em] text-white/35">
+                          {text.googleReviews}
+                        </p>
+                        <p className="text-sm font-semibold text-[#f5f1ea]">
+                          {restaurant.googleRating.toFixed(1)} Google
+                        </p>
+                      </div>
                     </div>
+                    <a
+                      href={reviewsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-medium text-black"
+                    >
+                      {text.seeReviews}
+                    </a>
                   </div>
-                  <a
-                    href={reviewsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"
-                  >
-                    {text.seeReviews}
-                  </a>
-                </div>
+                ) : null}
               </div>
 
               <div className="relative">
-                <div className="overflow-hidden rounded-[1.75rem] border border-black/8 bg-black shadow-[0_24px_80px_rgba(15,23,42,0.28)]">
+                <div className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-black shadow-[0_24px_80px_rgba(0,0,0,0.3)]">
                   <img
                     src={restaurant.heroImage}
                     alt={restaurant.name}
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <div
-                  className="absolute -bottom-4 left-4 rounded-3xl border border-white/70 bg-white px-4 py-3 text-sm shadow-xl"
-                  style={{ boxShadow: `0 20px 50px ${restaurant.accent}24` }}
-                >
-                  <span className="block text-[11px] uppercase tracking-[0.25em] text-black/40">
-                    {text.qrReady}
-                  </span>
-                  <span className="mt-1 block font-medium">
-                    {text.scanToOpen}
-                  </span>
-                </div>
+                {happyHour ? (
+                  <div
+                    className="absolute -bottom-4 left-4 right-4"
+                  >
+                    <HappyHourCard happyHour={happyHour} accent={restaurant.accent} />
+                  </div>
+                ) : null}
               </div>
             </div>
           </section>
 
-          <div id="menu" className="scroll-mt-28 grid gap-4 lg:scroll-mt-32">
-              {restaurant.categories.map((category) => (
-                <section
-                  key={category.id}
-                  className="rounded-[2rem] border border-black/8 bg-white/80 p-3 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur sm:p-4 lg:p-5"
-                >
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
-                      {text.category}
-                    </p>
-                    <h2 className="mt-2 text-2xl font-semibold">{category.name}</h2>
-                  </div>
-                  <span
-                    className="inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium"
-                    style={{
-                      backgroundColor: `${restaurant.accent}12`,
-                      color: restaurant.accent,
-                    }}
-                  >
-                    {category.items.length} plats
-                  </span>
-                </div>
-
-                <p className="mt-2 text-sm text-black/60">{category.description}</p>
-
-                <div className="mt-5 grid gap-4">
-                  {category.items.map((item) => (
-                    <article
-                      key={item.id}
-                      className="grid gap-4 rounded-[1.5rem] border border-black/8 bg-white p-4 sm:grid-cols-[140px_1fr]"
-                    >
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="h-40 w-full rounded-[1.25rem] object-cover sm:h-full"
-                      />
-                      <div className="flex flex-col gap-4">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div className="space-y-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="text-xl font-semibold">{item.name}</h3>
-                              {item.isSignature ? (
-                                <span
-                                  className="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.25em]"
-                                  style={{
-                                    backgroundColor: `${restaurant.accent}12`,
-                                    color: restaurant.accent,
-                                  }}
-                                >
-                                  {text.signature}
-                                </span>
-                              ) : null}
-                            </div>
-                            <p className="max-w-2xl text-sm leading-6 text-black/70">
-                              {item.description}
-                            </p>
-                          </div>
-                          <div className="rounded-2xl bg-black px-4 py-3 text-right text-white">
-                            <span className="block text-[11px] uppercase tracking-[0.25em] text-white/60">
-                              {text.price}
-                            </span>
-                            <span className="mt-1 block text-2xl font-semibold">
-                              {money(item.price)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          {item.ingredients.map((ingredient) => (
-                            <span
-                              key={ingredient}
-                              className="rounded-full border border-black/10 bg-black/3 px-3 py-1.5 text-black/70"
-                            >
-                              {ingredient}
-                            </span>
-                          ))}
-                        </div>
-
-                        <div className="grid gap-3 sm:grid-cols-1">
-                          <div className="rounded-2xl border border-black/8 bg-black/3 p-4">
-                            <p className="text-[11px] uppercase tracking-[0.3em] text-black/40">
-                              {text.allergens}
-                            </p>
-                            <p className="mt-2 text-sm text-black/70">
-                              {item.allergens.length > 0
-                                ? item.allergens.join(", ")
-                                : text.noAllergen}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-                </section>
-              ))}
+          <section
+            id="menu"
+            className="scroll-mt-28 rounded-[2rem] border border-black/10 bg-[#0f0f0f] px-3 py-4 text-[#f5f1ea] shadow-[0_30px_120px_rgba(15,23,42,0.14)] lg:scroll-mt-32 lg:px-4 lg:py-5"
+          >
+            <div className="mb-4 flex items-center justify-between gap-3 px-1 sm:px-2">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.35em] text-white/35">
+                  {text.category}
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">Menu</h2>
+              </div>
+              <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.25em] text-white/55">
+                mobile first
+              </div>
             </div>
+            <PublicMenuCategories
+              categories={restaurant.categories}
+              locale={locale}
+              accent={restaurant.accent}
+            />
+          </section>
         </div>
 
       </div>
       </main>
       <RestaurantHoursModal restaurant={restaurant} locale={locale} />
-      <PublicBookingPanel
-        restaurantSlug={restaurant.slug}
-        locale={locale}
-        seatsPerTable={restaurant.seatsPerTable}
-        initialAvailability={availability}
-      />
+      {restaurant.features.bookingEnabled ? (
+        <PublicBookingPanel
+          restaurantSlug={restaurant.slug}
+          locale={locale}
+          seatsPerTable={restaurant.seatsPerTable}
+          initialAvailability={availability}
+        />
+      ) : null}
     </>
   );
 }

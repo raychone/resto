@@ -100,6 +100,7 @@ export async function createReservation(
 
   const reservation: Reservation = {
     id: createId("reservation"),
+    restaurantId: restaurant.id,
     restaurantSlug: restaurant.slug,
     tablesNeeded,
     status: "pending",
@@ -119,6 +120,7 @@ export async function createReservation(
   const nextReservations = [...reservations, reservation];
   await writeJsonFile(reservationsFile, nextReservations);
   await recordAuditEntry({
+    restaurantId: restaurant.id,
     restaurantSlug: restaurant.slug,
     actorRole: input.actorRole ?? "client",
     actorName: input.actorName ?? "client",
@@ -133,7 +135,7 @@ export async function createReservation(
 export async function updateReservationStatus(
   restaurantSlug: string,
   reservationId: string,
-  status: "confirmed" | "cancelled",
+  status: "confirmed" | "cancelled" | "no_show",
   actor: { role: AuditActorRole; name: string },
 ) {
   const reservations = await listReservations();
@@ -157,6 +159,7 @@ export async function updateReservationStatus(
   nextReservations[index] = nextReservation;
   await writeJsonFile(reservationsFile, nextReservations);
   await recordAuditEntry({
+    restaurantId: current.restaurantId,
     restaurantSlug,
     actorRole: actor.role,
     actorName: actor.name,
@@ -184,6 +187,7 @@ export async function deleteReservation(
   const nextReservations = reservations.filter((entry) => entry.id !== reservationId);
   await writeJsonFile(reservationsFile, nextReservations);
   await recordAuditEntry({
+    restaurantId: reservation.restaurantId,
     restaurantSlug,
     actorRole: actor.role,
     actorName: actor.name,
@@ -222,6 +226,7 @@ export async function createMessage(
   const messages = await listMessages();
   const message: RestaurantMessage = {
     id: createId("message"),
+    restaurantId: restaurant.id,
     restaurantSlug: restaurant.slug,
     createdAt: new Date().toISOString(),
     status: "new",

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { StaffClient } from "@/components/staff-client";
 import { StaffLogin } from "@/components/staff-login";
 import { StaffLogoutButton } from "@/components/staff-logout-button";
-import { isStaffAuthenticated } from "@/lib/auth";
-import { listRestaurants } from "@/lib/restaurant-store";
+import { getRestaurantById } from "@/lib/restaurant-store";
+import { getStaffSessionUser, isStaffAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +19,14 @@ export default async function StaffPage() {
     return <StaffLogin />;
   }
 
-  const restaurants = await listRestaurants();
-  const restaurant = restaurants[0];
+  const staffUser = await getStaffSessionUser();
+  if (!staffUser) {
+    return <div>Aucun utilisateur staff connecté.</div>;
+  }
+
+  const restaurant = staffUser?.restaurantId
+    ? await getRestaurantById(staffUser.restaurantId)
+    : null;
 
   if (!restaurant) {
     return <div>Aucun restaurant configuré.</div>;
@@ -38,9 +44,8 @@ export default async function StaffPage() {
         </div>
       </div>
       <StaffClient
-        restaurantSlug={restaurant.slug}
-        restaurantName={restaurant.name}
-        whatsappNumber={restaurant.whatsappNumber}
+        restaurant={restaurant}
+        staffUserId={staffUser.id}
         locale="fr"
       />
     </main>

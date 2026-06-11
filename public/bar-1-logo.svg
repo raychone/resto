@@ -1,0 +1,24 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Noir 1 Bar 1 logo</title>
+  <desc id="desc">Elegant black and gold logo for the Bar 1 demo restaurant.</desc>
+  <defs>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(166 146) rotate(46) scale(308)">
+      <stop stop-color="#FDE68A" stop-opacity="0.22"/>
+      <stop offset="0.52" stop-color="#F59E0B" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#111111" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="120" y1="104" x2="392" y2="408" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5F1EA" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#F59E0B" stop-opacity="0.85"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#111111"/>
+  <circle cx="256" cy="256" r="188" fill="url(#glow)"/>
+  <circle cx="256" cy="256" r="182" stroke="url(#ring)" stroke-width="10"/>
+  <circle cx="256" cy="256" r="148" stroke="#F5F1EA" stroke-opacity="0.12" stroke-width="1.5" stroke-dasharray="10 14"/>
+  <path d="M256 132C271.464 132 284 144.536 284 160C284 175.464 271.464 188 256 188C240.536 188 228 175.464 228 160C228 144.536 240.536 132 256 132Z" fill="#F59E0B"/>
+  <path d="M256 132C256 132 262 146 262 160C262 174 256 188 256 188C256 188 250 174 250 160C250 146 256 132 256 132Z" fill="#FDE68A"/>
+  <text x="256" y="286" text-anchor="middle" fill="#F5F1EA" font-size="92" font-weight="800" font-family="Inter, Arial, sans-serif" letter-spacing="4">NOIR</text>
+  <text x="256" y="356" text-anchor="middle" fill="#F59E0B" font-size="72" font-weight="900" font-family="Inter, Arial, sans-serif" letter-spacing="8">1</text>
+  <text x="256" y="398" text-anchor="middle" fill="#F5F1EA" fill-opacity="0.85" font-size="24" font-weight="600" font-family="Inter, Arial, sans-serif" letter-spacing="6">BAR 1</text>
+</svg>

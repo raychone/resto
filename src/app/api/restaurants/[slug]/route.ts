@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isValidManagerSession, managerDashboardCookieName } from "@/lib/auth";
 import {
   deleteRestaurant,
+  getRestaurantById,
   getRestaurantBySlug,
   updateRestaurant,
 } from "@/lib/restaurant-store";
+import { getManagerUserFromRequest, getOwnerUserFromRequest } from "@/lib/auth";
+import { recordAuditEntry } from "@/lib/audit-store";
 import type { Restaurant } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
@@ -20,6 +22,16 @@ export async function GET(
     return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
   }
 
+  const owner = await getOwnerUserFromRequest(request);
+  const manager = await getManagerUserFromRequest(request);
+
+  if (
+    !owner &&
+    (!manager?.restaurantId || (await getRestaurantById(manager.restaurantId))?.slug !== slug)
+  ) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   return NextResponse.json(restaurant);
 }
 
@@ -27,30 +39,89 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  if (!isValidManagerSession(request.cookies.get(managerDashboardCookieName)?.value)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+  const owner = await getOwnerUserFromRequest(request);
+  const manager = await getManagerUserFromRequest(request);
   const { slug } = await params;
-  const payload = (await request.json()) as Restaurant;
-  const restaurant = await updateRestaurant(slug, payload);
+  const restaurant = await getRestaurantBySlug(slug);
 
   if (!restaurant) {
     return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
   }
 
-  return NextResponse.json(restaurant);
+  if (
+    !owner &&
+    (!manager?.restaurantId || restaurant.id !== manager.restaurantId)
+  ) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const payload = (await request.json()) as Restaurant;
+  const updatedRestaurant = await updateRestaurant(slug, payload);
+
+  if (!updatedRestaurant) {
+    return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
+  }
+
+  const actor = owner
+    ? { role: "manager" as const, name: "Owner" }
+    : manager
+      ? { role: "manager" as const, name: manager.name }
+      : null;
+
+  if (actor) {
+    await recordAuditEntry({
+      restaurantSlug: updatedRestaurant.slug,
+      restaurantId: updatedRestaurant.id,
+      actorRole: actor.role,
+      actorName: actor.name,
+      action: "restaurant_updated",
+      targetType: "restaurant",
+      targetId: updatedRestaurant.id,
+      details: "restaurant_config_saved",
+    });
+  }
+
+  return NextResponse.json(updatedRestaurant);
 }
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  if (!isValidManagerSession(request.cookies.get(managerDashboardCookieName)?.value)) {
+  const owner = await getOwnerUserFromRequest(request);
+  const manager = await getManagerUserFromRequest(request);
+  const { slug } = await params;
+  const restaurant = await getRestaurantBySlug(slug);
+
+  if (!restaurant) {
+    return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
+  }
+
+  if (
+    !owner &&
+    (!manager?.restaurantId || restaurant.id !== manager.restaurantId)
+  ) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { slug } = await params;
   await deleteRestaurant(slug);
+  const actor = owner
+    ? { role: "manager" as const, name: "Owner" }
+    : manager
+      ? { role: "manager" as const, name: manager.name }
+      : null;
+
+  if (actor) {
+    await recordAuditEntry({
+      restaurantSlug: restaurant.slug,
+      restaurantId: restaurant.id,
+      actorRole: actor.role,
+      actorName: actor.name,
+      action: "restaurant_deleted",
+      targetType: "restaurant",
+      targetId: restaurant.id,
+      details: "soft_deleted",
+    });
+  }
   return NextResponse.json({ ok: true });
 }

@@ -6,6 +6,7 @@ export type AuditActorRole = "manager" | "staff" | "client";
 export type AuditEntry = {
   id: string;
   restaurantSlug: string;
+  restaurantId?: string;
   actorRole: AuditActorRole;
   actorName: string;
   action: string;
@@ -44,7 +45,9 @@ export async function listAuditEntries() {
 
 export async function listAuditEntriesForRestaurant(restaurantSlug: string) {
   const entries = await listAuditEntries();
-  return entries.filter((entry) => entry.restaurantSlug === restaurantSlug);
+  return entries.filter(
+    (entry) => entry.restaurantSlug === restaurantSlug || entry.restaurantId === restaurantSlug,
+  );
 }
 
 export async function recordAuditEntry(
@@ -59,4 +62,3 @@ export async function recordAuditEntry(
   await writeJsonFile(auditFile, [...entries, auditEntry]);
   return auditEntry;
 }
-

@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { isValidDashboardCredentials, managerDashboardCookieName } from "@/lib/auth";
+import {
+  getValidUserByCredentials,
+  managerDashboardCookieName,
+} from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -9,12 +12,14 @@ export async function POST(request: Request) {
     password?: string;
   };
 
-  if (!username || !password || !isValidDashboardCredentials(username, password)) {
+  const user = username && password ? await getValidUserByCredentials(username, password) : null;
+
+  if (!user || user.role !== "manager") {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(managerDashboardCookieName, "raychone!", {
+  response.cookies.set(managerDashboardCookieName, user.id, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
