@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Locale, MenuCategory, MenuItem } from "@/lib/types";
 import { getMenuItemEffectivePrice } from "@/lib/types";
 
@@ -77,30 +77,11 @@ function money(amount: number) {
 }
 
 export function PublicMenuCategories({ categories, locale, accent }: Props) {
-  const [openCategoryId, setOpenCategoryId] = useState<string | null>(categories[0]?.id ?? null);
+  const [openCategoryId, setOpenCategoryId] = useState<string | null>(null);
   const [modalState, setModalState] = useState<ItemModalState>(null);
   const [isModalClosing, setIsModalClosing] = useState(false);
   const modalCloseTimer = useRef<number | null>(null);
   const text = labels[locale];
-
-  useEffect(() => {
-    if (!modalState) return;
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        closeModal();
-      }
-    };
-    window.addEventListener("keydown", onEscape);
-    return () => window.removeEventListener("keydown", onEscape);
-  }, [modalState]);
-
-  useEffect(() => {
-    return () => {
-      if (modalCloseTimer.current) {
-        window.clearTimeout(modalCloseTimer.current);
-      }
-    };
-  }, []);
 
   function openModal(item: MenuItem, categoryName: string) {
     if (modalCloseTimer.current) {
@@ -111,7 +92,7 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
     setModalState({ categoryName, item });
   }
 
-  function closeModal() {
+  const closeModal = useCallback(() => {
     if (!modalState || isModalClosing) {
       return;
     }
@@ -122,7 +103,26 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
       setIsModalClosing(false);
       modalCloseTimer.current = null;
     }, 180);
-  }
+  }, [isModalClosing, modalState]);
+
+  useEffect(() => {
+    if (!modalState) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [closeModal, modalState]);
+
+  useEffect(() => {
+    return () => {
+      if (modalCloseTimer.current) {
+        window.clearTimeout(modalCloseTimer.current);
+      }
+    };
+  }, []);
 
   const activeItemMeta = useMemo(() => {
     if (!modalState) return null;
@@ -150,7 +150,7 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
                 className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left text-[#f5f1ea] transition duration-300 hover:bg-white/[0.02] sm:px-5 sm:py-5"
               >
                 <div className="min-w-0">
-                  <h2 className="text-[1.95rem] font-semibold leading-[0.95] sm:text-[2.35rem]">
+                  <h2 className="text-[1.32rem] font-semibold leading-[0.95] sm:text-[1.95rem] lg:text-[2.35rem]">
                     {category.name}
                   </h2>
                 </div>

@@ -54,7 +54,10 @@ export function HappyHourCard({
           <p className="mt-2 text-sm font-semibold leading-6 text-[#f5f1ea] sm:text-base">
             {happyHour.active ? "Open" : "Starts in"}
           </p>
-          <p className="mt-1 font-mono text-[1.12rem] font-semibold tracking-[0.12em] text-white sm:text-[1.22rem]">
+          <p
+            className="mt-1 font-mono text-[1.12rem] font-semibold tracking-[0.12em] text-white sm:text-[1.22rem]"
+            suppressHydrationWarning
+          >
             {countdown}
           </p>
         </div>
@@ -67,9 +70,6 @@ export function HappyHourCard({
         </div>
       </div>
 
-      <p className="mt-3 text-[11px] uppercase tracking-[0.25em] text-white/30">
-        {happyHour.message}
-      </p>
     </div>
   );
 }

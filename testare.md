@@ -29,7 +29,7 @@ Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează paș
 6. Verifică dacă textul, butoanele și meniul se schimbă corect.
 7. Apasă butonul `Program` din secțiunea dedicată a paginii și verifică modalul cu orarul.
 8. Închide modalul.
-9. Apasă `Reserve` și verifică dacă se deschide modalul de rezervare.
+9. Dacă testezi un restaurant cu booking activ, apasă `Reserve` și verifică dacă se deschide modalul de rezervare.
 10. Verifică dacă butoanele Google Maps și Waze trimit spre adresa restaurantului.
 11. Verifică dacă meniul se deschide ca acordeon pe categorii.
 12. Dacă testezi demo-ul `Noir 1`, verifică dacă vezi categoriile `Happy Hour 6:30pm - 8:30pm`, `Draft Beers`, `Aperitifs`, `Cocktails & Mocktails`, `Whiskies` și restul listelor de bar.
@@ -38,7 +38,7 @@ Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează paș
 15. Apasă pe un preparat și verifică dacă se deschide modalul cu imagine, descriere, recipe, ingrediente, alergeni și butonul `X`.
 16. Verifică dacă signature apare pe imagine în modal, nu ca badge separat.
 17. Verifică dacă meniul public folosește fundal întunecat și text deschis pe mobil.
-18. Verifică dacă cardul de happy hour din hero arată countdown și secundele se schimbă în timp real.
+18. Verifică dacă cardul de happy hour din hero arată countdown-ul live cu secunde în linia principală și că nu mai repetă textul jos.
 19. Verifică faptul că butonul `Reserve` nu apare pe demo-ul `Noir 1`.
 
 ### 1.3 QR și PDF

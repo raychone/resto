@@ -114,19 +114,45 @@ function buildWazeUrl(address: string) {
 
 function MapIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z" />
-      <circle cx="12" cy="11" r="2.25" />
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path
+        d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z"
+        fill="#EA4335"
+      />
+      <path
+        d="M12 14.8a3.8 3.8 0 1 0 0-7.6 3.8 3.8 0 0 0 0 7.6Z"
+        fill="#4285F4"
+      />
+      <path
+        d="M12 4.1a7.9 7.9 0 0 1 5.6 2.3l-1.5 1.5A5.8 5.8 0 0 0 12 6.3a5.8 5.8 0 0 0-4.1 1.6L6.4 6.4A7.9 7.9 0 0 1 12 4.1Z"
+        fill="#34A853"
+      />
+      <path d="M6.4 6.4 7.9 7.9A5.8 5.8 0 0 0 6.3 12H4.1a7.9 7.9 0 0 1 2.3-5.6Z" fill="#FBBC05" />
     </svg>
   );
 }
 
 function WazeIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M8.5 14.5c1.2 1.1 2.7 1.6 3.5 1.6s2.3-.5 3.5-1.6" />
-      <path d="M10 10h.01M14 10h.01" />
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path
+        d="M12 4.5c-4.14 0-7.5 2.86-7.5 6.4 0 2.1 1.07 4 2.93 5.19l-.56 2.24 2.53-1.05A9.7 9.7 0 0 0 12 17.8c4.14 0 7.5-2.86 7.5-6.4S16.14 4.5 12 4.5Z"
+        fill="#25B6D2"
+      />
+      <path
+        d="M8.7 10.4c.2-.7 1-.9 1.6-.5l.8.6c.2.1.5.1.7 0l.9-.6c.6-.4 1.4-.1 1.6.5"
+        fill="none"
+        stroke="#fff"
+        strokeLinecap="round"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M9 12.9c.8.8 1.7 1.2 3 1.2s2.2-.4 3-1.2"
+        fill="none"
+        stroke="#fff"
+        strokeLinecap="round"
+        strokeWidth="1.5"
+      />
     </svg>
   );
 }
@@ -163,7 +189,10 @@ export async function PublicMenu({
         logoUrl={restaurant.logoUrl}
         locale={locale}
       />
-      <main className="mx-auto min-h-screen w-full max-w-[1440px] px-2 py-3 sm:px-4 lg:px-6 lg:py-4">
+      <main
+        id="top"
+        className="mx-auto min-h-screen w-full max-w-[1440px] scroll-mt-32 px-2 py-3 sm:px-4 lg:px-6 lg:py-4"
+      >
       <div className="grid gap-4">
         <div className="space-y-6">
           <section
@@ -207,35 +236,35 @@ export async function PublicMenu({
                     </div>
                   </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <a
-                    href={mapsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={text.maps}
-                    title={text.maps}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white text-black transition hover:scale-[1.03] hover:bg-white/90"
-                  >
-                    <MapIcon />
-                  </a>
+                <div className="flex flex-wrap items-center gap-2">
+                  <HoursOpenButton className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white">
+                    {text.program}
+                  </HoursOpenButton>
                   <a
                     href={wazeUrl}
                     target="_blank"
                     rel="noreferrer"
                     aria-label={text.waze}
                     title={text.waze}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black text-white transition hover:scale-[1.03] hover:bg-black/90"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
                   >
                     <WazeIcon />
                   </a>
-                  {restaurant.features.bookingEnabled ? (
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={text.maps}
+                    title={text.maps}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
+                  >
+                    <MapIcon />
+                  </a>
+                  {restaurant.features.bookingEnabled && restaurant.slug !== "bar-1" ? (
                     <BookingOpenButton className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white">
                       {text.reserve}
                     </BookingOpenButton>
                   ) : null}
-                  <HoursOpenButton className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white">
-                    {text.program}
-                  </HoursOpenButton>
                 </div>
 
                 {restaurant.features.googleReviewsEnabled ? (
@@ -288,13 +317,7 @@ export async function PublicMenu({
           >
             <div className="mb-4 flex items-center justify-between gap-3 px-1 sm:px-2">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.35em] text-white/35">
-                  {text.category}
-                </p>
                 <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">Menu</h2>
-              </div>
-              <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.25em] text-white/55">
-                mobile first
               </div>
             </div>
             <PublicMenuCategories

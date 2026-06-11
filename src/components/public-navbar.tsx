@@ -54,7 +54,7 @@ export function PublicNavbar({
       <div className="relative rounded-[1.75rem] border border-white/10 bg-[#111111]/95 px-3 py-3 text-[#f5f1ea] shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur sm:px-4 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:px-9 lg:py-4 xl:px-24">
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
           <Link
-            href={`/r/${restaurantSlug}?lang=${locale}`}
+            href="#top"
             className="flex items-center justify-start"
           >
             <img

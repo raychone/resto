@@ -75,19 +75,8 @@ export default async function QrPage({ params }: Props) {
           <p className="max-w-2xl text-base leading-7 text-black/70">
             {restaurant.features.qrMode === "off"
               ? "Le QR code est désactivé pour ce restaurant."
-              : "Ce code ouvre directement le menu web en français par défaut. Depuis le menu, le client peut changer de langue."}
+              : "Ce code ouvre directement le menu web du restaurant."}
           </p>
-
-          {publicUrl ? (
-            <div className="rounded-[1.75rem] border border-black/8 bg-black/3 p-4">
-              <p className="text-[11px] uppercase tracking-[0.3em] text-black/40">
-                Destination
-              </p>
-              <p className="mt-2 break-all text-sm font-medium text-black/70">
-                {publicUrl}
-              </p>
-            </div>
-          ) : null}
 
           <div className="flex flex-wrap gap-2">
             {locales.map((locale) => (

@@ -3,6 +3,8 @@
 :root {
   --background: #111111;
   --foreground: #f5f1ea;
+  --font-space-grotesk: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-fraunces: "Fraunces", "Cormorant Garamond", Georgia, serif;
 }
 
 @theme inline {
