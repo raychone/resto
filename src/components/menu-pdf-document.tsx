@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
 function formatPrice(locale: Locale, price: number) {
   const rounded = Math.round(price * 100) / 100;
   const formatted = Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(2);
-  return `${formatted.replace(".", ",")}€`;
+  return `${formatted}€`;
 }
 
 export function MenuPdfDocument({ restaurant, locale, logoDataUrl }: MenuPdfDocumentProps) {

@@ -14,7 +14,7 @@ Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează paș
 ### 1.1 Pagina principală
 
 1. Deschide `http://localhost:3000`.
-2. Verifică dacă logo-ul Bar 1 se vede corect.
+2. Verifică dacă logo-ul Noir 1 se vede corect.
 3. Verifică dacă navbar-ul este sticky și dark.
 4. Verifică dacă logo-ul este în stânga, `Menu` este centrat și selectorul de limbă este în dreapta.
 5. Verifică că `Reserve` nu apare pe demo-ul `Noir 1`.
@@ -33,12 +33,13 @@ Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează paș
 10. Verifică dacă butoanele Google Maps și Waze trimit spre adresa restaurantului.
 11. Verifică dacă meniul se deschide ca acordeon pe categorii.
 12. Dacă testezi demo-ul `Noir 1`, verifică dacă vezi categoriile `Happy Hour 6:30pm - 8:30pm`, `Draft Beers`, `Aperitifs`, `Cocktails & Mocktails`, `Whiskies` și restul listelor de bar.
-13. Verifică dacă lista de produse arată ca o listă curată, fără carduri, iar textul produselor este compact și aliniat cu prețul în dreapta.
-14. Verifică dacă prețurile sunt corecte față de seed-ul de bar.
+13. Verifică dacă lista de produse arată ca o listă curată, fără carduri, iar în listă apar doar numele și prețul din dreapta.
+14. Verifică dacă prețurile sunt corecte față de seed-ul de bar și că la happy hour apare doar prețul aplicat acum.
 15. Apasă pe un preparat și verifică dacă se deschide modalul cu imagine, descriere, recipe, ingrediente, alergeni și butonul `X`.
 16. Verifică dacă signature apare pe imagine în modal, nu ca badge separat.
 17. Verifică dacă meniul public folosește fundal întunecat și text deschis pe mobil.
 18. Verifică dacă cardul de happy hour din hero arată countdown și secundele se schimbă în timp real.
+19. Verifică faptul că butonul `Reserve` nu apare pe demo-ul `Noir 1`.
 
 ### 1.3 QR și PDF
 
@@ -142,7 +143,7 @@ Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează paș
    - user: `user`
    - parolă: `pass123!`
 3. Verifică dacă staff-ul este legat de un restaurant valid.
-4. Dacă vrei să testezi barul demo, folosește `Bar 1` din `/owner`.
+4. Dacă vrei să testezi barul demo, folosește `Noir 1` din `/owner`.
 5. Verifică dacă itemele cu happy hour ajung în bon la prețul redus.
 
 ### 3.2 Mese și bon

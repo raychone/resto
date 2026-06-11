@@ -52,13 +52,15 @@ export function HappyHourCard({
             {happyHour.label}
           </p>
           <p className="mt-2 text-sm font-semibold leading-6 text-[#f5f1ea] sm:text-base">
-            {happyHour.active ? "Open" : "Starts in"}{" "}
-            <span className="font-mono text-white">{countdown}</span>
+            {happyHour.active ? "Open" : "Starts in"}
+          </p>
+          <p className="mt-1 font-mono text-[1.12rem] font-semibold tracking-[0.12em] text-white sm:text-[1.22rem]">
+            {countdown}
           </p>
         </div>
 
         <div
-          className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-white"
+          className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-white shadow-[0_10px_24px_rgba(0,0,0,0.25)]"
           style={{ backgroundColor: `${accent}d9` }}
         >
           {happyHour.active ? "OPEN" : "SOON"}

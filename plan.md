@@ -45,7 +45,7 @@ Scopul este să fie ușor de clonat și branduit diferit pentru fiecare restaura
 - scoping strict pe restaurant pentru manager și staff
 
 **Stare curentă:** modelul `Restaurant + User`, autentificarea pe useri reali, izolarea pe restaurant și managementul de staff sunt implementate; bonul activ pe masă este închis, iar auditul manager/owner este acum în lucru. Rezervările includ și statusul `no_show` în dashboard și staff.
-Meniul public este acum orientat mobile-first, cu categorii dark tip acordeon/listă, fără count badge, iar modalul de preparat este scrollabil la tap/click cu imagine, recipe și signature peste imagine. QR-ul duce direct la meniul web fără text explicativ.
+Meniul public este orientat mobile-first, cu categorii dark tip acordeon/listă, fără count badge și fără „carduri” pentru variante; în listă apar doar numele și prețul, iar modalul de preparat este scrollabil la tap/click cu imagine, recipe și signature peste imagine. QR-ul duce direct la meniul web fără text explicativ.
 Restaurantul demo principal este `Noir 1`, cu logo local noir și un seed complet pentru happy hour, beers, aperitifs, wines, cocktails, rums, whiskies, gins, vodkas, tequilas și digestifs. Happy hour-ul afișează un countdown live cu secunde, iar booking-ul este dezactivat pe demo-ul principal.
 
 ### Faza 2 — users și parole

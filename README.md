@@ -7,6 +7,7 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 - meniu public per restaurant, cu limbi `fr / en / it / es`
 - categoriile din meniu sunt afișate ca acordeon/listă, fără număr de produse și fără etichetă duplicată
 - preparatele se deschid într-un modal scrollabil cu imagine, recipe, ingredients și allergens, iar signature apare pe imagine
+- rândurile din meniu sunt list-style, fără carduri, iar în listă apar doar numele și prețul
 - meniul public are stil dark pe mobile, cu text deschis pentru lizibilitate
 - menu-ul public afișează un singur preț curent, cu discount happy hour aplicat când este activ
 - QR code per restaurant, direct către meniul web
@@ -42,6 +43,7 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 - logo dedicat pentru `Noir 1` în stil noir, încărcat local din `/bar-1-logo.svg`
 - happy hour-ul este configurabil pe zile și interval, cu card live de countdown cu secunde pe pagina publică
 - booking-ul este oprit pentru `Noir 1`, deci `Book a table` nu apare pe demo-ul principal
+- happy hour-ul are un countdown live cu secunde vizibile
 - produsele din menu pot avea happy hour price redus
 
 ## Implementare pe faze

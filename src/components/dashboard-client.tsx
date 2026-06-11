@@ -97,7 +97,7 @@ function money(amount: number, currency: string) {
   const rounded = Math.round(amount * 100) / 100;
   const formatted = Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(2);
   return currency === "EUR"
-    ? `${formatted.replace(".", ",")}€`
+    ? `${formatted}€`
     : new Intl.NumberFormat("fr-FR", {
         style: "currency",
         currency,

@@ -73,7 +73,7 @@ const labels: Record<
 function money(amount: number) {
   const rounded = Math.round(amount * 100) / 100;
   const formatted = Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(2);
-  return `${formatted.replace(".", ",")}€`;
+  return `${formatted}€`;
 }
 
 export function PublicMenuCategories({ categories, locale, accent }: Props) {
@@ -147,14 +147,20 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
               <button
                 type="button"
                 onClick={() => setOpenCategoryId(isOpen ? null : category.id)}
-                className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left text-[#f5f1ea] transition sm:px-5 sm:py-5"
+                className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left text-[#f5f1ea] transition duration-300 hover:bg-white/[0.02] sm:px-5 sm:py-5"
               >
                 <div className="min-w-0">
-                  <h2 className="text-[2.35rem] font-semibold leading-[0.95] sm:text-[2.8rem]">
+                  <h2 className="text-[1.95rem] font-semibold leading-[0.95] sm:text-[2.35rem]">
                     {category.name}
                   </h2>
                 </div>
-                <span className="text-2xl leading-none text-white">{isOpen ? "▴" : "▾"}</span>
+                <span
+                  className={`text-xl leading-none text-white transition-transform duration-300 ${
+                    isOpen ? "rotate-180" : "rotate-0"
+                  }`}
+                >
+                  ▾
+                </span>
               </button>
 
               <div
@@ -170,24 +176,19 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
                           key={item.id}
                           type="button"
                           onClick={() => openModal(item, category.name)}
-                          className={`group flex w-full items-start justify-between gap-4 py-4 text-left text-[#f5f1ea] transition duration-300 hover:translate-x-0.5 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/20 ${
+                          className={`group flex w-full items-center justify-between gap-4 py-3 text-left text-[#f5f1ea] transition duration-300 hover:translate-x-0.5 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/20 ${
                             index !== category.items.length - 1
                               ? "border-b border-dashed border-white/12"
                               : ""
                           }`}
                         >
                           <div className="min-w-0">
-                            <h3 className="text-[0.96rem] font-medium leading-[1.15] sm:text-[1.05rem]">
+                            <h3 className="text-[0.86rem] font-medium leading-[1.1] sm:text-[0.95rem]">
                               {item.name}
                             </h3>
-                            {item.description ? (
-                              <p className="mt-1 max-w-[24rem] text-[0.72rem] leading-[1.2] text-white/48 sm:text-[0.82rem]">
-                                {item.description}
-                              </p>
-                            ) : null}
                           </div>
                           <div className="shrink-0 text-right">
-                            <span className="inline-block text-[0.95rem] font-medium leading-none text-white/90 sm:text-[1rem]">
+                            <span className="inline-block text-[0.85rem] font-medium leading-none text-white/90 sm:text-[0.95rem]">
                               {money(getMenuItemEffectivePrice(item))}
                             </span>
                           </div>
@@ -245,7 +246,7 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
                   <img
                     src={modalState.item.imageUrl}
                     alt={modalState.item.name}
-                    className="aspect-[4/5] w-full object-cover sm:aspect-auto sm:min-h-[320px]"
+                    className="h-[34vh] w-full object-cover sm:h-full sm:min-h-[320px]"
                   />
                   {modalState.item.isSignature ? (
                     <span
