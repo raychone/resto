@@ -1,5 +1,237 @@
 [
   {
+    "slug": "brasa-uno",
+    "name": "Brasa Uno",
+    "tagline": "Viande maturée, feu, texture, contraste.",
+    "description": "Steakhouse urbain avec des menus denses, des prix clairs et de grandes images pour chaque plat.",
+    "accent": "#B45309",
+    "logoUrl": "https://images.unsplash.com/photo-1529612700005-e35377bf1415?auto=format&fit=crop&w=800&q=80",
+    "heroImage": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1600&q=80",
+    "address": "51 Boulevard des Aéroports, Lyon",
+    "phone": "+33 4 00 00 00 02",
+    "openingHours": "Mardi - Dimanche, 13:00 - 23:30",
+    "weeklyHours": [
+      {
+        "day": "mon",
+        "label": "Lundi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "tue",
+        "label": "Mardi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "wed",
+        "label": "Mercredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "thu",
+        "label": "Jeudi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "fri",
+        "label": "Vendredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sat",
+        "label": "Samedi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sun",
+        "label": "Dimanche",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "22:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      }
+    ],
+    "currency": "EUR",
+    "categories": [
+      {
+        "id": "category-main",
+        "name": "Plats principaux",
+        "description": "Les plats qui définissent l'expérience.",
+        "items": [
+          {
+            "id": "item-ribeye",
+            "name": "Ribeye 350 g",
+            "description": "Avec beurre aromatisé, pommes de terre wedges et salade verte.",
+            "recipe": "Saisi au grill, fini au beurre et à l'ail.",
+            "ingredients": [
+              "bœuf",
+              "beurre",
+              "pommes de terre",
+              "salade",
+              "ail"
+            ],
+            "allergens": [
+              "lait"
+            ],
+            "price": 124,
+            "imageUrl": "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
+          }
+        ]
+      }
+    ],
+    "translations": {
+      "en": {
+        "name": "Brasa Uno",
+        "tagline": "Aged meat, fire, texture, contrast.",
+        "description": "An urban steakhouse with dense menus, clear prices and large images for every dish.",
+        "address": "51 Airports Boulevard, Lyon",
+        "categories": {
+          "category-main": {
+            "name": "Main courses",
+            "description": "The dishes that define the experience.",
+            "items": {
+              "item-ribeye": {
+                "name": "Ribeye 350 g",
+                "description": "With herb butter, wedges and green salad.",
+                "recipe": "Grilled, finished with butter and garlic."
+              }
+            }
+          }
+        }
+      },
+      "it": {
+        "name": "Brasa Uno",
+        "tagline": "Carne frollata, fuoco, consistenza, contrasto.",
+        "description": "Una steakhouse urbana con menu densi, prezzi chiari e immagini grandi per ogni piatto.",
+        "address": "51 Boulevard des Aéroports, Lione",
+        "categories": {
+          "category-main": {
+            "name": "Piatti principali",
+            "description": "I piatti che definiscono l'esperienza.",
+            "items": {
+              "item-ribeye": {
+                "name": "Ribeye 350 g",
+                "description": "Con burro aromatico, patate wedges e insalata verde.",
+                "recipe": "Alla griglia, rifinito con burro e aglio."
+              }
+            }
+          }
+        }
+      },
+      "es": {
+        "name": "Brasa Uno",
+        "tagline": "Carne madurada, fuego, textura, contraste.",
+        "description": "Un steakhouse urbano con menús densos, precios claros e imágenes grandes para cada plato.",
+        "address": "51 Boulevard des Aéroports, Lyon",
+        "categories": {
+          "category-main": {
+            "name": "Platos principales",
+            "description": "Los platos que definen la experiencia.",
+            "items": {
+              "item-ribeye": {
+                "name": "Ribeye 350 g",
+                "description": "Con mantequilla aromática, wedges y ensalada verde.",
+                "recipe": "A la parrilla, terminado con mantequilla y ajo."
+              }
+            }
+          }
+        }
+      }
+    },
+    "id": "87971927-025d-4c91-932e-e2de5b46263e",
+    "status": "trial",
+    "plan": "starter",
+    "whatsappNumber": "+33 4 00 00 00 02",
+    "googleRating": 4.8,
+    "googleReviewsCount": 0,
+    "googleReviewsUrl": "",
+    "tableCount": 12,
+    "seatsPerTable": 4,
+    "features": {
+      "bookingEnabled": true,
+      "qrMode": "pdf",
+      "notificationProvider": "android",
+      "whatsappAlertsEnabled": true,
+      "smsAlertsEnabled": false,
+      "googleReviewsEnabled": true
+    },
+    "createdAt": "2026-06-10T22:15:18.387Z",
+    "updatedAt": "2026-06-10T22:15:18.387Z",
+    "deletedAt": null,
+    "happyHourSchedule": null,
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": ""
+  },
+  {
     "slug": "terra-fresh",
     "name": "Terra Fresh Kitchen",
     "tagline": "Bowls propres, couleurs denses, goût net.",
@@ -318,244 +550,16 @@
       "bookingEnabled": false,
       "qrMode": "pdf",
       "notificationProvider": "android",
-      "whatsappAlertsEnabled": true,
+      "whatsappAlertsEnabled": false,
       "smsAlertsEnabled": false,
       "googleReviewsEnabled": true
     },
     "createdAt": "2026-06-10T22:15:18.385Z",
-    "updatedAt": "2026-06-10T22:15:18.385Z",
+    "updatedAt": "2026-06-12T09:46:07.912Z",
     "deletedAt": null,
-    "happyHourSchedule": null
-  },
-  {
-    "slug": "brasa-uno",
-    "name": "Brasa Uno",
-    "tagline": "Viande maturée, feu, texture, contraste.",
-    "description": "Steakhouse urbain avec des menus denses, des prix clairs et de grandes images pour chaque plat.",
-    "accent": "#B45309",
-    "logoUrl": "https://images.unsplash.com/photo-1529612700005-e35377bf1415?auto=format&fit=crop&w=800&q=80",
-    "heroImage": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1600&q=80",
-    "address": "51 Boulevard des Aéroports, Lyon",
-    "phone": "+33 4 00 00 00 02",
-    "openingHours": "Mardi - Dimanche, 13:00 - 23:30",
-    "weeklyHours": [
-      {
-        "day": "mon",
-        "label": "Lundi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "tue",
-        "label": "Mardi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "wed",
-        "label": "Mercredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "thu",
-        "label": "Jeudi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "fri",
-        "label": "Vendredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sat",
-        "label": "Samedi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sun",
-        "label": "Dimanche",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "22:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      }
-    ],
-    "currency": "EUR",
-    "categories": [
-      {
-        "id": "category-main",
-        "name": "Plats principaux",
-        "description": "Les plats qui définissent l'expérience.",
-        "items": [
-          {
-            "id": "item-ribeye",
-            "name": "Ribeye 350 g",
-            "description": "Avec beurre aromatisé, pommes de terre wedges et salade verte.",
-            "recipe": "Saisi au grill, fini au beurre et à l'ail.",
-            "ingredients": [
-              "bœuf",
-              "beurre",
-              "pommes de terre",
-              "salade",
-              "ail"
-            ],
-            "allergens": [
-              "lait"
-            ],
-            "price": 124,
-            "imageUrl": "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true,
-            "happyHourEnabled": false,
-            "happyHourPrice": null
-          }
-        ]
-      }
-    ],
-    "translations": {
-      "en": {
-        "name": "Brasa Uno",
-        "tagline": "Aged meat, fire, texture, contrast.",
-        "description": "An urban steakhouse with dense menus, clear prices and large images for every dish.",
-        "address": "51 Airports Boulevard, Lyon",
-        "categories": {
-          "category-main": {
-            "name": "Main courses",
-            "description": "The dishes that define the experience.",
-            "items": {
-              "item-ribeye": {
-                "name": "Ribeye 350 g",
-                "description": "With herb butter, wedges and green salad.",
-                "recipe": "Grilled, finished with butter and garlic."
-              }
-            }
-          }
-        }
-      },
-      "it": {
-        "name": "Brasa Uno",
-        "tagline": "Carne frollata, fuoco, consistenza, contrasto.",
-        "description": "Una steakhouse urbana con menu densi, prezzi chiari e immagini grandi per ogni piatto.",
-        "address": "51 Boulevard des Aéroports, Lione",
-        "categories": {
-          "category-main": {
-            "name": "Piatti principali",
-            "description": "I piatti che definiscono l'esperienza.",
-            "items": {
-              "item-ribeye": {
-                "name": "Ribeye 350 g",
-                "description": "Con burro aromatico, patate wedges e insalata verde.",
-                "recipe": "Alla griglia, rifinito con burro e aglio."
-              }
-            }
-          }
-        }
-      },
-      "es": {
-        "name": "Brasa Uno",
-        "tagline": "Carne madurada, fuego, textura, contraste.",
-        "description": "Un steakhouse urbano con menús densos, precios claros e imágenes grandes para cada plato.",
-        "address": "51 Boulevard des Aéroports, Lyon",
-        "categories": {
-          "category-main": {
-            "name": "Platos principales",
-            "description": "Los platos que definen la experiencia.",
-            "items": {
-              "item-ribeye": {
-                "name": "Ribeye 350 g",
-                "description": "Con mantequilla aromática, wedges y ensalada verde.",
-                "recipe": "A la parrilla, terminado con mantequilla y ajo."
-              }
-            }
-          }
-        }
-      }
-    },
-    "id": "87971927-025d-4c91-932e-e2de5b46263e",
-    "status": "trial",
-    "plan": "starter",
-    "whatsappNumber": "+33 4 00 00 00 02",
-    "googleRating": 4.8,
-    "googleReviewsCount": 0,
-    "googleReviewsUrl": "",
-    "tableCount": 12,
-    "seatsPerTable": 4,
-    "features": {
-      "bookingEnabled": true,
-      "qrMode": "pdf",
-      "notificationProvider": "android",
-      "whatsappAlertsEnabled": true,
-      "smsAlertsEnabled": false,
-      "googleReviewsEnabled": true
-    },
-    "createdAt": "2026-06-10T22:15:18.387Z",
-    "updatedAt": "2026-06-10T22:15:18.387Z",
-    "deletedAt": null,
-    "happyHourSchedule": null
+    "happyHourSchedule": null,
+    "uberEatsUrl": "www.ubereats.fr",
+    "tripAdvisorUrl": "www.tripadvisor.com"
   },
   {
     "slug": "bar-1",
@@ -2246,15 +2250,15 @@
     "tableCount": 10,
     "seatsPerTable": 2,
     "features": {
-      "bookingEnabled": true,
+      "bookingEnabled": false,
       "qrMode": "menu",
       "notificationProvider": "android",
-      "whatsappAlertsEnabled": true,
-      "smsAlertsEnabled": true,
+      "whatsappAlertsEnabled": false,
+      "smsAlertsEnabled": false,
       "googleReviewsEnabled": true
     },
     "createdAt": "2026-06-10T22:15:18.387Z",
-    "updatedAt": "2026-06-11T13:16:42.967Z",
+    "updatedAt": "2026-06-12T09:47:48.647Z",
     "deletedAt": null,
     "happyHourSchedule": {
       "enabled": true,
@@ -2270,6 +2274,8 @@
       ],
       "start": "18:30",
       "end": "20:30"
-    }
+    },
+    "uberEatsUrl": "www.usereats.fr",
+    "tripAdvisorUrl": "www.tripadvisor.com"
   }
 ]

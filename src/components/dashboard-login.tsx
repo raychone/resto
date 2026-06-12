@@ -43,8 +43,8 @@ export function DashboardLogin({
   }
 
   return (
-    <main className="flex min-h-screen w-full items-center justify-center px-4">
-      <section className="w-full max-w-md rounded-[2rem] border border-black/8 bg-white/90 p-6 shadow-[0_24px_90px_rgba(15,23,42,0.1)] backdrop-blur">
+    <main className="internal-dark flex min-h-screen w-full items-center justify-center px-4">
+      <section className="w-full max-w-md rounded-[2rem] border border-white/10 bg-[#171717]/95 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.45)] backdrop-blur">
         <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
           Accès sécurisé
         </p>

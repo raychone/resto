@@ -134,7 +134,46 @@
       }
     ],
     "createdAt": "2026-06-10T22:57:24.206Z",
-    "updatedAt": "2026-06-11T11:40:55.872Z",
+    "updatedAt": "2026-06-12T09:46:54.092Z",
+    "deletedAt": null
+  },
+  {
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "tableId": null,
+    "staffUserId": "staff-root",
+    "source": "takeaway",
+    "status": "paid",
+    "openedAt": "2026-06-12T09:43:55.311Z",
+    "closedAt": "2026-06-12T09:44:02.195Z",
+    "archivedAt": null,
+    "note": "",
+    "id": "order-etdl7bji",
+    "items": [
+      {
+        "menuItemId": "item-umami-bowl",
+        "nameSnapshot": "Umami Bowl",
+        "priceSnapshot": 58,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-dxql73ww",
+        "orderId": "order-etdl7bji",
+        "createdAt": "2026-06-12T09:43:55.619Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-garden-bowl",
+        "nameSnapshot": "Garden Glow",
+        "priceSnapshot": 44,
+        "quantity": 1,
+        "note": "",
+        "id": "order-item-jobvahwv",
+        "orderId": "order-etdl7bji",
+        "createdAt": "2026-06-12T09:44:00.246Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-12T09:43:55.357Z",
+    "updatedAt": "2026-06-12T09:46:54.092Z",
     "deletedAt": null
   }
 ]

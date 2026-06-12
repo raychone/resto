@@ -165,6 +165,7 @@ Poate:
 - edita numele, descrierea, logo-ul, culorile și contactele
 - edita meniul, prețurile, ingredientele și alergenii
 - activa sau dezactiva QR menu, booking, SMS, WhatsApp și Google Reviews
+- seta linkuri Uber Eats și TripAdvisor per restaurant
 - vedea auditul restaurantului
 - crea, dezactiva și reseta utilizatori staff
 - configura programul și capacitatea

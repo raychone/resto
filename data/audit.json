@@ -372,5 +372,101 @@
     "details": "restaurant_config_saved",
     "id": "audit-4e9wg6vr",
     "createdAt": "2026-06-11T11:48:36.396Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "actorRole": "staff",
+    "actorName": "User",
+    "action": "order_opened",
+    "targetType": "order",
+    "targetId": "order-etdl7bji",
+    "details": "takeaway",
+    "id": "audit-zznd6ytw",
+    "createdAt": "2026-06-12T09:43:55.365Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "actorRole": "staff",
+    "actorName": "User",
+    "action": "order_item_added",
+    "targetType": "order",
+    "targetId": "order-etdl7bji",
+    "details": "Umami Bowl × 1",
+    "id": "audit-fnl2srur",
+    "createdAt": "2026-06-12T09:43:55.625Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "actorRole": "staff",
+    "actorName": "User",
+    "action": "order_item_added",
+    "targetType": "order",
+    "targetId": "order-etdl7bji",
+    "details": "Garden Glow × 1",
+    "id": "audit-q3bn3wkz",
+    "createdAt": "2026-06-12T09:44:00.252Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "actorRole": "staff",
+    "actorName": "User",
+    "action": "order_paid",
+    "targetType": "order",
+    "targetId": "order-etdl7bji",
+    "details": "À emporter · 102 EUR cash · réglé",
+    "id": "audit-qf5l7cg1",
+    "createdAt": "2026-06-12T09:44:02.207Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "actorRole": "manager",
+    "actorName": "Owner",
+    "action": "restaurant_updated",
+    "targetType": "restaurant",
+    "targetId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "details": "restaurant_config_saved",
+    "id": "audit-desa5xlj",
+    "createdAt": "2026-06-12T09:45:43.810Z"
+  },
+  {
+    "restaurantSlug": "terra-fresh",
+    "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "actorRole": "manager",
+    "actorName": "Owner",
+    "action": "restaurant_updated",
+    "targetType": "restaurant",
+    "targetId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
+    "details": "restaurant_config_saved",
+    "id": "audit-2njqsbcu",
+    "createdAt": "2026-06-12T09:46:07.916Z"
+  },
+  {
+    "restaurantSlug": "bar-1",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "actorRole": "manager",
+    "actorName": "Owner",
+    "action": "restaurant_updated",
+    "targetType": "restaurant",
+    "targetId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "details": "restaurant_config_saved",
+    "id": "audit-gxs4z6ik",
+    "createdAt": "2026-06-12T09:47:45.694Z"
+  },
+  {
+    "restaurantSlug": "bar-1",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "actorRole": "manager",
+    "actorName": "Owner",
+    "action": "restaurant_updated",
+    "targetType": "restaurant",
+    "targetId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "details": "restaurant_config_saved",
+    "id": "audit-ab4fpjds",
+    "createdAt": "2026-06-12T09:47:48.651Z"
   }
 ]

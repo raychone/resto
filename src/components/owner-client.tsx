@@ -28,6 +28,8 @@ type InvoiceDraft = {
 type RestaurantDraft = {
   name: string;
   slug: string;
+  uberEatsUrl: string;
+  tripAdvisorUrl: string;
   managerName: string;
   managerUsername: string;
   managerPassword: string;
@@ -111,6 +113,8 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
   const [restaurantDraft, setRestaurantDraft] = useState<RestaurantDraft>(() => ({
     name: "Nouveau restaurant",
     slug: "",
+    uberEatsUrl: "",
+    tripAdvisorUrl: "",
     managerName: "Manager",
     managerUsername: "",
     managerPassword: "",
@@ -325,6 +329,39 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
     setMessage("Modules du restaurant enregistrés.");
   }
 
+  async function updateRestaurantLinks(
+    restaurantSlug: string,
+    patch: Partial<Pick<Restaurant, "uberEatsUrl" | "tripAdvisorUrl">>,
+  ) {
+    const restaurant = restaurants.find((entry) => entry.slug === restaurantSlug);
+    if (!restaurant) {
+      setMessage("Restaurant introuvable.");
+      return;
+    }
+
+    setSavingRestaurantSlug(restaurantSlug);
+    setMessage(null);
+
+    const response = await fetch(`/api/restaurants/${restaurantSlug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...restaurant, ...patch }),
+    });
+
+    if (!response.ok) {
+      setSavingRestaurantSlug(null);
+      setMessage("Impossible de mettre à jour les liens du restaurant.");
+      return;
+    }
+
+    const nextRestaurant = (await response.json()) as Restaurant;
+    setRestaurants((current) =>
+      current.map((entry) => (entry.id === nextRestaurant.id ? nextRestaurant : entry)),
+    );
+    setSavingRestaurantSlug(null);
+    setMessage("Liens du restaurant enregistrés.");
+  }
+
   async function testRestaurantNotification(restaurantSlug: string) {
     const restaurant = restaurants.find((entry) => entry.slug === restaurantSlug);
     if (!restaurant) {
@@ -423,6 +460,8 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
       body: JSON.stringify({
         name: restaurantDraft.name,
         slug: restaurantDraft.slug,
+        uberEatsUrl: restaurantDraft.uberEatsUrl,
+        tripAdvisorUrl: restaurantDraft.tripAdvisorUrl,
         initialUsers: [
           restaurantDraft.managerUsername && restaurantDraft.managerPassword
             ? {
@@ -456,6 +495,8 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
       ...current,
       name: "Nouveau restaurant",
       slug: "",
+      uberEatsUrl: "",
+      tripAdvisorUrl: "",
       managerName: "Manager",
       managerUsername: "",
       managerPassword: "",
@@ -490,7 +531,7 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
   }
 
   return (
-    <main className="min-h-screen w-full px-3 py-4 sm:px-4 lg:px-8">
+    <main className="internal-dark min-h-screen w-full px-3 py-4 sm:px-4 lg:px-8">
       <section className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
         <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
@@ -666,6 +707,35 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
                   setRestaurantDraft((current) => ({ ...current, slug: event.target.value }))
                 }
                 placeholder="ex: bar-1"
+                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
+              />
+            </label>
+            <label className="grid gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.28em] text-black/45">
+                Lien Uber Eats
+              </span>
+              <input
+                value={restaurantDraft.uberEatsUrl}
+                onChange={(event) =>
+                  setRestaurantDraft((current) => ({ ...current, uberEatsUrl: event.target.value }))
+                }
+                placeholder="https://www.ubereats.com/..."
+                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
+              />
+            </label>
+            <label className="grid gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.28em] text-black/45">
+                Lien TripAdvisor
+              </span>
+              <input
+                value={restaurantDraft.tripAdvisorUrl}
+                onChange={(event) =>
+                  setRestaurantDraft((current) => ({
+                    ...current,
+                    tripAdvisorUrl: event.target.value,
+                  }))
+                }
+                placeholder="https://www.tripadvisor.com/..."
                 className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
               />
             </label>
@@ -1012,6 +1082,62 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
                         className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium disabled:opacity-60"
                       >
                         {testingNotificationSlug === restaurant.slug ? "Test..." : "Tester notification"}
+                      </button>
+                    </div>
+
+                    <div className="mt-4 grid gap-3">
+                      <label className="grid gap-1">
+                        <span className="text-[11px] uppercase tracking-[0.2em] text-black/45">
+                          Lien Uber Eats
+                        </span>
+                        <input
+                          value={restaurant.uberEatsUrl}
+                          onChange={(event) =>
+                            setRestaurants((current) =>
+                              current.map((entry) =>
+                                entry.id === restaurant.id
+                                  ? { ...entry, uberEatsUrl: event.target.value }
+                                  : entry,
+                              ),
+                            )
+                          }
+                          placeholder="https://www.ubereats.com/..."
+                          className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none"
+                        />
+                      </label>
+                      <label className="grid gap-1">
+                        <span className="text-[11px] uppercase tracking-[0.2em] text-black/45">
+                          Lien TripAdvisor
+                        </span>
+                        <input
+                          value={restaurant.tripAdvisorUrl}
+                          onChange={(event) =>
+                            setRestaurants((current) =>
+                              current.map((entry) =>
+                                entry.id === restaurant.id
+                                  ? { ...entry, tripAdvisorUrl: event.target.value }
+                                  : entry,
+                              ),
+                            )
+                          }
+                          placeholder="https://www.tripadvisor.com/..."
+                          className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateRestaurantLinks(restaurant.slug, {
+                            uberEatsUrl: restaurant.uberEatsUrl,
+                            tripAdvisorUrl: restaurant.tripAdvisorUrl,
+                          })
+                        }
+                        disabled={savingRestaurantSlug === restaurant.slug}
+                        className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium disabled:opacity-60"
+                      >
+                        {savingRestaurantSlug === restaurant.slug
+                          ? "Enregistrement..."
+                          : "Sauver les liens"}
                       </button>
                     </div>
                   </div>

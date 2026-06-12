@@ -548,7 +548,7 @@ export function StaffClient({ restaurant, staffUserId, locale }: Props) {
   const selectedOrderItems = currentOrder?.items ?? [];
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6">
+    <main className="internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6">
       <section className="rounded-[2rem] border border-black/8 bg-white/85 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>

@@ -105,3 +105,20 @@ export function buildGoogleReviewsUrl({
   const query = encodeURIComponent(`${restaurantName} ${address} avis Google`);
   return `https://www.google.com/search?q=${query}`;
 }
+
+export function buildTripAdvisorUrl({
+  tripAdvisorUrl,
+  restaurantName,
+  address,
+}: {
+  tripAdvisorUrl: string;
+  restaurantName: string;
+  address: string;
+}) {
+  if (tripAdvisorUrl.trim()) {
+    return tripAdvisorUrl.trim();
+  }
+
+  const query = encodeURIComponent(`${restaurantName} ${address} TripAdvisor`);
+  return `https://www.tripadvisor.com/Search?q=${query}`;
+}

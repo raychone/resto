@@ -657,15 +657,15 @@ export function DashboardClient({
 
   if (!draft) {
     return (
-      <div className="rounded-[2rem] border border-black/8 bg-white/80 p-8 text-sm text-black/60 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+      <div className="internal-dark rounded-[2rem] border border-white/10 bg-[#171717]/95 p-8 text-sm text-[#f5f1ea]/80 shadow-[0_20px_60px_rgba(0,0,0,0.22)]">
         Chargement du tableau de bord...
       </div>
     );
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      <aside className="space-y-4 rounded-[2rem] border border-black/8 bg-white/85 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+    <div className="internal-dark grid gap-6 lg:grid-cols-[320px_1fr]">
+      <aside className="space-y-4 rounded-[2rem] border border-white/10 bg-[#171717]/95 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur">
         <div className="space-y-2">
           <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
             Restaurants
@@ -677,7 +677,7 @@ export function DashboardClient({
           <button
             type="button"
             onClick={startNewRestaurant}
-            className="w-full rounded-2xl border border-black/10 bg-black px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
+            className="w-full rounded-2xl border border-white/10 bg-[#0b0b0b] px-4 py-3 text-sm font-medium text-[#f5f1ea] transition hover:opacity-90"
           >
             Nouveau restaurant
           </button>
@@ -697,7 +697,7 @@ export function DashboardClient({
                 className={`w-full rounded-[1.5rem] border p-4 text-left transition ${
                   selected
                     ? "border-transparent text-white shadow-lg"
-                    : "border-black/8 bg-black/3 text-black hover:bg-black/5"
+                    : "border-white/10 bg-white/5 text-[#f5f1ea] hover:bg-white/10"
                 }`}
                 style={
                   selected
@@ -717,14 +717,14 @@ export function DashboardClient({
           })}
         </div>
 
-        <div className="rounded-[1.5rem] border border-black/8 bg-black/3 p-4 text-sm text-black/70">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-black/40">État</p>
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4 text-sm text-[#f5f1ea]/70">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-[#f5f1ea]/40">État</p>
           <p className="mt-2">{notice ?? "Prêt à éditer."}</p>
         </div>
       </aside>
 
       <div className="space-y-6">
-        <section className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur sm:p-8">
+        <section className="rounded-[2rem] border border-white/10 bg-[#171717]/95 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur sm:p-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-2">
               <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
@@ -857,6 +857,22 @@ export function DashboardClient({
                       Tester
                     </a>
                   </div>
+                </Field>
+                <Field label="Lien Uber Eats">
+                  <input
+                    value={draft.uberEatsUrl}
+                    onChange={(event) => updateField("uberEatsUrl", event.target.value)}
+                    placeholder="https://www.ubereats.com/..."
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                  />
+                </Field>
+                <Field label="Lien TripAdvisor">
+                  <input
+                    value={draft.tripAdvisorUrl}
+                    onChange={(event) => updateField("tripAdvisorUrl", event.target.value)}
+                    placeholder="https://www.tripadvisor.com/..."
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                  />
                 </Field>
                 <Field label="Monnaie">
                   <input

@@ -7,6 +7,44 @@
   --font-fraunces: "Fraunces", "Cormorant Garamond", Georgia, serif;
 }
 
+.internal-dark {
+  color: #f5f1ea;
+  background: #111111;
+}
+
+.internal-dark [class*="text-black"] {
+  color: #f5f1ea !important;
+}
+
+.internal-dark [class*="bg-white"] {
+  background-color: #171717 !important;
+}
+
+.internal-dark [class*="bg-black"] {
+  background-color: #1f1f1f !important;
+}
+
+.internal-dark [class*="border-black"] {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.internal-dark input,
+.internal-dark select,
+.internal-dark textarea {
+  color: #f5f1ea !important;
+  background-color: #1b1b1b !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.internal-dark input::placeholder,
+.internal-dark textarea::placeholder {
+  color: rgba(245, 241, 234, 0.45) !important;
+}
+
+.internal-dark a {
+  color: inherit;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

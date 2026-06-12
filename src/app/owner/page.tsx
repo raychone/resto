@@ -36,8 +36,8 @@ export default async function OwnerPage() {
   ]);
 
   return (
-    <main className="w-full">
-      <div className="border-b border-black/8 bg-white/80 px-3 py-4 sm:px-4 lg:px-8">
+    <main className="internal-dark w-full">
+      <div className="border-b border-white/10 bg-[#111111]/95 px-3 py-4 sm:px-4 lg:px-8">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">Owner</p>

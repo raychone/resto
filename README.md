@@ -13,7 +13,9 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 - QR code per restaurant, direct către meniul web
 - PDF A3 pentru meniu, ca variantă opțională de print
 - navbar public dark, fără orar în header, cu logo-ul restaurantului în stânga, butonul `Menu` centrat și selectorul de limbă în dreapta
-- butoanele Google Maps și Waze sunt icon-only, cu cerc discret pentru lizibilitate
+- butoanele Google Maps, Waze, Uber Eats și TripAdvisor apar ca icon-uri rapide, doar dacă linkurile sunt setate
+- TripAdvisor apare ca un card de avis, iar Uber Eats apare ca buton `Delivery` în limba selectată
+- cardul `TripAdvisor` folosește fallback către TripAdvisor dacă nu există link propriu
 - rezervări online cu modal pe pași
 - pagină `staff` pentru rezervări, mesaje și operare zilnică
 - pagină `dashboard` pentru manager
@@ -28,7 +30,7 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 - owner-ul vede un audit global à l’échelle du portefeuille
 - rezervările au statusuri `pending / confirmed / cancelled / no_show`
 - owner-ul poate schimba `plan` și `status` pentru fiecare restaurant
-- owner-ul poate activa / dezactiva modulele per restaurant: booking, QR mode, WhatsApp, SMS, Google Reviews
+- owner-ul poate activa / dezactiva modulele per restaurant: booking, QR mode, WhatsApp, SMS, Google Reviews și poate seta linkuri Uber Eats / TripAdvisor
 - owner-ul poate crea un restaurant nou și poate adăuga manager / staff inițial din aceeași formă
 - owner-ul are filtre și statusuri rapide pentru facturi: brouillon / envoyée / payée / annulée
 - owner-ul vede acum și un rezumat comercial pe setup / maintenance + acoperirea pachetelor
@@ -46,6 +48,23 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 - booking-ul este oprit pentru `Noir 1`, deci `Book a table` nu apare pe demo-ul principal
 - happy hour-ul are un countdown live cu secunde vizibile doar în linia principală a cardului
 - produsele din menu pot avea happy hour price redus
+
+## Noir 1 — rutele de test
+
+Acesta este restaurantul demo principal și este tratat ca un client real:
+
+- public: `http://localhost:3000/r/bar-1?lang=fr`
+- QR direct către meniu: `http://localhost:3000/qr/bar-1`
+- manager: `http://localhost:3000/dashboard` cu `raych / raychone!`
+- staff: `http://localhost:3000/staff` cu `user / pass123!`
+- owner: `http://localhost:3000/owner` cu `owner / owner123!`
+
+Reguli practice pentru Noir 1:
+
+- `dashboard` și `staff` sunt restricționate la `Noir 1`
+- `book a table` este oprit pe Noir 1
+- QR-ul deschide direct meniul web al lui `Noir 1`
+- footer-ul public afișează iconițele Facebook / Instagram și creditul `Powered by LACStudio`
 
 ## Implementare pe faze
 
@@ -116,12 +135,6 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 npm install
 npm run dev
 ```
-
-<<<<<<< HEAD
-Open [http://localhost:3000]q (http://localhost:3000) with your browser to see the result.
-=======
-Deschide:
->>>>>>> cd9e415 (cevaaaaa)
 
 - `http://localhost:3000`
 - `http://localhost:3000/dashboard`

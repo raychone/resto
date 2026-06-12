@@ -77,21 +77,21 @@ export function RestaurantHoursModal({ restaurant, locale }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/45 p-2 sm:p-4">
+    <div className="fixed inset-0 z-[60] bg-black/65 p-2 sm:p-4">
       <div className="mx-auto flex h-full w-full max-w-3xl items-center justify-center">
-        <section className="w-full overflow-hidden rounded-[2rem] bg-white shadow-[0_40px_120px_rgba(15,23,42,0.28)]">
-          <div className="flex items-start justify-between gap-4 border-b border-black/8 px-4 py-4 sm:px-6">
+        <section className="w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#111111] text-[#f5f1ea] shadow-[0_40px_120px_rgba(0,0,0,0.45)]">
+          <div className="flex items-start justify-between gap-4 border-b border-white/10 px-4 py-4 sm:px-6">
             <div className="space-y-1">
-              <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
+              <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">
                 {text.program}
               </p>
               <h2 className="text-2xl font-semibold">{text.title}</h2>
-              <p className="text-sm leading-6 text-black/60">{text.subtitle}</p>
+              <p className="text-sm leading-6 text-white/65">{text.subtitle}</p>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"
+              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-[#f5f1ea] hover:bg-white/10"
             >
               {text.close}
             </button>
@@ -102,10 +102,10 @@ export function RestaurantHoursModal({ restaurant, locale }: Props) {
               {restaurant.weeklyHours.map((entry) => (
                 <div
                   key={entry.day}
-                  className="grid gap-2 rounded-2xl border border-black/8 bg-black/2 px-4 py-3 text-sm md:grid-cols-[130px_1fr]"
+                  className="grid gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm md:grid-cols-[130px_1fr]"
                 >
                   <span className="font-medium">{entry.label}</span>
-                  <div className="text-black/60">
+                  <div className="text-white/65">
                     {entry.closed ? (
                       <span>{text.closed}</span>
                     ) : (

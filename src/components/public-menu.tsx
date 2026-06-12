@@ -1,5 +1,5 @@
 import { getAvailabilityForRestaurant } from "@/lib/engagement-store";
-import { buildGoogleReviewsUrl } from "@/lib/contact-links";
+import { buildGoogleReviewsUrl, buildTripAdvisorUrl } from "@/lib/contact-links";
 import { getHappyHourStatus, type Locale, type Restaurant } from "@/lib/types";
 import { BookingOpenButton } from "@/components/booking-open-button";
 import { PublicBookingPanel } from "@/components/public-booking-panel";
@@ -26,7 +26,9 @@ const copy: Record<
     waze: string;
     program: string;
     googleReviews: string;
+    tripAdvisorReviews: string;
     seeReviews: string;
+    delivery: string;
     reserve: string;
   }
 > = {
@@ -45,7 +47,9 @@ const copy: Record<
     waze: "Waze",
     program: "Programme",
     googleReviews: "Avis Google",
+    tripAdvisorReviews: "Avis TripAdvisor",
     seeReviews: "Voir les avis",
+    delivery: "Livraison",
     reserve: "Réserver une table",
   },
   en: {
@@ -63,7 +67,9 @@ const copy: Record<
     waze: "Waze",
     program: "Program",
     googleReviews: "Google reviews",
+    tripAdvisorReviews: "TripAdvisor reviews",
     seeReviews: "See reviews",
+    delivery: "Delivery",
     reserve: "Book a table",
   },
   it: {
@@ -81,7 +87,9 @@ const copy: Record<
     waze: "Waze",
     program: "Programma",
     googleReviews: "Recensioni Google",
+    tripAdvisorReviews: "Recensioni TripAdvisor",
     seeReviews: "Vedi recensioni",
+    delivery: "Consegna",
     reserve: "Prenota un tavolo",
   },
   es: {
@@ -99,7 +107,9 @@ const copy: Record<
     waze: "Waze",
     program: "Programa",
     googleReviews: "Reseñas Google",
+    tripAdvisorReviews: "Reseñas TripAdvisor",
     seeReviews: "Ver reseñas",
+    delivery: "Entrega",
     reserve: "Reservar una mesa",
   },
 };
@@ -114,7 +124,7 @@ function buildWazeUrl(address: string) {
 
 function MapIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
       <path
         d="M12 21s6-4.35 6-10a6 6 0 1 0-12 0c0 5.65 6 10 6 10Z"
         fill="#EA4335"
@@ -134,7 +144,7 @@ function MapIcon() {
 
 function WazeIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
       <path
         d="M12 4.5c-4.14 0-7.5 2.86-7.5 6.4 0 2.1 1.07 4 2.93 5.19l-.56 2.24 2.53-1.05A9.7 9.7 0 0 0 12 17.8c4.14 0 7.5-2.86 7.5-6.4S16.14 4.5 12 4.5Z"
         fill="#25B6D2"
@@ -157,6 +167,59 @@ function WazeIcon() {
   );
 }
 
+function TripAdvisorIcon() {
+  return (
+    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#1d1d1d] text-[8px] font-black leading-none text-white">
+      TA
+    </span>
+  );
+}
+
+function DeliveryIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+      <path
+        d="M3.5 8.5h10.2v7.2H3.5z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M13.7 11h3.1l2 2.2V15h-5.1"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="7" cy="16.8" r="1.5" fill="currentColor" />
+      <circle cx="17" cy="16.8" r="1.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+function FacebookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M14 8.5V7c0-.8.5-1 1-1h2V3h-2.8C11.9 3 11 4.8 11 7v1.5H9V12h2v9h3v-9h2.4l.6-3.5H14Z"
+      />
+    </svg>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7Zm5 3.2A4.8 4.8 0 1 1 7.2 13 4.8 4.8 0 0 1 12 8.2Zm0 2A2.8 2.8 0 1 0 14.8 13 2.8 2.8 0 0 0 12 10.2ZM17.8 6.9a1.1 1.1 0 1 1-1.1-1.1 1.1 1.1 0 0 1 1.1 1.1Z"
+      />
+    </svg>
+  );
+}
+
 export async function PublicMenu({
   restaurant,
   locale,
@@ -174,8 +237,15 @@ export async function PublicMenu({
 
   const mapsUrl = buildMapsUrl(restaurant.address);
   const wazeUrl = buildWazeUrl(restaurant.address);
+  const uberEatsUrl = restaurant.uberEatsUrl.trim();
+  const tripAdvisorUrl = restaurant.tripAdvisorUrl.trim();
   const reviewsUrl = buildGoogleReviewsUrl({
     reviewsUrl: restaurant.googleReviewsUrl,
+    restaurantName: restaurant.name,
+    address: restaurant.address,
+  });
+  const tripAdvisorReviewsUrl = buildTripAdvisorUrl({
+    tripAdvisorUrl,
     restaurantName: restaurant.name,
     address: restaurant.address,
   });
@@ -260,6 +330,19 @@ export async function PublicMenu({
                   >
                     <MapIcon />
                   </a>
+                  {uberEatsUrl ? (
+                    <a
+                      href={uberEatsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={text.delivery}
+                      title={text.delivery}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+                    >
+                      <DeliveryIcon />
+                      <span>{text.delivery}</span>
+                    </a>
+                  ) : null}
                   {restaurant.features.bookingEnabled && restaurant.slug !== "bar-1" ? (
                     <BookingOpenButton className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white">
                       {text.reserve}
@@ -268,26 +351,51 @@ export async function PublicMenu({
                 </div>
 
                 {restaurant.features.googleReviewsEnabled ? (
-                  <div className="inline-flex w-fit items-center gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3 shadow-[0_14px_40px_rgba(0,0,0,0.18)]">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">⭐</span>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-[0.25em] text-white/35">
-                          {text.googleReviews}
-                        </p>
-                        <p className="text-sm font-semibold text-[#f5f1ea]">
-                          {restaurant.googleRating.toFixed(1)} Google
-                        </p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="flex w-full items-center justify-between gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3 shadow-[0_14px_40px_rgba(0,0,0,0.18)]">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">⭐</span>
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.25em] text-white/35">
+                            {text.googleReviews}
+                          </p>
+                          <p className="text-sm font-semibold text-[#f5f1ea]">
+                            {restaurant.googleRating.toFixed(1)} Google
+                          </p>
+                        </div>
                       </div>
+                      <a
+                        href={reviewsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-medium text-black"
+                      >
+                        {text.seeReviews}
+                      </a>
                     </div>
-                    <a
-                      href={reviewsUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-medium text-black"
-                    >
-                      {text.seeReviews}
-                    </a>
+                    {tripAdvisorUrl ? (
+                      <div className="flex w-full items-center justify-between gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3 shadow-[0_14px_40px_rgba(0,0,0,0.18)]">
+                        <div className="flex items-start gap-2">
+                          <span className="text-xl leading-none">⭐</span>
+                          <div className="leading-tight">
+                            <span className="block text-[11px] uppercase tracking-[0.25em] text-white/35">
+                              TripAdvisor
+                            </span>
+                            <span className="block text-sm font-semibold text-[#f5f1ea]">
+                              5.0
+                            </span>
+                          </div>
+                        </div>
+                        <a
+                          href={tripAdvisorReviewsUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-medium text-black"
+                        >
+                          {text.seeReviews}
+                        </a>
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
               </div>
@@ -339,6 +447,32 @@ export async function PublicMenu({
           initialAvailability={availability}
         />
       ) : null}
+      <footer className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-4 pb-8 pt-6 text-[#f5f1ea]/70 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-2">
+          <a
+            href="https://www.facebook.com"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Facebook"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 transition hover:bg-white/10"
+          >
+            <FacebookIcon />
+          </a>
+          <a
+            href="https://www.instagram.com"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 transition hover:bg-white/10"
+          >
+            <InstagramIcon />
+          </a>
+        </div>
+        <p className="text-center text-[11px] uppercase tracking-[0.35em] text-[#f5f1ea]/45">
+          Powered by <span className="text-[#f5f1ea]">LACStudio</span>
+        </p>
+        <div className="w-18" />
+      </footer>
     </>
   );
 }

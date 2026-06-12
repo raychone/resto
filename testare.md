@@ -2,6 +2,16 @@
 
 Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează pașii în ordinea de mai jos.
 
+## Noir 1 — traseul principal de test
+
+- public: `http://localhost:3000/r/bar-1?lang=fr`
+- QR direct: `http://localhost:3000/qr/bar-1`
+- manager: `/dashboard` cu `raych / raychone!`
+- staff: `/staff` cu `user / pass123!`
+- owner: `/owner` cu `owner / owner123!`
+
+La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo principal.
+
 ## 0. Înainte să începi
 
 1. Rulează aplicația local cu `npm run dev`.
@@ -30,7 +40,7 @@ Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează paș
 7. Apasă butonul `Program` din secțiunea dedicată a paginii și verifică modalul cu orarul.
 8. Închide modalul.
 9. Dacă testezi un restaurant cu booking activ, apasă `Reserve` și verifică dacă se deschide modalul de rezervare.
-10. Verifică dacă butoanele Google Maps și Waze trimit spre adresa restaurantului.
+10. Verifică dacă butoanele Google Maps, Waze, Uber Eats și TripAdvisor trimit spre linkurile corecte ale restaurantului.
 11. Verifică dacă meniul se deschide ca acordeon pe categorii.
 12. Dacă testezi demo-ul `Noir 1`, verifică dacă vezi categoriile `Happy Hour 6:30pm - 8:30pm`, `Draft Beers`, `Aperitifs`, `Cocktails & Mocktails`, `Whiskies` și restul listelor de bar.
 13. Verifică dacă lista de produse arată ca o listă curată, fără carduri, iar în listă apar doar numele și prețul din dreapta.
@@ -40,6 +50,9 @@ Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează paș
 17. Verifică dacă meniul public folosește fundal întunecat și text deschis pe mobil.
 18. Verifică dacă cardul de happy hour din hero arată countdown-ul live cu secunde în linia principală și că nu mai repetă textul jos.
 19. Verifică faptul că butonul `Reserve` nu apare pe demo-ul `Noir 1`.
+20. Verifică faptul că `TripAdvisor` apare ca un card de avis și că `Delivery` este afișat în limba selectată.
+21. Verifică faptul că iconițele Facebook și Instagram deschid linkurile lor reale.
+22. Verifică faptul că modalul de orar este dark, cu text deschis și buton `X`.
 
 ### 1.3 QR și PDF
 
@@ -131,6 +144,8 @@ Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează paș
    - WhatsApp
    - SMS
    - Google Reviews
+   - Uber Eats
+   - TripAdvisor
 4. Apasă `Sauver les modules`.
 5. Verifică dacă modificările se păstrează după refresh.
 

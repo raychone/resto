@@ -327,6 +327,8 @@ export type Restaurant = {
   address: string;
   phone: string;
   whatsappNumber: string;
+  uberEatsUrl: string;
+  tripAdvisorUrl: string;
   googleRating: number;
   googleReviewsCount: number;
   googleReviewsUrl: string;
@@ -498,6 +500,8 @@ export function createBlankRestaurant(): Restaurant {
     address: "12 Rue Exemple, Paris",
     phone: "+33 1 00 00 00 00",
     whatsappNumber: "+33 1 00 00 00 00",
+    uberEatsUrl: "",
+    tripAdvisorUrl: "",
     googleRating: 4.8,
     googleReviewsCount: 128,
     googleReviewsUrl: "",
@@ -600,6 +604,8 @@ export function normalizeRestaurant(restaurant: Restaurant): Restaurant {
     address: restaurant.address.trim(),
     phone: restaurant.phone.trim(),
     whatsappNumber: (restaurant.whatsappNumber ?? restaurant.phone ?? "").trim(),
+    uberEatsUrl: (restaurant.uberEatsUrl ?? "").trim(),
+    tripAdvisorUrl: (restaurant.tripAdvisorUrl ?? "").trim(),
     googleRating:
       Number.isFinite(restaurant.googleRating) && restaurant.googleRating > 0
         ? Math.round(restaurant.googleRating * 10) / 10

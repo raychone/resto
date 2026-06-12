@@ -4,7 +4,7 @@ import { DashboardClient } from "@/components/dashboard-client";
 import { DashboardLogin } from "@/components/dashboard-login";
 import { DashboardLogoutButton } from "@/components/dashboard-logout-button";
 import { getDashboardSessionUser, isDashboardAuthenticated } from "@/lib/auth";
-import { getRestaurantById } from "@/lib/restaurant-store";
+import { getRestaurantById, getRestaurantBySlug } from "@/lib/restaurant-store";
 
 export const dynamic = "force-dynamic";
 
@@ -41,9 +41,16 @@ export default async function DashboardPage({ searchParams }: Props) {
     return <div>Aucun restaurant configuré.</div>;
   }
 
+  const noirOneRestaurant =
+    restaurant.slug === "bar-1" ? restaurant : await getRestaurantBySlug("bar-1");
+
+  if (!noirOneRestaurant) {
+    return <div>Aucun restaurant configuré.</div>;
+  }
+
   return (
-    <main className="min-h-screen w-full">
-      <section className="border-b border-black/8 bg-white/80 px-0 py-6 shadow-[0_24px_90px_rgba(15,23,42,0.04)] backdrop-blur">
+    <main className="internal-dark min-h-screen w-full">
+      <section className="border-b border-white/10 bg-[#111111]/95 px-0 py-6 shadow-[0_24px_90px_rgba(0,0,0,0.22)] backdrop-blur">
         <div className="flex w-full flex-col gap-4 px-0 sm:px-0 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
             <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
@@ -61,7 +68,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           <div className="flex flex-wrap gap-3">
             <DashboardLogoutButton endpoint="/api/auth/logout" label="Déconnexion" />
             <Link
-              href={`/r/${query.restaurant ?? restaurant.slug}`}
+              href={`/r/${query.restaurant ?? noirOneRestaurant.slug}`}
               className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"
             >
               Voir le menu public
@@ -72,8 +79,8 @@ export default async function DashboardPage({ searchParams }: Props) {
 
       <div className="px-0 py-0">
         <DashboardClient
-          initialRestaurants={[restaurant]}
-          initialSelectedSlug={query.restaurant ?? restaurant.slug}
+          initialRestaurants={[noirOneRestaurant]}
+          initialSelectedSlug={query.restaurant ?? noirOneRestaurant.slug}
         />
       </div>
     </main>
