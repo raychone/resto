@@ -7,6 +7,10 @@ import type { User } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+function encodeSessionPayload(user: User) {
+  return `payload:${Buffer.from(JSON.stringify(user), "utf8").toString("base64url")}`;
+}
+
 export async function POST(request: Request) {
   const { name, email, password } = (await request.json()) as {
     name?: string;
@@ -52,6 +56,16 @@ export async function POST(request: Request) {
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });
+
+  if (process.env.VERCEL === "1") {
+    response.cookies.set(clientDashboardCookieName, encodeSessionPayload(user), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+  }
 
   return response;
 }

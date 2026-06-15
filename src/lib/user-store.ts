@@ -383,7 +383,9 @@ export async function createUser(input: Omit<User, "id" | "createdAt" | "updated
   });
 
   const nextUsers = [...users, user];
-  await writeUsersFile(nextUsers);
+  if (canPersistDataFiles) {
+    await writeUsersFile(nextUsers);
+  }
   return user;
 }
 
@@ -406,7 +408,9 @@ export async function updateUser(
 
   const nextUsers = [...users];
   nextUsers[index] = nextUser;
-  await writeUsersFile(nextUsers);
+  if (canPersistDataFiles) {
+    await writeUsersFile(nextUsers);
+  }
   return nextUser;
 }
 

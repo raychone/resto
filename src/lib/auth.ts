@@ -14,6 +14,22 @@ export const kitchenDashboardCookieName = "meniu_kitchen_session";
 export const clientDashboardCookieName = "meniu_client_session";
 export const ownerDashboardCookieName = "meniu_owner_session";
 
+function decodeSessionCookie(value: string): User | null {
+  if (!value.startsWith("payload:")) {
+    return null;
+  }
+
+  const encoded = value.slice("payload:".length);
+
+  try {
+    const decoded = Buffer.from(encoded, "base64url").toString("utf8");
+    const parsed = JSON.parse(decoded) as User;
+    return parsed ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getValidUserByCredentials(username: string, password: string) {
   const user = await getUserByUsername(username);
   if (!user || !isUserActive(user) || !verifyPassword(password, user.passwordHash)) {
@@ -53,6 +69,11 @@ async function getSessionUser(cookieName: string, role: UserRole) {
   const userId = cookieStore.get(cookieName)?.value;
   if (!userId) return null;
 
+  const payloadUser = decodeSessionCookie(userId);
+  if (payloadUser && isUserRole(payloadUser, role)) {
+    return payloadUser;
+  }
+
   const user = await getUserById(userId);
   if (!isUserRole(user, role)) {
     return null;
@@ -77,6 +98,11 @@ async function getSessionUserFromRequest(
 
   if (!userId) {
     return null;
+  }
+
+  const payloadUser = decodeSessionCookie(userId);
+  if (payloadUser && isUserRole(payloadUser, role)) {
+    return payloadUser;
   }
 
   const user = await getUserById(userId);
