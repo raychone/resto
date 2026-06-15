@@ -2,6 +2,7 @@ import { getAvailabilityForRestaurant } from "@/lib/engagement-store";
 import { buildGoogleReviewsUrl, buildTripAdvisorUrl } from "@/lib/contact-links";
 import { getHappyHourStatus, type Locale, type Restaurant } from "@/lib/types";
 import { BookingOpenButton } from "@/components/booking-open-button";
+import { ClientCartBar } from "@/components/client-cart-bar";
 import { PublicBookingPanel } from "@/components/public-booking-panel";
 import { HoursOpenButton } from "@/components/hours-open-button";
 import { RestaurantHoursModal } from "@/components/restaurant-hours-modal";
@@ -164,14 +165,6 @@ function WazeIcon() {
         strokeWidth="1.5"
       />
     </svg>
-  );
-}
-
-function TripAdvisorIcon() {
-  return (
-    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#1d1d1d] text-[8px] font-black leading-none text-white">
-      TA
-    </span>
   );
 }
 
@@ -343,7 +336,7 @@ export async function PublicMenu({
                       <span>{text.delivery}</span>
                     </a>
                   ) : null}
-                  {restaurant.features.bookingEnabled && restaurant.slug !== "bar-1" ? (
+                  {restaurant.features.bookingEnabled ? (
                     <BookingOpenButton className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white">
                       {text.reserve}
                     </BookingOpenButton>
@@ -432,12 +425,22 @@ export async function PublicMenu({
               categories={restaurant.categories}
               locale={locale}
               accent={restaurant.accent}
+              restaurantSlug={restaurant.slug}
+              orderFlowEnabled={restaurant.features.orderFlowEnabled}
             />
           </section>
         </div>
 
       </div>
       </main>
+      {restaurant.features.orderFlowEnabled ? (
+        <ClientCartBar
+          restaurantSlug={restaurant.slug}
+          restaurantName={restaurant.name}
+          currency={restaurant.currency}
+          enabled={restaurant.features.orderFlowEnabled}
+        />
+      ) : null}
       <RestaurantHoursModal restaurant={restaurant} locale={locale} />
       {restaurant.features.bookingEnabled ? (
         <PublicBookingPanel

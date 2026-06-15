@@ -4,6 +4,7 @@ import { StaffLogin } from "@/components/staff-login";
 import { StaffLogoutButton } from "@/components/staff-logout-button";
 import { getRestaurantById, getRestaurantBySlug } from "@/lib/restaurant-store";
 import { getStaffSessionUser, isStaffAuthenticated } from "@/lib/auth";
+import { getActiveTableSessionForRestaurant } from "@/lib/table-session-store";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,8 @@ export default async function StaffPage() {
     return <div>Aucun restaurant configuré.</div>;
   }
 
+  const tableSession = await getActiveTableSessionForRestaurant(noirOneRestaurant.id);
+
   return (
     <main className="internal-dark min-h-screen w-full">
       <div className="border-b border-white/10 bg-[#111111]/95 px-3 py-4 sm:px-4 lg:px-6">
@@ -54,6 +57,8 @@ export default async function StaffPage() {
         restaurant={noirOneRestaurant}
         staffUserId={staffUser.id}
         locale="fr"
+        tableSession={tableSession}
+        orderFlowEnabled={noirOneRestaurant.features.orderFlowEnabled}
       />
     </main>
   );

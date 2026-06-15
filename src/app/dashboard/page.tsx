@@ -28,6 +28,7 @@ export default async function DashboardPage({ searchParams }: Props) {
         defaultUsername="raych"
         defaultPassword="raychone!"
         endpoint="/api/auth/login"
+        backAction={{ label: "Accueil", href: "/" }}
       />
     );
   }
@@ -66,7 +67,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <DashboardLogoutButton endpoint="/api/auth/logout" label="Déconnexion" />
+            <DashboardLogoutButton endpoint="/api/auth/logout" label="Déconnexion" redirectTo="/" />
             <Link
               href={`/r/${query.restaurant ?? noirOneRestaurant.slug}`}
               className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"

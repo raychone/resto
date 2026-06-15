@@ -5,6 +5,7 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 ## Ce este implementat acum
 
 - meniu public per restaurant, cu limbi `fr / en / it / es`
+- landing page principală la `/` cu rolurile, scopul aplicației și butoane directe de test
 - categoriile din meniu sunt afișate ca acordeon/listă, închise by default, fără număr de produse și fără etichetă duplicată
 - preparatele se deschid într-un modal scrollabil cu imagine, recipe, ingredients și allergens, iar signature apare pe imagine
 - rândurile din meniu sunt list-style, fără carduri, iar în listă apar doar numele și prețul
@@ -17,7 +18,12 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 - TripAdvisor apare ca un card de avis, iar Uber Eats apare ca buton `Delivery` în limba selectată
 - cardul `TripAdvisor` folosește fallback către TripAdvisor dacă nu există link propriu
 - rezervări online cu modal pe pași
-- pagină `staff` pentru rezervări, mesaje și operare zilnică
+- pagină `staff` pentru rezervări, mesaje, meniu rapid în acordeoane și operare zilnică
+- pagină `kitchen` pentru coada de comenzi și stările `preparing / ready / served`
+- pagină `client` pentru login client, meniu în aplicație, coș, confirmare comandă, nota live a mesei, suma rămasă de plată, loyalty și split de notă cu itemii atribuiți clientului
+- login client cu Google OAuth real sau identifiant / mot de passe
+- owner-ul poate activa / dezactiva modulul de comandă per restaurant, iar staff/kitchen/client se ascund sau se opresc în funcție de acest flag
+- modulul de comandă are acum gate per restaurant și controlează meniul, coșul, staff-ul și kitchen flow-ul
 - pagină `dashboard` pentru manager
 - pagină `owner` pentru overview global și facturare
 - model restaurant + user cu scoping pe restaurant
@@ -25,7 +31,7 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 - logica de active / disabled și `mustChangePassword` pregătită în model
 - managerul poate crea, dezactiva și reseta utilizatori staff pentru restaurantul lui
 - mese, bon activ, comenzi și plăți separate pentru staff
-- staff-ul poate ajusta cantitățile cu `+ / -` direct pe bon
+- staff-ul poate ajusta cantitățile cu `+ / -` direct pe bon și poate adăuga produse din meniul în acordeon
 - managerul vede un historique d’audit dans un accordion
 - owner-ul vede un audit global à l’échelle du portefeuille
 - rezervările au statusuri `pending / confirmed / cancelled / no_show`
@@ -44,10 +50,19 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 - demo-ul `Noir 1` este pregătit pentru happy hour, beers, aperitifs, wines, cocktails, rums, whiskies, gins, vodkas, tequilas și digestifs
 - path demo pentru bar: `/r/bar-1`
 - logo dedicat pentru `Noir 1` în stil noir, încărcat local din `/bar-1-logo.svg`
+- traseul clientului este: scanare QR → meniu → coș → login / signup client → confirmare comandă → validare fizică de către ospătar → trimitere în bucătărie → notificare când comanda e gata → servire la masă
+- la confirmarea coșului clientului, restaurantul primește alertă conform providerului setat, iar clientul vede statusul comenzii în portal
+- clientul vede în portal un status clar al comenzii: en attente, en cuisine, prêt, servi sau payé
+- portalul client face polling pentru statusul comenzii, deci schimbările din staff/kitchen se văd fără refresh manual
+- portalul client afișează și un timeline vizual al statusului: soumise, validée, prête, servie
+- client, staff și kitchen au notificări browser activabile manual, cu indicare vizibilă a stării permisiunii
+- când comanda trece în `ready` sau `served`, restaurantul primește notificarea potrivită și clientul vede statusul actualizat automat
 - happy hour-ul este configurabil pe zile și interval, cu card live de countdown cu secunde pe pagina publică
 - booking-ul este oprit pentru `Noir 1`, deci `Book a table` nu apare pe demo-ul principal
 - happy hour-ul are un countdown live cu secunde vizibile doar în linia principală a cardului
 - produsele din menu pot avea happy hour price redus
+- clientul se poate conecta cu Gmail/Google pe `/client` sau `/client/signup` fără flow de email manual
+- după login Google, clientul ajunge direct în `/client?focus=cart`
 
 ## Noir 1 — rutele de test
 
@@ -57,7 +72,11 @@ Acesta este restaurantul demo principal și este tratat ca un client real:
 - QR direct către meniu: `http://localhost:3000/qr/bar-1`
 - manager: `http://localhost:3000/dashboard` cu `raych / raychone!`
 - staff: `http://localhost:3000/staff` cu `user / pass123!`
+- kitchen: `http://localhost:3000/kitchen` cu `kitchen / kitchen123!`
+- client: `http://localhost:3000/client` cu `client / client123!`
+- clienți demo suplimentari: `client2 / client2!` … `client10 / client10!`
 - owner: `http://localhost:3000/owner` cu `owner / owner123!`
+- seed rapid Noir 1: `npm run seed:noir1`
 
 Reguli practice pentru Noir 1:
 
@@ -65,6 +84,8 @@ Reguli practice pentru Noir 1:
 - `book a table` este oprit pe Noir 1
 - QR-ul deschide direct meniul web al lui `Noir 1`
 - footer-ul public afișează iconițele Facebook / Instagram și creditul `Powered by LACStudio`
+- bucătăria vede comenzile și le trece în `en préparation / prêt / servi`
+- clientul are portal de login separat în app, cu loyalty, nota live a mesei, suma rămasă de plată și split pe itemi atribuiți
 
 ## Implementare pe faze
 
@@ -117,17 +138,39 @@ Reguli practice pentru Noir 1:
 - ghid de instalare notificări pentru owner și restaurant
 - starea curentă: providerul este modelat în aplicație, iar confirmarea rezervărilor poate declanșa notificări prin fallback-uri server-side sau composer-ul Android
 
+### Faza 7 — loyalty, client și split de notă
+
+- loyalty pe tier-uri și puncte
+- client portal dedicat
+- split de notă pe masă
+- participant / share per client
+- editare manuală a repartizării în `staff`
+- client poate chema ospătarul din portal
+- client poate crea cont din `/client/signup`
+- client poate confirma coșul din `/client` și trimite comanda în așteptare pentru validarea ospătarului
+- pregătire pentru comenzi client-side și badge pe bon
+
+**Stare curentă:** clientul are login separat și un portal cu meniu, coș, confirmare comandă, loyalty + split de notă pe itemi atribuiți; la încasare se acumulează puncte pe customer, staff-ul poate aloca produse pe clientul corect și poate edita manual repartizarea mesei. Clientul poate și chema ospătarul din portal.
+
 ## Roluri curente
 
 - `owner` — vede toate restaurantele
 - `manager` — vede doar restaurantul lui
-- `staff` — vede doar restaurantul lui
+- `staff` — vede doar restaurantul lui, cu meniu rapid și alerte pe mese
+- `kitchen` — vede doar restaurantul lui și coada de comenzi
+- `client` — vede doar restaurantul lui și portalul de loyalty + meniu + coș + split pe itemi
+- seed-ul demo creează 10 mese ocupate, 10 clienți, 3 ospătari, 1 bucătar și 1 manager pe `Noir 1`
 
 ## Credentiale demo
 
 - owner: `owner / owner123!`
 - manager: `raych / raychone!`
 - staff: `user / pass123!`
+- kitchen: `kitchen / kitchen123!`
+- client: `client / client123!`
+- clienți demo suplimentari: `client2 / client2!` … `client10 / client10!`
+- signup client: `http://localhost:3000/client/signup`
+- seed rapid Noir 1: `npm run seed:noir1`
 
 ## Cum rulezi local
 
@@ -136,9 +179,35 @@ npm install
 npm run dev
 ```
 
+Pentru login Google OAuth ai nevoie de:
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- redirect URI autorizat în Google Cloud Console:
+  - local: `http://localhost:3000/api/client-auth/google/callback`
+  - production: `https://domainul-tau/api/client-auth/google/callback`
+- copiezi `.env.local.example` în `.env.local` și completezi valorile reale
+
+### Ce vezi în fluxul live
+
+- `client` vede meniul, coșul și un timeline clar: soumise → validée → en cuisine → prête → servie
+- `staff` vede alerte pe mese pentru comenzi QR și apeluri de la client
+- `kitchen` vede coada de comenzi și trecerea în `preparing / ready / served`
+- mesele au același identificator peste tot: client, staff, kitchen, manager, owner
+- managerul are acum un sumar rapid pentru rezervări, comenzi, ready și mesaje pe restaurant
+- staff-ul are tab-uri sticky și alert summary pentru QR / apeluri / ready
+- staff-ul are și un subnav intern pentru `Alertes / Tables / Bon / Menu`, ca să sară rapid la zona corectă
+- în staff, bonul curent e separat vizual, meniul e compact, iar alertele pe mese sunt mai vizibile
+- în client, tab-urile sunt sticky și blocul curent arată clar masa, statusul și restul
+- clientul și staff-ul folosesc acum o bară flotantă jos, cu iconițe și accent clar pe tabul activ, fără să acopere conținutul
+- în kitchen, sumarul de stare este sus, iar coada este împărțită clar pe `à prendre / en préparation / prêts`
+- owner-ul are o bară sticky de secțiuni pentru modules / test / facturi / audit / creare restaurant
+
 - `http://localhost:3000`
 - `http://localhost:3000/dashboard`
 - `http://localhost:3000/staff`
+- `http://localhost:3000/kitchen`
+- `http://localhost:3000/client`
 - `http://localhost:3000/owner`
 
 ## Cum verifici ce s-a implementat acum
@@ -154,29 +223,36 @@ npm run dev
 9. În `/dashboard`, schimbă `plan`, `status` și modulele comerciale.
 10. În `/dashboard`, deschide `Historique` și verifică auditul manager.
 11. Intră în `/staff` cu `user / pass123!`.
-12. În pagina staff, selectează o masă, adaugă un produs din meniu și ajustează cantitatea cu `+ / -`.
+12. În pagina staff, selectează o masă, urmărește alertele pe masa respectivă, adaugă un produs din meniu rapid și ajustează cantitatea cu `+ / -`.
 13. Creează o rezervare manuală din staff și marcheaz-o `confirmed`, `cancelled` și `no_show`.
-14. Intră în `/owner` cu `owner / owner123!`.
-15. Verifică faptul că owner-ul vede portofoliul global, facturile și auditul global.
-16. În `/owner`, schimbă `plan` sau `status` pentru un restaurant și apasă `Enregistrer`.
-17. În `/owner`, modifică modulele unui restaurant și apasă `Sauver les modules`.
-18. În secțiunea `Factures`, filtrează după status și verifică sumarul de sus.
-19. Folosește preseturile `Starter / Pro / Premium` ca să precompletezi rapid factura.
-20. În `Owner`, apasă `Tester notification` pe un restaurant și verifică rezultatul.
-21. În `Owner`, folosește testul rapid din header și verifică selectorul de restaurant.
-22. În `Owner`, folosește blocul `Onboarding notifications` ca să configurezi și să testezi rapid un restaurant.
+14. Intră în `/kitchen` cu `kitchen / kitchen123!`.
+15. Verifică faptul că vezi comenzile și le poți trece în `preparing / ready / served`.
+16. Intră în `/client` cu `client / client123!`.
+17. Verifică meniul din aplicație, adaugă produse în coș și apoi verifică loyalty tier-ul, punctele, nota live a mesei și suma rămasă de plată.
+18. Intră în `/owner` cu `owner / owner123!`.
+19. Verifică faptul că owner-ul vede portofoliul global, facturile și auditul global.
+20. În `/owner`, schimbă `plan` sau `status` pentru un restaurant și apasă `Enregistrer`.
+21. În `/owner`, modifică modulele unui restaurant și apasă `Sauver les modules`.
+22. În secțiunea `Factures`, filtrează după status și verifică sumarul de sus.
+23. Folosește preseturile `Starter / Pro / Premium` ca să precompletezi rapid factura.
+24. În `Owner`, apasă `Tester notification` pe un restaurant și verifică rezultatul.
+25. În `Owner`, folosește testul rapid din header și verifică selectorul de restaurant.
+26. În `Owner`, folosește blocul `Onboarding notifications` ca să configurezi și să testezi rapid un restaurant.
 
 ## Fișiere importante
 
 - `plan.md` — planul complet al produsului și fazele de implementare
 - `src/lib/types.ts` — modelele de date
+- `src/lib/loyalty.ts` — tier-uri și progresul de loyalty
 - `src/lib/auth.ts` — autentificare și scoping
 - `src/lib/restaurant-store.ts` — restaurante și migrare seed
 - `src/lib/user-store.ts` — useri, parole și status
+- `src/lib/customer-store.ts` — clienți și loyalty
+- `src/lib/table-session-store.ts` — sesiuni de masă și split de notă
 
 ## Stare curentă
 
-Implementarea este stabilă pe fazele 1–6:
+Implementarea este stabilă pe fazele 1–7:
 
 - `Restaurant` are identitate proprie
 - `User` este model comun pentru `owner / manager / staff`
@@ -188,6 +264,8 @@ Implementarea este stabilă pe fazele 1–6:
 - dacă un user demo staff apare fără restaurant valid, store-ul îl remapează automat pe primul restaurant activ
 - staff-ul poate deschide un bon pe masă sau pe takeaway și poate adăuga produse din meniu
 - staff-ul poate mări sau micșora rapid cantitatea unui produs din bon
+- kitchen-ul vede comenzile și le trece în `preparing / ready / served`
+- clientul are login separat și vede loyalty + split pe itemi, plus meniul în aplicație
 - managerul și owner-ul au vizualizare de audit, staff-ul nu
 - rezervările au acum și statusul `no_show` în dashboard și staff
 - owner-ul poate seta `plan` și `status` per restaurant din portalul owner
@@ -201,9 +279,11 @@ Implementarea este stabilă pe fazele 1–6:
 - crearea și confirmarea rezervărilor pot declanșa notificări server-side sau composer-ul Android, în funcție de provider
 - owner-ul are un panou de test pentru notificări direct din cardul restaurantului
 - owner-ul are și un onboarding compact pentru configurarea și testarea notificărilor
+- owner-ul are și o bară sticky de navigație pentru a sari rapid între secțiunile mari
 - QR-ul public deschide direct meniul web; A3 rămâne doar pentru print
 - meniul public e acum orientat mobile-first, cu categorii dark și detaliu pe tap/click
 - produsele pot avea preț happy hour setat din dashboard, iar staff-ul vede doar prețul curent
+- clientul are login separat și un portal cu loyalty + split de note pe itemi
 
 Ce rămâne acum este mai degrabă operativ:
 

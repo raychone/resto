@@ -40,6 +40,11 @@ const seedRestaurants: Restaurant[] = [
     seatsPerTable: 4,
     weeklyHours: createDefaultWeeklyHours(),
     features: {
+      orderFlowEnabled: true,
+      clientLoginEnabled: true,
+      waiterValidationEnabled: true,
+      kitchenWorkflowEnabled: true,
+      servedConfirmationEnabled: true,
       bookingEnabled: true,
       qrMode: "pdf",
       notificationProvider: "android",
@@ -249,6 +254,11 @@ const seedRestaurants: Restaurant[] = [
     seatsPerTable: 4,
     weeklyHours: createDefaultWeeklyHours(),
     features: {
+      orderFlowEnabled: true,
+      clientLoginEnabled: true,
+      waiterValidationEnabled: true,
+      kitchenWorkflowEnabled: true,
+      servedConfirmationEnabled: true,
       bookingEnabled: true,
       qrMode: "pdf",
       notificationProvider: "android",
@@ -383,6 +393,11 @@ const seedRestaurants: Restaurant[] = [
     "end": "20:30"
   },
   "features": {
+    "orderFlowEnabled": true,
+    "clientLoginEnabled": true,
+    "waiterValidationEnabled": true,
+    "kitchenWorkflowEnabled": true,
+    "servedConfirmationEnabled": true,
     "bookingEnabled": false,
     "qrMode": "menu",
     "notificationProvider": "android",

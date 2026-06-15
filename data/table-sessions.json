@@ -1,0 +1,285 @@
+[
+  {
+    "id": "table-session-root",
+    "restaurantId": "87971927-025d-4c91-932e-e2de5b46263e",
+    "tableId": "87971927-025d-4c91-932e-e2de5b46263e-table-1",
+    "orderId": null,
+    "status": "open",
+    "guestCount": 2,
+    "estimatedTotal": 84.5,
+    "paidTotal": 0,
+    "note": "Session démo pour le split de note.",
+    "participants": [
+      {
+        "id": "participant-1",
+        "customerId": null,
+        "name": "Jean Dupont",
+        "sharePercent": 50,
+        "settledAmount": 0,
+        "note": "Client principal"
+      },
+      {
+        "id": "participant-2",
+        "customerId": null,
+        "name": "Invité 2",
+        "sharePercent": 50,
+        "settledAmount": 0,
+        "note": "Partage égal"
+      }
+    ],
+    "createdAt": "2026-06-12T17:48:31.492Z",
+    "updatedAt": "2026-06-15T13:25:20.106Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-1-session",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-1",
+    "orderId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-1-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 12,
+    "paidTotal": 0,
+    "note": "Session démo pour Camille Martin",
+    "participants": [
+      {
+        "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-1-participant",
+        "customerId": "client-root-customer",
+        "name": "Camille Martin",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "updatedAt": "2026-06-15T13:25:20.107Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-2-session",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-2",
+    "orderId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-2-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 15,
+    "paidTotal": 0,
+    "note": "Session démo pour Lucie Bernard",
+    "participants": [
+      {
+        "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-2-participant",
+        "customerId": "client-02-customer",
+        "name": "Lucie Bernard",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "updatedAt": "2026-06-15T13:25:20.107Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-3-session",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-3",
+    "orderId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-3-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 15,
+    "paidTotal": 0,
+    "note": "Session démo pour Yanis Dubois",
+    "participants": [
+      {
+        "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-3-participant",
+        "customerId": "client-03-customer",
+        "name": "Yanis Dubois",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "updatedAt": "2026-06-15T13:25:20.107Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-4-session",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-4",
+    "orderId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-4-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 15,
+    "paidTotal": 0,
+    "note": "Session démo pour Sarah Petit",
+    "participants": [
+      {
+        "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-4-participant",
+        "customerId": "client-04-customer",
+        "name": "Sarah Petit",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "updatedAt": "2026-06-15T13:25:20.107Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-5-session",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-5",
+    "orderId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-5-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 15,
+    "paidTotal": 0,
+    "note": "Session démo pour Nicolas Leroy",
+    "participants": [
+      {
+        "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-5-participant",
+        "customerId": "client-05-customer",
+        "name": "Nicolas Leroy",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "updatedAt": "2026-06-15T13:25:20.108Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-6-session",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-6",
+    "orderId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-6-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 22.5,
+    "paidTotal": 0,
+    "note": "Session démo pour Emma Laurent",
+    "participants": [
+      {
+        "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-6-participant",
+        "customerId": "client-06-customer",
+        "name": "Emma Laurent",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "updatedAt": "2026-06-15T13:25:20.108Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-7-session",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-7",
+    "orderId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-7-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 17,
+    "paidTotal": 0,
+    "note": "Session démo pour Hugo Moreau",
+    "participants": [
+      {
+        "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-7-participant",
+        "customerId": "client-07-customer",
+        "name": "Hugo Moreau",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "updatedAt": "2026-06-15T13:25:20.108Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-8-session",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-8",
+    "orderId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-8-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 11.8,
+    "paidTotal": 0,
+    "note": "Session démo pour Chloé Garnier",
+    "participants": [
+      {
+        "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-8-participant",
+        "customerId": "client-08-customer",
+        "name": "Chloé Garnier",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "updatedAt": "2026-06-15T13:25:20.109Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-9-session",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-9",
+    "orderId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-9-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 44,
+    "paidTotal": 0,
+    "note": "Session démo pour Mehdi Roux",
+    "participants": [
+      {
+        "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-9-participant",
+        "customerId": "client-09-customer",
+        "name": "Mehdi Roux",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "updatedAt": "2026-06-15T13:25:20.109Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-10-session",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-10",
+    "orderId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-10-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 15,
+    "paidTotal": 0,
+    "note": "Session démo pour Inès Fontaine",
+    "participants": [
+      {
+        "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-10-participant",
+        "customerId": "client-10-customer",
+        "name": "Inès Fontaine",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "updatedAt": "2026-06-15T13:25:20.109Z",
+    "closedAt": null,
+    "deletedAt": null
+  }
+]

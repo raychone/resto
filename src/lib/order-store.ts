@@ -1,6 +1,8 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { listRestaurants } from "@/lib/restaurant-store";
 import { createId, type Order, type OrderItem, type Payment } from "@/lib/types";
+import { listTablesForRestaurant } from "@/lib/table-store";
 
 const dataDir = path.join(process.cwd(), "data");
 const ordersFile = path.join(dataDir, "orders.json");
@@ -21,6 +23,9 @@ function normalizeOrder(order: Order): Order {
     status:
       order.status === "open" ||
       order.status === "sent_to_kitchen" ||
+      order.status === "preparing" ||
+      order.status === "ready" ||
+      order.status === "served" ||
       order.status === "paid" ||
       order.status === "cancelled" ||
       order.status === "archived"
@@ -37,6 +42,23 @@ function normalizeOrder(order: Order): Order {
   };
 }
 
+async function normalizeOrderForRestaurant(order: Order) {
+  const restaurants = await listRestaurants();
+  const restaurant = restaurants.find((entry) => entry.id === order.restaurantId) ?? null;
+  if (!restaurant) {
+    return normalizeOrder(order);
+  }
+
+  const tables = await listTablesForRestaurant(restaurant.id);
+  const hasMatchingTable = order.tableId ? tables.some((table) => table.id === order.tableId) : false;
+  const fallbackTableId = tables[0]?.id ?? null;
+
+  return normalizeOrder({
+    ...order,
+    tableId: hasMatchingTable ? order.tableId : fallbackTableId,
+  });
+}
+
 function normalizeOrderItem(item: OrderItem): OrderItem {
   const now = new Date().toISOString();
   return {
@@ -48,6 +70,8 @@ function normalizeOrderItem(item: OrderItem): OrderItem {
     priceSnapshot: Number.isFinite(item.priceSnapshot) ? Number(item.priceSnapshot) : 0,
     quantity: Number.isFinite(item.quantity) && item.quantity > 0 ? Math.floor(item.quantity) : 1,
     note: item.note ?? "",
+    assignedClientId: item.assignedClientId ?? null,
+    assignedClientName: item.assignedClientName ?? null,
     createdAt: item.createdAt ?? now,
     deletedAt: item.deletedAt ?? null,
   };
@@ -96,7 +120,9 @@ async function readOrdersFile() {
   await ensureStore(ordersFile);
   const raw = await fs.readFile(ordersFile, "utf8");
   const parsed = JSON.parse(raw) as Order[];
-  const normalized = Array.isArray(parsed) ? parsed.map(normalizeOrder) : [];
+  const normalized = Array.isArray(parsed)
+    ? await Promise.all(parsed.map((order) => normalizeOrderForRestaurant(order)))
+    : [];
   if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
     await fs.writeFile(ordersFile, JSON.stringify(normalized, null, 2), "utf8");
   }
@@ -153,7 +179,7 @@ export async function createOrder(input: Omit<Order, "id" | "createdAt" | "updat
 }) {
   const orders = await listOrders();
   const now = new Date().toISOString();
-  const order = normalizeOrder({
+  const order = await normalizeOrderForRestaurant({
     ...input,
     id: createId("order"),
     items: input.items ?? [],
@@ -171,7 +197,7 @@ export async function updateOrder(orderId: string, patch: Partial<Omit<Order, "i
   const index = orders.findIndex((order) => order.id === orderId);
   if (index === -1) return null;
 
-  const nextOrder = normalizeOrder({
+  const nextOrder = await normalizeOrderForRestaurant({
     ...orders[index],
     ...patch,
     updatedAt: new Date().toISOString(),
@@ -200,9 +226,46 @@ export async function addOrderItem(
     deletedAt: null,
   });
 
-  const nextOrder = normalizeOrder({
+  const nextOrder = await normalizeOrderForRestaurant({
     ...currentOrder,
     items: [...currentOrder.items, item],
+    updatedAt: new Date().toISOString(),
+  });
+
+  const nextOrders = [...orders];
+  nextOrders[index] = nextOrder;
+  await writeOrdersFile(nextOrders);
+  return nextOrder;
+}
+
+export async function updateOrderItem(
+  orderId: string,
+  itemId: string,
+  patch: Partial<
+    Pick<OrderItem, "quantity" | "note" | "assignedClientId" | "assignedClientName">
+  >,
+) {
+  const orders = await listOrders();
+  const index = orders.findIndex((order) => order.id === orderId);
+  if (index === -1) return null;
+
+  const currentOrder = orders[index];
+  const itemIndex = currentOrder.items.findIndex((item) => item.id === itemId);
+  if (itemIndex === -1) return null;
+
+  const nextItems = [...currentOrder.items];
+  nextItems[itemIndex] = normalizeOrderItem({
+    ...nextItems[itemIndex],
+    ...patch,
+    quantity:
+      typeof patch.quantity === "number" && patch.quantity > 0
+        ? Math.floor(patch.quantity)
+        : nextItems[itemIndex].quantity,
+  });
+
+  const nextOrder = await normalizeOrderForRestaurant({
+    ...currentOrder,
+    items: nextItems,
     updatedAt: new Date().toISOString(),
   });
 
@@ -220,7 +283,7 @@ export async function removeOrderItem(orderId: string, itemId: string) {
   const currentOrder = orders[index];
   const nextItems = currentOrder.items.filter((item) => item.id !== itemId);
 
-  const nextOrder = normalizeOrder({
+  const nextOrder = await normalizeOrderForRestaurant({
     ...currentOrder,
     items: nextItems,
     updatedAt: new Date().toISOString(),
@@ -237,34 +300,11 @@ export async function updateOrderItemQuantity(
   itemId: string,
   quantity: number,
 ) {
-  const orders = await listOrders();
-  const index = orders.findIndex((order) => order.id === orderId);
-  if (index === -1) return null;
-
-  const currentOrder = orders[index];
-  const itemIndex = currentOrder.items.findIndex((item) => item.id === itemId);
-  if (itemIndex === -1) return null;
-
   if (quantity <= 0) {
     return removeOrderItem(orderId, itemId);
   }
 
-  const nextItems = [...currentOrder.items];
-  nextItems[itemIndex] = normalizeOrderItem({
-    ...nextItems[itemIndex],
-    quantity: Math.floor(quantity),
-  });
-
-  const nextOrder = normalizeOrder({
-    ...currentOrder,
-    items: nextItems,
-    updatedAt: new Date().toISOString(),
-  });
-
-  const nextOrders = [...orders];
-  nextOrders[index] = nextOrder;
-  await writeOrdersFile(nextOrders);
-  return nextOrder;
+  return updateOrderItem(orderId, itemId, { quantity });
 }
 
 export async function createPayment(input: Omit<Payment, "id" | "createdAt" | "updatedAt">) {
@@ -290,7 +330,7 @@ export async function createPayment(input: Omit<Payment, "id" | "createdAt" | "u
   const nextPaidTotal = [...existingPayments, payment].reduce((sum, entry) => sum + entry.amount, 0);
   const total = orderTotal(order);
   const isFullyPaid = nextPaidTotal >= total;
-  const nextOrder = normalizeOrder({
+  const nextOrder = await normalizeOrderForRestaurant({
     ...order,
     status: isFullyPaid ? "paid" : order.status,
     closedAt: isFullyPaid ? new Date().toISOString() : order.closedAt,

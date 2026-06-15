@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOwnerUserFromRequest, getManagerUserFromRequest, getStaffUserFromRequest } from "@/lib/auth";
+import {
+  getOwnerUserFromRequest,
+  getManagerUserFromRequest,
+  getStaffUserFromRequest,
+  getKitchenUserFromRequest,
+} from "@/lib/auth";
 import { recordAuditEntry } from "@/lib/audit-store";
+import { dispatchOrderReadyNotification, dispatchOrderServedNotification } from "@/lib/notification-service";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
 import { archiveOrder, getOrderById, updateOrder } from "@/lib/order-store";
 import { getTableById } from "@/lib/table-store";
@@ -15,13 +21,21 @@ async function canAccessRestaurant(request: NextRequest, restaurantId: string) {
   if (manager && manager.restaurantId === restaurantId) return true;
 
   const staff = await getStaffUserFromRequest(request);
-  return Boolean(staff && staff.restaurantId === restaurantId);
+  if (staff && staff.restaurantId === restaurantId) return true;
+
+  const kitchen = await getKitchenUserFromRequest(request);
+  return Boolean(kitchen && kitchen.restaurantId === restaurantId);
 }
 
 async function resolveAuditActor(request: NextRequest, restaurantId: string) {
   const staff = await getStaffUserFromRequest(request);
   if (staff && staff.restaurantId === restaurantId) {
     return { role: "staff" as const, name: staff.name };
+  }
+
+  const kitchen = await getKitchenUserFromRequest(request);
+  if (kitchen && kitchen.restaurantId === restaurantId) {
+    return { role: "kitchen" as const, name: kitchen.name };
   }
 
   const manager = await getManagerUserFromRequest(request);
@@ -53,7 +67,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 
   const body = (await request.json()) as {
-    status?: "open" | "sent_to_kitchen" | "paid" | "cancelled" | "archived";
+    status?: "open" | "sent_to_kitchen" | "preparing" | "ready" | "served" | "paid" | "cancelled" | "archived";
     tableId?: string | null;
     note?: string;
   };
@@ -72,6 +86,60 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     closedAt: body.status === "paid" || body.status === "cancelled" ? new Date().toISOString() : existing.closedAt,
     archivedAt: body.status === "archived" ? new Date().toISOString() : existing.archivedAt,
   });
+
+  if (!next) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
+  if (body.status === "ready" && next.status === "ready") {
+    const table = next.tableId ? await getTableById(next.tableId) : null;
+    const tableLabel =
+      next.source === "takeaway"
+        ? "À emporter"
+        : table?.name || (next.tableId ? `Table ${next.tableId.slice(-4)}` : "Table");
+    const notification = await dispatchOrderReadyNotification({
+      provider: restaurant.features.notificationProvider,
+      restaurant,
+      order: next,
+      tableLabel,
+    });
+
+    await recordAuditEntry({
+      restaurantSlug: restaurant.slug,
+      restaurantId: restaurant.id,
+      actorRole: "manager",
+      actorName: "System",
+      action: "order_ready_notification",
+      targetType: "order",
+      targetId: orderId,
+      details: `provider=${notification.provider}; sent=${notification.sent ? "yes" : "no"}`,
+    });
+  }
+
+  if (body.status === "served" && next.status === "served") {
+    const table = next.tableId ? await getTableById(next.tableId) : null;
+    const tableLabel =
+      next.source === "takeaway"
+        ? "À emporter"
+        : table?.name || (next.tableId ? `Table ${next.tableId.slice(-4)}` : "Table");
+    const notification = await dispatchOrderServedNotification({
+      provider: restaurant.features.notificationProvider,
+      restaurant,
+      order: next,
+      tableLabel,
+    });
+
+    await recordAuditEntry({
+      restaurantSlug: restaurant.slug,
+      restaurantId: restaurant.id,
+      actorRole: "manager",
+      actorName: "System",
+      action: "order_served_notification",
+      targetType: "order",
+      targetId: orderId,
+      details: `provider=${notification.provider}; sent=${notification.sent ? "yes" : "no"}`,
+    });
+  }
 
   const actor = await resolveAuditActor(request, restaurant.id);
   if (actor) {

@@ -57,6 +57,8 @@ export async function POST(request: NextRequest, { params }: Params) {
     priceSnapshot?: number;
     quantity?: number;
     note?: string;
+    assignedClientId?: string | null;
+    assignedClientName?: string | null;
   };
 
   if (!body.menuItemId || !body.nameSnapshot || typeof body.priceSnapshot !== "number") {
@@ -69,6 +71,8 @@ export async function POST(request: NextRequest, { params }: Params) {
     priceSnapshot: body.priceSnapshot,
     quantity: body.quantity && body.quantity > 0 ? body.quantity : 1,
     note: body.note ?? "",
+    assignedClientId: body.assignedClientId ?? null,
+    assignedClientName: body.assignedClientName ?? null,
   });
 
   const actor = await resolveAuditActor(request, restaurant.id);

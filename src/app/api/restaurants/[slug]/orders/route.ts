@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOwnerUserFromRequest, getManagerUserFromRequest, getStaffUserFromRequest } from "@/lib/auth";
+import {
+  getOwnerUserFromRequest,
+  getManagerUserFromRequest,
+  getStaffUserFromRequest,
+  getKitchenUserFromRequest,
+} from "@/lib/auth";
 import { recordAuditEntry } from "@/lib/audit-store";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
 import {
   createOrder,
   listOrdersForRestaurant,
   listPaymentsForRestaurant,
+  updateOrder,
 } from "@/lib/order-store";
 import { getTableById } from "@/lib/table-store";
+import { listTableSessionsForRestaurant, updateTableSession } from "@/lib/table-session-store";
 
 export const dynamic = "force-dynamic";
 
@@ -19,13 +26,21 @@ async function canAccessRestaurant(request: NextRequest, restaurantId: string) {
   if (manager && manager.restaurantId === restaurantId) return true;
 
   const staff = await getStaffUserFromRequest(request);
-  return Boolean(staff && staff.restaurantId === restaurantId);
+  if (staff && staff.restaurantId === restaurantId) return true;
+
+  const kitchen = await getKitchenUserFromRequest(request);
+  return Boolean(kitchen && kitchen.restaurantId === restaurantId);
 }
 
 async function resolveAuditActor(request: NextRequest, restaurantId: string) {
   const staff = await getStaffUserFromRequest(request);
   if (staff && staff.restaurantId === restaurantId) {
     return { role: "staff" as const, name: staff.name };
+  }
+
+  const kitchen = await getKitchenUserFromRequest(request);
+  if (kitchen && kitchen.restaurantId === restaurantId) {
+    return { role: "kitchen" as const, name: kitchen.name };
   }
 
   const manager = await getManagerUserFromRequest(request);
@@ -89,6 +104,7 @@ export async function POST(
   const order = await createOrder({
     restaurantId: restaurant.id,
     tableId: body.tableId ?? null,
+    tableSessionId: null,
     staffUserId: body.staffUserId ?? null,
     source: body.source ?? (body.tableId ? "table" : "takeaway"),
     status: "open",
@@ -97,6 +113,25 @@ export async function POST(
     archivedAt: null,
     note: body.note ?? "",
   });
+
+  if (body.tableId) {
+    const tableSessions = await listTableSessionsForRestaurant(restaurant.id);
+    const tableSession = tableSessions.find(
+      (session) => session.status === "open" && session.tableId === body.tableId,
+    );
+    if (tableSession && !tableSession.orderId) {
+      await updateTableSession(tableSession.id, {
+        orderId: order.id,
+      });
+      await updateOrder(order.id, {
+        tableSessionId: tableSession.id,
+      });
+    } else if (tableSession) {
+      await updateOrder(order.id, {
+        tableSessionId: tableSession.id,
+      });
+    }
+  }
 
   const actor = await resolveAuditActor(request, restaurant.id);
   if (actor) {
@@ -108,7 +143,7 @@ export async function POST(
       action: "order_opened",
       targetType: "order",
       targetId: order.id,
-      details: `${order.source}${order.tableId ? ` · table=${order.tableId}` : ""}`,
+      details: `${order.source}${order.tableId ? ` · table=${(await getTableById(order.tableId))?.name ?? order.tableId}` : ""}`,
     });
   }
 

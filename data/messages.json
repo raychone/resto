@@ -1,0 +1,44 @@
+[
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-2-message",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "restaurantSlug": "bar-1",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-2",
+    "tableLabel": "Table 2",
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "status": "read",
+    "name": "Lucie Bernard",
+    "phone": "+33 6 00 00 00 02",
+    "email": "client2@demo.local",
+    "message": "Le client Lucie Bernard souhaite appeler le serveur depuis Table 2.",
+    "locale": "fr"
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-5-message",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "restaurantSlug": "bar-1",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-5",
+    "tableLabel": "Table 5",
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "status": "new",
+    "name": "Nicolas Leroy",
+    "phone": "+33 6 00 00 00 05",
+    "email": "client5@demo.local",
+    "message": "Le client Nicolas Leroy souhaite appeler le serveur depuis Table 5.",
+    "locale": "fr"
+  },
+  {
+    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-8-message",
+    "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
+    "restaurantSlug": "bar-1",
+    "tableId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001-table-8",
+    "tableLabel": "Table 8",
+    "createdAt": "2026-06-15T13:22:30.313Z",
+    "status": "new",
+    "name": "Chloé Garnier",
+    "phone": "+33 6 00 00 00 08",
+    "email": "client8@demo.local",
+    "message": "Le client Chloé Garnier souhaite appeler le serveur depuis Table 8.",
+    "locale": "fr"
+  }
+]

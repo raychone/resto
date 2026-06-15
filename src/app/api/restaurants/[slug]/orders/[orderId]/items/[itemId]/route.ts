@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOwnerUserFromRequest, getManagerUserFromRequest, getStaffUserFromRequest } from "@/lib/auth";
 import { recordAuditEntry } from "@/lib/audit-store";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
-import { getOrderById, updateOrderItemQuantity } from "@/lib/order-store";
+import { getOrderById, updateOrderItem } from "@/lib/order-store";
 
 export const dynamic = "force-dynamic";
 
@@ -51,12 +51,29 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
-  const body = (await request.json()) as { quantity?: number };
-  if (typeof body.quantity !== "number") {
-    return NextResponse.json({ error: "Missing quantity" }, { status: 400 });
-  }
+  const body = (await request.json()) as {
+    quantity?: number;
+    note?: string;
+    assignedClientId?: string | null;
+    assignedClientName?: string | null;
+  };
 
-  const next = await updateOrderItemQuantity(orderId, itemId, body.quantity);
+  const next = await updateOrderItem(orderId, itemId, {
+    quantity: typeof body.quantity === "number" ? body.quantity : undefined,
+    note: typeof body.note === "string" ? body.note : undefined,
+    assignedClientId:
+      body.assignedClientId === null || typeof body.assignedClientId === "string"
+        ? body.assignedClientId
+        : undefined,
+    assignedClientName:
+      body.assignedClientName === null || typeof body.assignedClientName === "string"
+        ? body.assignedClientName
+        : undefined,
+  });
+
+  if (!next) {
+    return NextResponse.json({ error: "Item not found" }, { status: 404 });
+  }
 
   const actor = await resolveAuditActor(request, restaurant.id);
   if (actor) {
@@ -65,10 +82,20 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       restaurantId: restaurant.id,
       actorRole: actor.role,
       actorName: actor.name,
-      action: "order_item_quantity_changed",
+      action:
+        typeof body.quantity === "number"
+          ? "order_item_quantity_changed"
+          : body.assignedClientId !== undefined || body.assignedClientName !== undefined
+            ? "order_item_assigned_client"
+            : "order_item_updated",
       targetType: "order",
       targetId: order.id,
-      details: `item=${itemId} · qty=${body.quantity}`,
+      details:
+        typeof body.quantity === "number"
+          ? `item=${itemId} · qty=${body.quantity}`
+          : body.assignedClientName
+            ? `item=${itemId} · client=${body.assignedClientName}`
+            : `item=${itemId}`,
     });
   }
 

@@ -297,6 +297,11 @@ export type RestaurantQrMode = "pdf" | "menu" | "off";
 export type NotificationProvider = "android" | "twilio" | "whatsapp_business" | "off";
 
 export type RestaurantFeatures = {
+  orderFlowEnabled: boolean;
+  clientLoginEnabled: boolean;
+  waiterValidationEnabled: boolean;
+  kitchenWorkflowEnabled: boolean;
+  servedConfirmationEnabled: boolean;
   bookingEnabled: boolean;
   qrMode: RestaurantQrMode;
   notificationProvider: NotificationProvider;
@@ -374,6 +379,8 @@ export type RestaurantMessage = {
   id: string;
   restaurantSlug: string;
   restaurantId?: string;
+  tableId?: string | null;
+  tableLabel?: string | null;
   locale: Locale;
   name: string;
   phone: string;
@@ -399,7 +406,15 @@ export type Table = {
 };
 
 export type OrderSource = "table" | "takeaway" | "phone" | "qr";
-export type OrderStatus = "open" | "sent_to_kitchen" | "paid" | "cancelled" | "archived";
+export type OrderStatus =
+  | "open"
+  | "sent_to_kitchen"
+  | "preparing"
+  | "ready"
+  | "served"
+  | "paid"
+  | "cancelled"
+  | "archived";
 export type PaymentMethod = "cash" | "card" | "external" | "other";
 export type PaymentStatus = "pending" | "completed" | "cancelled";
 
@@ -411,6 +426,8 @@ export type OrderItem = {
   priceSnapshot: number;
   quantity: number;
   note: string;
+  assignedClientId?: string | null;
+  assignedClientName?: string | null;
   createdAt: string;
   deletedAt?: string | null;
 };
@@ -419,6 +436,7 @@ export type Order = {
   id: string;
   restaurantId: string;
   tableId?: string | null;
+  tableSessionId?: string | null;
   staffUserId?: string | null;
   source: OrderSource;
   status: OrderStatus;
@@ -445,7 +463,57 @@ export type Payment = {
   deletedAt?: string | null;
 };
 
-export type UserRole = "owner" | "manager" | "staff";
+export type LoyaltyTier = "bronze" | "silver" | "gold" | "platinum";
+
+export type CustomerStatus = "active" | "disabled";
+
+export type Customer = {
+  id: string;
+  restaurantId: string;
+  userId?: string | null;
+  firstName: string;
+  lastName: string;
+  name: string;
+  email: string;
+  phone: string;
+  currentPoints: number;
+  lifetimePoints: number;
+  tier: LoyaltyTier;
+  status: CustomerStatus;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+};
+
+export type TableSessionStatus = "open" | "closed" | "archived";
+
+export type TableSessionParticipant = {
+  id: string;
+  customerId?: string | null;
+  name: string;
+  sharePercent: number;
+  settledAmount: number;
+  note?: string;
+};
+
+export type TableSession = {
+  id: string;
+  restaurantId: string;
+  tableId: string | null;
+  orderId: string | null;
+  status: TableSessionStatus;
+  guestCount: number;
+  estimatedTotal: number;
+  paidTotal: number;
+  note: string;
+  participants: TableSessionParticipant[];
+  createdAt: string;
+  updatedAt: string;
+  closedAt?: string | null;
+  deletedAt?: string | null;
+};
+
+export type UserRole = "owner" | "manager" | "staff" | "kitchen" | "client";
 export type UserStatus = "active" | "disabled";
 
 export type User = {
@@ -511,6 +579,11 @@ export function createBlankRestaurant(): Restaurant {
     weeklyHours: createDefaultWeeklyHours(),
     happyHourSchedule: null,
     features: {
+      orderFlowEnabled: true,
+      clientLoginEnabled: true,
+      waiterValidationEnabled: true,
+      kitchenWorkflowEnabled: true,
+      servedConfirmationEnabled: true,
       bookingEnabled: true,
       qrMode: "pdf",
       notificationProvider: "android",
@@ -650,6 +723,11 @@ export function normalizeRestaurant(restaurant: Restaurant): Restaurant {
           }
         : null,
     features: {
+      orderFlowEnabled: restaurant.features?.orderFlowEnabled ?? true,
+      clientLoginEnabled: restaurant.features?.clientLoginEnabled ?? true,
+      waiterValidationEnabled: restaurant.features?.waiterValidationEnabled ?? true,
+      kitchenWorkflowEnabled: restaurant.features?.kitchenWorkflowEnabled ?? true,
+      servedConfirmationEnabled: restaurant.features?.servedConfirmationEnabled ?? true,
       bookingEnabled: restaurant.features?.bookingEnabled ?? true,
       qrMode:
         restaurant.features?.qrMode === "menu" || restaurant.features?.qrMode === "off"

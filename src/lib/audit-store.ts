@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-export type AuditActorRole = "manager" | "staff" | "client";
+export type AuditActorRole = "manager" | "staff" | "kitchen" | "client";
 
 export type AuditEntry = {
   id: string;

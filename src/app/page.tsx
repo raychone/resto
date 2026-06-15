@@ -3,170 +3,199 @@ import { listRestaurants } from "@/lib/restaurant-store";
 
 export const dynamic = "force-dynamic";
 
-function cardGradient(accent: string) {
-  return `radial-gradient(circle at top left, ${accent}33, transparent 40%), linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7))`;
+function SectionCard({
+  title,
+  text,
+  href,
+  label,
+}: {
+  title: string;
+  text: string;
+  href: string;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group rounded-[1.75rem] border border-white/10 bg-[#171717] p-4 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-[#1c1c1c]"
+    >
+      <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">{label}</p>
+      <h3 className="mt-2 text-xl font-semibold text-[#f5f1ea]">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-white/65">{text}</p>
+      <span className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white transition group-hover:bg-white/10">
+        Ouvrir
+      </span>
+    </Link>
+  );
 }
 
 export default async function HomePage() {
   const restaurants = await listRestaurants();
   const restaurant = restaurants.find((entry) => entry.slug === "bar-1") ?? restaurants[0];
 
+  const roleCards = [
+    {
+      title: "Client",
+      text: "Scanner le QR, consulter le menu, remplir le panier, se connecter ou créer un compte, puis confirmer la commande.",
+      href: "/client",
+      label: "Compte client",
+    },
+    {
+      title: "Staff",
+      text: "Valider les commandes client, gérer les réservations, servir les tables et encaisser.",
+      href: "/staff",
+      label: "Service",
+    },
+    {
+      title: "Kitchen",
+      text: "Voir les commandes validées, commencer la préparation et signaler quand c’est prêt.",
+      href: "/kitchen",
+      label: "Cuisine",
+    },
+    {
+      title: "Manager",
+      text: "Gérer le menu, les prix, les horaires, les modules et l’audit du restaurant.",
+      href: "/dashboard",
+      label: "Manager",
+    },
+    {
+      title: "Owner",
+      text: "Voir tous les restaurants, les plans, la facturation et les notifications.",
+      href: "/owner",
+      label: "Owner",
+    },
+  ];
+
+  const testLinks = [
+    { label: "Menu Noir 1", href: `/r/${restaurant?.slug ?? "bar-1"}?lang=fr` },
+    { label: "QR Noir 1", href: `/qr/${restaurant?.slug ?? "bar-1"}` },
+    { label: "Client signup", href: "/client/signup" },
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Staff", href: "/staff" },
+    { label: "Kitchen", href: "/kitchen" },
+    { label: "Client", href: "/client" },
+    { label: "Owner", href: "/owner" },
+  ];
+
   return (
-    <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-6 text-[#f5f1ea] sm:px-6 lg:px-8">
-      <section className="overflow-hidden rounded-[2.25rem] border border-white/10 bg-[#121212] shadow-[0_30px_120px_rgba(15,23,42,0.34)] backdrop-blur">
-        <div className="grid gap-10 p-5 sm:p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium uppercase tracking-[0.3em] text-white/55">
-              <img
-                src={restaurant.logoUrl || "/logo.png"}
-                alt="Logo"
-                className="h-7 w-7 rounded-lg object-cover"
-              />
-              <span>Plateforme QR menu</span>
-            </div>
-            <div className="space-y-4">
-              <h1 className="font-display max-w-3xl text-5xl leading-none sm:text-6xl lg:text-7xl">
-                Menu digital pour restaurants, avec tableau de bord et QR par lieu.
-              </h1>
-              <p className="max-w-2xl text-base leading-7 text-white/70 sm:text-lg">
-                Une base unique pour plusieurs restaurants : tu modifies le contenu
-                depuis le tableau de bord, tu publies le menu sur mobile et tu
-                génères un QR séparé pour chaque adresse.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/dashboard"
-                className="rounded-full border border-white/10 bg-white px-5 py-3 text-sm font-medium text-black"
-              >
-                Ouvrir le tableau de bord
-              </Link>
-              <Link
-                href="/staff"
-                className="rounded-full border border-white/10 bg-black px-5 py-3 text-sm font-medium text-white"
-              >
-                Ouvrir la page staff
-              </Link>
-              <a
-                href="#restaurants"
-                className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-white"
-              >
-                Voir les restaurants
-              </a>
-            </div>
-          </div>
-
-          <div className="grid gap-4 rounded-[2rem] border border-white/10 bg-white/5 p-4 sm:grid-cols-2">
-            {[
-              {
-                title: "Tableau de bord",
-                text: "Tu édites le contenu par restaurant.",
-              },
-              {
-                title: "Menu public",
-                text: "Une page mobile pensée pour le scan QR.",
-              },
-              {
-                title: "Allergènes",
-                text: "Affichés clairement sur chaque plat.",
-              },
-              {
-                title: "QR dédié",
-                text: "Un code par restaurant, sans ambiguïté.",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-[1.5rem] border border-white/10 bg-[#1a1a1a] p-4"
-              >
-                <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">
-                  {item.title}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-white/70">{item.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="restaurants" className="mt-8 space-y-4">
-        <div className="flex flex-col gap-2">
-          <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">
-            Restaurant actif
-          </p>
-          <h2 className="font-display text-3xl">Démonstration prête</h2>
-        </div>
-
-        {restaurant ? (
-          <article className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#121212] shadow-[0_20px_60px_rgba(15,23,42,0.18)] backdrop-blur">
-            <div className="flex items-center justify-between gap-3 border-b border-white/8 px-5 py-4">
-              <div className="flex items-center gap-3">
+    <main className="min-h-screen w-full bg-[#0f0f0f] text-[#f5f1ea]">
+      <section className="mx-auto max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
+        <div className="overflow-hidden rounded-[2.5rem] border border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(120,92,255,0.14),_transparent_28%),linear-gradient(180deg,_#151515_0%,_#0f0f0f_100%)] shadow-[0_30px_120px_rgba(0,0,0,0.4)]">
+          <div className="grid gap-8 p-5 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:p-10">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium uppercase tracking-[0.3em] text-white/55">
                 <img
-                  src={restaurant.logoUrl || "/logo.png"}
+                  src={restaurant?.logoUrl || "/logo.png"}
                   alt="Logo"
-                  className="h-10 w-10 rounded-xl object-cover"
+                  className="h-7 w-7 rounded-lg object-cover"
                 />
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">Présentation</p>
-                  <h3 className="text-lg font-semibold">{restaurant.name}</h3>
-                </div>
-              </div>
-            </div>
-            <div className="h-44" style={{ background: cardGradient(restaurant.accent) }}>
-              <img
-                src={restaurant.heroImage}
-                alt={restaurant.name}
-                className="h-full w-full object-cover mix-blend-multiply"
-              />
-            </div>
-            <div className="space-y-4 p-5">
-              <div className="space-y-1">
-                <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">
-                  {restaurant.slug}
-                </p>
-                <h3 className="text-2xl font-semibold">{restaurant.name}</h3>
-                <p className="text-sm leading-6 text-white/65">{restaurant.tagline}</p>
+                <span>Noir 1 demo</span>
               </div>
 
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className="rounded-full bg-white px-3 py-1.5 text-black">
-                  {restaurant.categories.length} catégories
-                </span>
-                <span className="rounded-full border border-white/10 px-3 py-1.5 text-white/70">
-                  QR dédié
-                </span>
+              <div className="space-y-4">
+                <h1 className="font-display max-w-4xl text-5xl leading-none sm:text-6xl lg:text-7xl">
+                  Plateforme SaaS pour restaurants, bars et service en salle.
+                </h1>
+                <p className="max-w-2xl text-base leading-7 text-white/70 sm:text-lg">
+                  Démo active sur <span className="font-semibold text-white">Noir 1</span> :
+                  menu QR, commandes, validation serveur, cuisine, réservations, loyalty,
+                  dashboard manager et owner global.
+                </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href={`/r/${restaurant.slug}`}
-                  className="rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-medium text-black"
+                  href={`/r/${restaurant?.slug ?? "bar-1"}?lang=fr`}
+                  className="rounded-full border border-white/10 bg-white px-5 py-3 text-sm font-medium text-black"
                 >
-                  Menu
+                  Ouvrir le menu demo
                 </Link>
                 <Link
-                  href={`/qr/${restaurant.slug}`}
-                  className="rounded-full border border-white/10 bg-black px-4 py-2 text-sm font-medium text-white"
+                  href="/client/signup"
+                  className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-white"
                 >
-                  QR
+                  Créer un compte client
                 </Link>
                 <Link
-                  href={`/dashboard?restaurant=${restaurant.slug}`}
-                  className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white"
+                  href="/dashboard"
+                  className="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-white"
                 >
-                  Édition
+                  Tester le dashboard
                 </Link>
                 <Link
                   href="/staff"
-                  className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white"
+                  className="rounded-full border border-white/10 bg-black px-5 py-3 text-sm font-medium text-white"
                 >
-                  Staff
+                  Tester le staff
                 </Link>
               </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  {
+                    title: "Scannable QR",
+                    text: "QR direct vers le menu du restaurant.",
+                  },
+                  {
+                    title: "Service réel",
+                    text: "Commande → validation serveur → cuisine → service.",
+                  },
+                  {
+                    title: "Multi-roles",
+                    text: "Client, staff, kitchen, manager, owner.",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.title}
+                    className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4"
+                  >
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">{item.title}</p>
+                    <p className="mt-2 text-sm leading-6 text-white/70">{item.text}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </article>
-        ) : null}
+
+            <div className="space-y-4">
+              <div className="rounded-[2rem] border border-white/10 bg-white/5 p-4">
+                <p className="text-[11px] uppercase tracking-[0.35em] text-white/35">Restaurant démo</p>
+                <h2 className="mt-2 text-3xl font-semibold text-[#f5f1ea]">{restaurant?.name ?? "Noir 1"}</h2>
+                <p className="mt-2 text-sm leading-6 text-white/65">{restaurant?.tagline}</p>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">QR</p>
+                    <p className="mt-1 text-sm text-white/80">Menu direct pour mobile</p>
+                  </div>
+                  <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">Modules</p>
+                    <p className="mt-1 text-sm text-white/80">Booking, delivery, reviews</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3">
+                {testLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className="flex items-center justify-between rounded-[1.25rem] border border-white/10 bg-[#1a1a1a] px-4 py-3 text-sm font-medium text-white transition hover:border-white/20 hover:bg-[#202020]"
+                  >
+                    <span>{link.label}</span>
+                    <span className="text-white/40">→</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-[1440px] px-3 pb-8 sm:px-4 lg:px-6">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          {roleCards.map((card) => (
+            <SectionCard key={card.title} {...card} />
+          ))}
+        </div>
       </section>
     </main>
   );

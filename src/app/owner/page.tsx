@@ -25,6 +25,7 @@ export default async function OwnerPage() {
         defaultUsername="owner"
         defaultPassword="owner123!"
         endpoint="/api/owner-auth/login"
+        backAction={{ label: "Accueil", href: "/" }}
       />
     );
   }
@@ -43,7 +44,7 @@ export default async function OwnerPage() {
             <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">Owner</p>
             <h1 className="text-3xl font-semibold">Portfolio restaurants</h1>
           </div>
-          <DashboardLogoutButton endpoint="/api/owner-auth/logout" label="Déconnexion" />
+          <DashboardLogoutButton endpoint="/api/owner-auth/logout" label="Déconnexion" redirectTo="/" />
         </div>
       </div>
 

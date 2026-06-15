@@ -230,6 +230,8 @@ export async function createMessage(
     restaurantSlug: restaurant.slug,
     createdAt: new Date().toISOString(),
     status: "new",
+    tableId: input.tableId ?? null,
+    tableLabel: input.tableLabel ?? null,
     name: input.name.trim(),
     phone: input.phone.trim(),
     email: input.email.trim(),
@@ -240,4 +242,34 @@ export async function createMessage(
   const nextMessages = [...messages, message];
   await writeJsonFile(messagesFile, nextMessages);
   return message;
+}
+
+export async function updateMessageStatus(
+  restaurantSlug: string,
+  options: {
+    ids?: string[];
+    tableId?: string;
+    status: RestaurantMessage["status"];
+  },
+) {
+  const messages = await listMessages();
+  const nextMessages = messages.map((message) => {
+    if (message.restaurantSlug !== restaurantSlug) {
+      return message;
+    }
+
+    const matchesId = options.ids?.includes(message.id);
+    const matchesTable = options.tableId ? message.tableId === options.tableId : false;
+    if (!matchesId && !matchesTable) {
+      return message;
+    }
+
+    return {
+      ...message,
+      status: options.status,
+    };
+  });
+
+  await writeJsonFile(messagesFile, nextMessages);
+  return nextMessages.filter((message) => message.restaurantSlug === restaurantSlug);
 }

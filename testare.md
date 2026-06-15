@@ -8,7 +8,12 @@ Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează paș
 - QR direct: `http://localhost:3000/qr/bar-1`
 - manager: `/dashboard` cu `raych / raychone!`
 - staff: `/staff` cu `user / pass123!`
+- kitchen: `/kitchen` cu `kitchen / kitchen123!`
+- client: `/client` cu `client / client123!`
+- clienți demo suplimentari: `client2 / client2!` … `client10 / client10!`
+- signup client: `/client/signup`
 - owner: `/owner` cu `owner / owner123!`
+- seed rapid Noir 1: `npm run seed:noir1`
 
 La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo principal.
 
@@ -18,6 +23,14 @@ La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo p
 2. Deschide browserul la `http://localhost:3000`.
 3. Dacă ai sesiuni vechi, fă logout din toate rolurile.
 4. Dacă vezi date vechi sau un restaurant lipsă, oprește și repornește `npm run dev`.
+5. Dacă vrei demo-ul ocupat complet, rulează `npm run seed:noir1`.
+
+### 0.1 Landing page
+
+1. Deschide `http://localhost:3000`.
+2. Verifică dacă vezi prezentarea aplicației, rolurile și butoanele directe de test.
+3. Verifică dacă demo-ul principal este `Noir 1`.
+4. Verifică dacă butoanele te duc rapid la public, client signup, manager, staff, kitchen și owner.
 
 ## 1. Testare publică
 
@@ -28,6 +41,7 @@ La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo p
 3. Verifică dacă navbar-ul este sticky și dark.
 4. Verifică dacă logo-ul este în stânga, `Menu` este centrat și selectorul de limbă este în dreapta.
 5. Verifică că `Reserve` nu apare pe demo-ul `Noir 1`.
+6. Verifică dacă linkul de logout te duce înapoi la `Accueil`.
 
 ### 1.2 Pagina restaurantului
 
@@ -53,6 +67,34 @@ La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo p
 20. Verifică faptul că `TripAdvisor` apare ca un card de avis și că `Delivery` este afișat în limba selectată.
 21. Verifică faptul că iconițele Facebook și Instagram deschid linkurile lor reale.
 22. Verifică faptul că modalul de orar este dark, cu text deschis și buton `X`.
+23. Din `owner`, oprește `Order flow` pentru `Noir 1` și verifică dacă `Ajouter au panier` și coșul dispar din public/client.
+24. Pornește din nou `Order flow` și verifică dacă meniul și coșul reapar.
+25. Intră în `/staff` și verifică dacă secțiunile de comenzi apar doar când `Order flow` este activat.
+26. Intră în `/kitchen` și verifică faptul că vezi comenzile în coadă și le poți trece în `preparing / ready / served`.
+27. Intră în `/client` și verifică faptul că login-ul client funcționează pe portalul dedicat.
+28. Verifică dacă vezi coșul tău și butonul de confirmare a comenzii.
+29. Trimite coșul și verifică dacă apare statusul de așteptare pentru validarea ospătarului.
+30. Verifică dacă staff-ul vede comanda în secțiunea `Commandes client`.
+31. Confirmă comanda din staff și verifică dacă trece în bucătărie.
+32. Deschide `/kitchen` și verifică dacă comanda apare în coadă.
+33. Marchează comanda `ready` din kitchen și verifică dacă staff primește notificarea / semnalul de comandă gata.
+34. Marchează comanda `served` din staff și verifică dacă ajunge la starea finală.
+35. Verifică dacă, după confirmarea coșului, restaurantul primește alerta de comandă nouă prin providerul configurat.
+36. Verifică dacă în `/client` apare statusul clar al comenzii în curs.
+37. Verifică dacă în `/client` statusul comenzii se actualizează automat fără refresh manual.
+38. Verifică dacă în `/client` vezi și timeline-ul vizual al statusului: soumise, validée, prête, servie.
+39. Marchează comanda `ready` și verifică dacă restaurantul primește notificarea de ready și clientul vede statusul actualizat.
+40. Marchează comanda `served` și verifică dacă restaurantul primește notificarea de served și clientul vede statusul final.
+41. Verifică dacă vezi loyalty tier-ul, punctele, nota live a mesei și suma rămasă de plată.
+42. Verifică dacă staff-ul poate edita manual repartizarea mesei și că modificarea se salvează.
+43. Verifică dacă poți adăuga sau elimina un invitat din repartizare.
+44. Verifică dacă butonul `Appeler le serveur` trimite o cerere și afișează confirmarea.
+45. Dacă staff-ul a alocat produse clientului tău, verifică dacă apar în secțiunea `Mes articles`.
+46. După o încasare, verifică dacă punctele de loyalty cresc pentru clientul atribuit.
+47. Deschide `/client/signup`, creează un cont nou cu email și verifică dacă intri automat în `/client`.
+48. În `/client`, `/staff` și `/kitchen`, apasă `Activer notifications` și verifică dacă browserul cere permisiunea.
+49. După activare, schimbă statusul unei comenzi și verifică dacă apare notificarea browser corespunzătoare.
+50. Verifică dacă lângă buton apare starea: activat / blocat / disponibil.
 
 ### 1.3 QR și PDF
 
@@ -78,6 +120,18 @@ La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo p
    - mesaj pentru staff
 6. Trimite cererea.
 7. Verifică mesajul de confirmare de succes.
+
+### 1.5 Client Google OAuth
+
+1. Deschide `/client`.
+2. Apasă `Continuer avec Google`.
+3. Alege un cont Gmail real.
+4. Acceptă ecranul Google de autorizare.
+5. Verifică dacă revii în `/client?focus=cart` conectat automat.
+6. Deschide `/client/signup`.
+7. Apasă `Continuer avec Google`.
+8. Verifică dacă se creează contul automat dacă nu exista.
+9. Dacă vrei autentificare reală, verifică în `.env.local` că ai `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` și `NEXT_PUBLIC_BASE_URL`.
 
 ## 2. Testare manager
 
@@ -157,9 +211,16 @@ La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo p
 2. Loghează-te cu:
    - user: `user`
    - parolă: `pass123!`
-3. Verifică dacă staff-ul este legat de un restaurant valid.
-4. Dacă vrei să testezi barul demo, folosește `Noir 1` din `/owner`.
-5. Verifică dacă itemele cu happy hour ajung în bon la prețul redus.
+3. Verifică dacă staff-ul este legat de `Noir 1`.
+4. Deschide meniul rapid cu acordeoane din staff și adaugă un produs pe bon.
+5. Verifică dacă mesele cu comandă QR au badge de alertă.
+6. Verifică dacă itemele cu happy hour ajung în bon la prețul redus.
+7. Verifică dacă bara de tab-uri rămâne lipită sus când dai scroll.
+8. Verifică dacă bara internă de staff te duce rapid la `Alertes / Tables / Bon / Menu`.
+9. Verifică dacă bonul curent este afișat separat, cu total / plătit / rămas.
+10. Verifică dacă meniul staff este mai compact decât meniul public.
+11. Verifică dacă alerta pe masă este vizibilă instant în roșu / portocaliu.
+12. Verifică dacă bara flotantă de jos la client și staff nu acoperă conținutul de dedesubt.
 
 ### 3.2 Mese și bon
 
@@ -198,6 +259,36 @@ La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo p
 4. Verifică dacă se deschide SMS / WhatsApp / fallback-ul corect.
 5. Verifică dacă mesajul conține rezumatul rezervării sau al confirmării.
 
+### 3.6 Kitchen
+
+1. Deschide `http://localhost:3000/kitchen`.
+2. Loghează-te cu:
+   - user: `kitchen`
+   - parolă: `kitchen123!`
+3. Verifică dacă vezi comenzile restaurantului `Noir 1`.
+4. Marchează o comandă `preparing`.
+5. Marchează aceeași comandă `ready`.
+6. Marchează aceeași comandă `served`.
+
+### 3.7 Client
+
+1. Deschide `http://localhost:3000/client`.
+2. Loghează-te cu:
+   - user: `client`
+   - parolă: `client123!`
+3. Verifică dacă vezi cardul de loyalty.
+4. Verifică tier-ul, punctele de viață și progresul.
+5. Verifică meniul în aplicație și adaugă produse în coș.
+6. Verifică secțiunea de split de notă pe masă și că nota live afișează produsele și suma rămasă.
+7. Verifică dacă apar participanții și sumele estimate.
+8. Dacă staff-ul modifică repartizarea mesei, verifică dacă vezi schimbarea după refresh.
+9. Dacă staff-ul adaugă sau elimină un invitat, verifică dacă lista se actualizează.
+10. Verifică dacă poți vedea coșul și dacă poți trimite o comandă din portal.
+11. Verifică dacă butonul `Appeler le serveur` creează o cerere în inboxul staff.
+12. Dacă există produse atribuite clientului, verifică dacă vezi totalul tău și articolele tale.
+13. După ce staff-ul face o încasare, revino și verifică dacă tier-ul sau punctele s-au actualizat.
+14. Verifică dacă timeline-ul comenzii arată clar `Soumise → Validée → En cuisine → Prête → Servie`.
+
 ## 4. Testare owner
 
 ### 4.1 Login
@@ -217,6 +308,7 @@ La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo p
 4. Verifică numărul de SMS active.
 5. Verifică totalul facturat.
 6. Deschide `/r/bar-1` și verifică meniul dark, acordeoanele curate și prețurile bar.
+7. Verifică bara sticky de secțiuni: `Modules`, `Test`, `Factures`, `Audit`, `Créer`.
 
 ### 4.3 Test rapid notificări
 
@@ -232,6 +324,7 @@ La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo p
 3. Folosește butonul `Aller aux modules`.
 4. Folosește butonul `Aller au test`.
 5. Testează încă o dată notificarea.
+6. Verifică dacă bara sticky de sus te duce rapid la secțiunile mari fără scroll inutil.
 
 ### 4.5 Facturi
 
@@ -241,6 +334,7 @@ La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo p
 4. Creează o factură.
 5. Schimbă statusul unei facturi.
 6. Șterge o factură.
+7. Verifică sumarul de alerte din dashboard: rezervări, comenzi, ready și mesaje.
 
 ### 4.6 Control comercial
 

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOwnerUserFromRequest, getManagerUserFromRequest, getStaffUserFromRequest } from "@/lib/auth";
 import { recordAuditEntry } from "@/lib/audit-store";
+import { getCustomerById, updateCustomer } from "@/lib/customer-store";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
 import { createPayment, getOrderById, listPaymentsForOrder } from "@/lib/order-store";
 import { getTableById } from "@/lib/table-store";
+import { listTableSessionsForRestaurant, updateTableSession } from "@/lib/table-session-store";
 
 export const dynamic = "force-dynamic";
 
@@ -109,6 +111,48 @@ export async function POST(request: NextRequest, { params }: Params) {
         `${targetLabel} · ${body.amount} EUR ${methodLabel}` +
         (remaining > 0 ? ` · reste ${remaining} EUR` : " · réglé"),
     });
+  }
+
+  const tableSession =
+    order?.tableSessionId
+      ? (await listTableSessionsForRestaurant(restaurant.id)).find(
+          (session) => session.id === order.tableSessionId,
+        )
+      : order?.tableId
+        ? (await listTableSessionsForRestaurant(restaurant.id)).find(
+            (session) => session.status === "open" && session.tableId === order.tableId,
+          )
+        : null;
+
+  if (tableSession && order) {
+    await updateTableSession(tableSession.id, {
+      paidTotal,
+      status: remaining <= 0 ? "closed" : tableSession.status,
+      closedAt: remaining <= 0 ? new Date().toISOString() : tableSession.closedAt ?? null,
+    });
+
+    const earnedPointsByCustomer = new Map<string, number>();
+    for (const participant of tableSession.participants) {
+      if (!participant.customerId) continue;
+      const rawPoints = (body.amount * participant.sharePercent) / 100;
+      const points = Math.max(0, Math.floor(rawPoints));
+      if (points > 0) {
+        earnedPointsByCustomer.set(
+          participant.customerId,
+          (earnedPointsByCustomer.get(participant.customerId) ?? 0) + points,
+        );
+      }
+    }
+
+    for (const [customerId, earnedPoints] of earnedPointsByCustomer.entries()) {
+      const customer = await getCustomerById(customerId);
+      if (!customer) continue;
+
+      await updateCustomer(customerId, {
+        currentPoints: customer.currentPoints + earnedPoints,
+        lifetimePoints: customer.lifetimePoints + earnedPoints,
+      });
+    }
   }
 
   return NextResponse.json(

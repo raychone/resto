@@ -16,13 +16,13 @@ Scopul este să fie ușor de clonat și branduit diferit pentru fiecare restaura
 
 ## Avancement
 
-`Faza 1` ✅ `Faza 2` ✅ `Faza 3` ✅ `Faza 4` ✅ `Faza 5` ✅ `Faza 6` ✅
+`Faza 1` ✅ `Faza 2` ✅ `Faza 3` ✅ `Faza 4` ✅ `Faza 5` ✅ `Faza 6` ✅ `Faza 7` ⏳
 
 ---
 
 ## Status general
 
-`Faza 1` → `Faza 2` → `Faza 3` → `Faza 4` → `Faza 5` → `Faza 6`
+`Faza 1` → `Faza 2` → `Faza 3` → `Faza 4` → `Faza 5` → `Faza 6` → `Faza 7`
 
 - Faza 1 — model și scoping
 - Faza 2 — users și parole
@@ -30,6 +30,7 @@ Scopul este să fie ușor de clonat și branduit diferit pentru fiecare restaura
 - Faza 4 — restricții UI / API și audit
 - Faza 5 — facturare și pachete
 - Faza 6 — SMS, WhatsApp, polish și scalare
+- Faza 7 — loyalty, client și split de notă
 
 ---
 
@@ -121,6 +122,22 @@ Restaurantul demo principal este `Noir 1`, cu logo local noir și un seed comple
 
 **Stare curentă:** faza 6 este închisă la nivel de produs; providerul de notificări este pregătit în model, UI și serviciul server-side, owner-ul are test de notificări + test rapid în header + onboarding compact, iar Android SMS rămâne default cu fallback-uri Twilio / WhatsApp Business documentate.
 Pe zona UI/UX, meniul public a fost refăcut pe stil dark mobile-first, cu detaliu de preparat în modal, iar produsele pot avea happy hour price redus.
+
+### Faza 7 — loyalty, client și split de notă
+
+- `Customer`
+- loyalty pe tier-uri și puncte
+- `TableSession`
+- `TableSessionParticipant`
+- `client` cu login separat
+- split de notă pe masă
+- editare manuală a repartizării în staff
+- client poate chema ospătarul din portal
+- client poate crea cont din `/client/signup`
+- items atribuite clientului pe bon
+- badge de client pe bon pentru staff / kitchen
+
+**Stare curentă:** baza pentru `client` și `kitchen` este activă; traseul real este acum QR → coș → login / signup client → conexiune Google reală opțională → confirmare comandă → validare fizică de către ospătar → trimitere în bucătărie → notificare pentru ospătar când comanda e gata → servire la masă; loyalty-ul, split-ul pe note și atribuirea itemilor pe client sunt conectate în fluxul de staff și în portalul client, iar staff-ul poate edita manual repartizarea mesei, poate adăuga sau elimina invitați, poate salva repartizarea și clientul poate chema ospătarul din portal. Punctele se acumulează la încasare.
 
 ---
 
@@ -739,6 +756,15 @@ Să fie ușor de vândut ca pachet:
 - ghid de instalare notificări
 - polish final
 - scalare pentru mai multe restaurante
+
+### Faza 7
+
+- loyalty pe tier-uri și puncte
+- login client
+- split de notă pe masă
+- participant / share per client
+- client badge pe bon
+- pregătire pentru comenzi client-side
 
 ---
 

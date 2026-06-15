@@ -8,7 +8,7 @@ export function StaffLogin() {
       defaultUsername="user"
       defaultPassword="pass123!"
       endpoint="/api/staff-auth/login"
+      backAction={{ label: "Accueil", href: "/" }}
     />
   );
 }
-

@@ -10,6 +10,7 @@ import {
   type HappyHourSchedule,
   weeklyDayLabels,
   type Reservation,
+  type RestaurantMessage,
   type Restaurant,
   type User,
   type WeeklyHour,
@@ -184,9 +185,13 @@ export function DashboardClient({
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [orders, setOrders] = useState<{ status: string }[]>([]);
+  const [messages, setMessages] = useState<RestaurantMessage[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([]);
   const [loadingReservations, setLoadingReservations] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingAudit, setLoadingAudit] = useState(false);
   const [reservationFilter, setReservationFilter] = useState<
@@ -205,6 +210,15 @@ export function DashboardClient({
     null;
 
   const todayKey = formatTodayKey();
+
+  const alertSummary = useMemo(() => {
+    const pendingReservations = reservations.filter((reservation) => reservation.status === "pending").length;
+    const activeOrders = orders.filter((order) => !["paid", "cancelled", "archived"].includes(order.status)).length;
+    const readyOrders = orders.filter((order) => order.status === "ready").length;
+    const messagesCount = messages.filter((message) => !message.deletedAt).length;
+
+    return { pendingReservations, activeOrders, readyOrders, messagesCount };
+  }, [messages, orders, reservations]);
 
   const reservationStats = useMemo(() => {
     const pending = reservations.filter((reservation) => reservation.status === "pending").length;
@@ -272,6 +286,32 @@ export function DashboardClient({
     setLoadingReservations(false);
   }
 
+  async function loadOrders(slug: string) {
+    if (!slug) return;
+    setLoadingOrders(true);
+    const response = await fetch(`/api/restaurants/${slug}/orders`, { cache: "no-store" });
+
+    if (response.ok) {
+      const payload = (await response.json()) as { orders: { status: string }[] };
+      setOrders(payload.orders);
+    }
+
+    setLoadingOrders(false);
+  }
+
+  async function loadMessages(slug: string) {
+    if (!slug) return;
+    setLoadingMessages(true);
+    const response = await fetch(`/api/restaurants/${slug}/messages`, { cache: "no-store" });
+
+    if (response.ok) {
+      const payload = (await response.json()) as { messages: RestaurantMessage[] };
+      setMessages(payload.messages);
+    }
+
+    setLoadingMessages(false);
+  }
+
   async function loadUsers(slug: string) {
     if (!slug) return;
     setLoadingUsers(true);
@@ -327,6 +367,8 @@ export function DashboardClient({
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       void loadReservations(activeSlug);
+      void loadOrders(activeSlug);
+      void loadMessages(activeSlug);
       void loadUsers(activeSlug);
       void loadAudit(activeSlug);
     }, 0);
@@ -724,7 +766,54 @@ export function DashboardClient({
       </aside>
 
       <div className="space-y-6">
-        <section className="rounded-[2rem] border border-white/10 bg-[#171717]/95 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur sm:p-8">
+        <section className="grid gap-3 sm:grid-cols-4">
+          <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-4 text-amber-950">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-amber-700">Réservations</p>
+            <p className="mt-1 text-2xl font-semibold">
+              {loadingReservations ? "…" : alertSummary.pendingReservations}
+            </p>
+            <p className="text-sm text-amber-800/80">En attente de validation.</p>
+          </div>
+          <div className="rounded-[1.5rem] border border-rose-200 bg-rose-50 p-4 text-rose-950">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-rose-700">Commandes</p>
+            <p className="mt-1 text-2xl font-semibold">{loadingOrders ? "…" : alertSummary.activeOrders}</p>
+            <p className="text-sm text-rose-800/80">Sur le restaurant.</p>
+          </div>
+          <div className="rounded-[1.5rem] border border-indigo-200 bg-indigo-50 p-4 text-indigo-950">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-indigo-700">Prêtes</p>
+            <p className="mt-1 text-2xl font-semibold">{loadingOrders ? "…" : alertSummary.readyOrders}</p>
+            <p className="text-sm text-indigo-800/80">À servir maintenant.</p>
+          </div>
+          <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 text-slate-950">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-slate-700">Messages</p>
+            <p className="mt-1 text-2xl font-semibold">{loadingMessages ? "…" : alertSummary.messagesCount}</p>
+            <p className="text-sm text-slate-800/80">Appels serveur et notes.</p>
+          </div>
+        </section>
+
+        <nav className="sticky top-3 z-20 rounded-[1.75rem] border border-white/10 bg-[#111111]/90 p-2 shadow-[0_12px_30px_rgba(0,0,0,0.18)] backdrop-blur">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { href: "#dashboard-menu", label: "Restaurant" },
+              { href: "#dashboard-staff", label: "Staff" },
+              { href: "#dashboard-reservations", label: "Réservations" },
+              { href: "#dashboard-audit", label: "Audit" },
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#f5f1ea] transition hover:bg-white/10"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </nav>
+
+        <section
+          id="dashboard-menu"
+          className="scroll-mt-28 rounded-[2rem] border border-white/10 bg-[#171717]/95 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur sm:p-8"
+        >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-2">
               <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
@@ -758,7 +847,10 @@ export function DashboardClient({
 
         <section className="grid gap-6 xl:grid-cols-[1fr_360px]">
           <div className="space-y-6">
-            <div className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+            <div
+              id="dashboard-staff"
+              className="scroll-mt-28 rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur"
+            >
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Nom du restaurant">
                   <input
@@ -1486,7 +1578,10 @@ export function DashboardClient({
           </div>
 
           <aside className="space-y-6">
-            <div className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+            <div
+              id="dashboard-audit"
+              className="scroll-mt-28 rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur"
+            >
               <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
                 Linkuri
               </p>
@@ -1516,7 +1611,10 @@ export function DashboardClient({
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+            <div
+              id="dashboard-reservations"
+              className="scroll-mt-28 rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
@@ -1622,7 +1720,10 @@ export function DashboardClient({
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+            <div
+              id="dashboard-reservations"
+              className="scroll-mt-28 rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur"
+            >
               <button
                 type="button"
                 onClick={() => setAuditOpen((current) => !current)}
@@ -1678,7 +1779,10 @@ export function DashboardClient({
               ) : null}
             </div>
 
-            <div className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur">
+            <div
+              id="dashboard-audit"
+              className="scroll-mt-28 rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur"
+            >
               <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
                 Résumé
               </p>

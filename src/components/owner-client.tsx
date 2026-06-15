@@ -122,6 +122,8 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
     staffUsername: "",
     staffPassword: "",
   }));
+  const [showManagerPassword, setShowManagerPassword] = useState(false);
+  const [showStaffPassword, setShowStaffPassword] = useState(false);
 
   const selectedRestaurant = useMemo(
     () => restaurants.find((entry) => entry.slug === draft.restaurantSlug) ?? restaurants[0],
@@ -285,6 +287,11 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
     patch: Partial<
       Pick<
         Restaurant["features"],
+        | "orderFlowEnabled"
+        | "clientLoginEnabled"
+        | "waiterValidationEnabled"
+        | "kitchenWorkflowEnabled"
+        | "servedConfirmationEnabled"
         | "bookingEnabled"
         | "qrMode"
         | "notificationProvider"
@@ -613,6 +620,26 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
           </div>
         </div>
 
+        <nav className="sticky top-3 z-20 rounded-[1.75rem] border border-black/8 bg-white/90 p-2 shadow-[0_12px_30px_rgba(15,23,42,0.12)] backdrop-blur">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { href: "#owner-capabilities", label: "Modules" },
+              { href: "#owner-notification-test", label: "Test" },
+              { href: "#owner-billing", label: "Factures" },
+              { href: "#owner-history", label: "Audit" },
+              { href: "#owner-create", label: "Créer" },
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="rounded-full border border-black/10 bg-black/3 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-black transition hover:bg-black/6"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+        </nav>
+
         <div
           id="owner-notification-test"
           className="mt-5 rounded-[1.5rem] border border-black/8 bg-black/2 p-4"
@@ -658,6 +685,7 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
         </div>
 
         <form
+          id="owner-create"
           onSubmit={createRestaurantBundle}
           className="mt-5 rounded-[1.5rem] border border-black/8 bg-white p-4"
         >
@@ -767,18 +795,28 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
                   placeholder="Username"
                   className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
                 />
-                <input
-                  value={restaurantDraft.managerPassword}
-                  onChange={(event) =>
-                    setRestaurantDraft((current) => ({
-                      ...current,
-                      managerPassword: event.target.value,
-                    }))
-                  }
-                  placeholder="Mot de passe temporaire"
-                  type="password"
-                  className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-                />
+                <div className="relative">
+                  <input
+                    value={restaurantDraft.managerPassword}
+                    onChange={(event) =>
+                      setRestaurantDraft((current) => ({
+                        ...current,
+                        managerPassword: event.target.value,
+                      }))
+                    }
+                    placeholder="Mot de passe temporaire"
+                    type={showManagerPassword ? "text" : "password"}
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 pr-12 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowManagerPassword((current) => !current)}
+                    className="absolute inset-y-0 right-0 flex items-center justify-center px-4 text-black/45"
+                    aria-label={showManagerPassword ? "Masquer le mot de passe manager" : "Afficher le mot de passe manager"}
+                  >
+                    {showManagerPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -807,18 +845,28 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
                   placeholder="Username"
                   className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
                 />
-                <input
-                  value={restaurantDraft.staffPassword}
-                  onChange={(event) =>
-                    setRestaurantDraft((current) => ({
-                      ...current,
-                      staffPassword: event.target.value,
-                    }))
-                  }
-                  placeholder="Mot de passe temporaire"
-                  type="password"
-                  className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-                />
+                <div className="relative">
+                  <input
+                    value={restaurantDraft.staffPassword}
+                    onChange={(event) =>
+                      setRestaurantDraft((current) => ({
+                        ...current,
+                        staffPassword: event.target.value,
+                      }))
+                    }
+                    placeholder="Mot de passe temporaire"
+                    type={showStaffPassword ? "text" : "password"}
+                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 pr-12 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowStaffPassword((current) => !current)}
+                    className="absolute inset-y-0 right-0 flex items-center justify-center px-4 text-black/45"
+                    aria-label={showStaffPassword ? "Masquer le mot de passe staff" : "Afficher le mot de passe staff"}
+                  >
+                    {showStaffPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -856,6 +904,7 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
                     </span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-[0.18em]">
+                    <Badge active={restaurant.features.orderFlowEnabled}>Order flow</Badge>
                     <Badge active={restaurant.features.bookingEnabled}>Booking</Badge>
                     <Badge active={restaurant.features.whatsappAlertsEnabled}>WhatsApp</Badge>
                     <Badge active={restaurant.features.smsAlertsEnabled}>SMS</Badge>
@@ -980,6 +1029,101 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
 
                       <div className="grid gap-2">
                         <FeatureToggle
+                          label="Order flow"
+                          active={restaurant.features.orderFlowEnabled}
+                          onChange={(checked) =>
+                            setRestaurants((current) =>
+                              current.map((entry) =>
+                                entry.id === restaurant.id
+                                  ? {
+                                      ...entry,
+                                      features: {
+                                        ...entry.features,
+                                        orderFlowEnabled: checked,
+                                      },
+                                    }
+                                  : entry,
+                              ),
+                            )
+                          }
+                        />
+                        <FeatureToggle
+                          label="Client login"
+                          active={restaurant.features.clientLoginEnabled}
+                          onChange={(checked) =>
+                            setRestaurants((current) =>
+                              current.map((entry) =>
+                                entry.id === restaurant.id
+                                  ? {
+                                      ...entry,
+                                      features: {
+                                        ...entry.features,
+                                        clientLoginEnabled: checked,
+                                      },
+                                    }
+                                  : entry,
+                              ),
+                            )
+                          }
+                        />
+                        <FeatureToggle
+                          label="Waiter validation"
+                          active={restaurant.features.waiterValidationEnabled}
+                          onChange={(checked) =>
+                            setRestaurants((current) =>
+                              current.map((entry) =>
+                                entry.id === restaurant.id
+                                  ? {
+                                      ...entry,
+                                      features: {
+                                        ...entry.features,
+                                        waiterValidationEnabled: checked,
+                                      },
+                                    }
+                                  : entry,
+                              ),
+                            )
+                          }
+                        />
+                        <FeatureToggle
+                          label="Kitchen workflow"
+                          active={restaurant.features.kitchenWorkflowEnabled}
+                          onChange={(checked) =>
+                            setRestaurants((current) =>
+                              current.map((entry) =>
+                                entry.id === restaurant.id
+                                  ? {
+                                      ...entry,
+                                      features: {
+                                        ...entry.features,
+                                        kitchenWorkflowEnabled: checked,
+                                      },
+                                    }
+                                  : entry,
+                              ),
+                            )
+                          }
+                        />
+                        <FeatureToggle
+                          label="Served confirmation"
+                          active={restaurant.features.servedConfirmationEnabled}
+                          onChange={(checked) =>
+                            setRestaurants((current) =>
+                              current.map((entry) =>
+                                entry.id === restaurant.id
+                                  ? {
+                                      ...entry,
+                                      features: {
+                                        ...entry.features,
+                                        servedConfirmationEnabled: checked,
+                                      },
+                                    }
+                                  : entry,
+                              ),
+                            )
+                          }
+                        />
+                        <FeatureToggle
                           label="Booking"
                           active={restaurant.features.bookingEnabled}
                           onChange={(checked) =>
@@ -1062,6 +1206,11 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
                         type="button"
                         onClick={() =>
                           updateRestaurantFeatures(restaurant.slug, {
+                            orderFlowEnabled: restaurant.features.orderFlowEnabled,
+                            clientLoginEnabled: restaurant.features.clientLoginEnabled,
+                            waiterValidationEnabled: restaurant.features.waiterValidationEnabled,
+                            kitchenWorkflowEnabled: restaurant.features.kitchenWorkflowEnabled,
+                            servedConfirmationEnabled: restaurant.features.servedConfirmationEnabled,
                             bookingEnabled: restaurant.features.bookingEnabled,
                             qrMode: restaurant.features.qrMode,
                             notificationProvider: restaurant.features.notificationProvider,
@@ -1160,7 +1309,10 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+          <div
+            id="owner-billing"
+            className="scroll-mt-28 rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)]"
+          >
             <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
               Factures
             </p>
@@ -1272,7 +1424,10 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)]">
+          <div
+            id="owner-history"
+            className="scroll-mt-28 rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)]"
+          >
             <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
               Historique global
             </p>
@@ -1313,6 +1468,7 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
 
         <aside className="space-y-4">
           <form
+            id="owner-create"
             onSubmit={handleSubmit}
             className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)]"
           >

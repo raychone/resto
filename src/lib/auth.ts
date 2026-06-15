@@ -10,6 +10,8 @@ import type { User, UserRole } from "@/lib/types";
 
 export const managerDashboardCookieName = "meniu_manager_session";
 export const staffDashboardCookieName = "meniu_staff_session";
+export const kitchenDashboardCookieName = "meniu_kitchen_session";
+export const clientDashboardCookieName = "meniu_client_session";
 export const ownerDashboardCookieName = "meniu_owner_session";
 
 export async function getValidUserByCredentials(username: string, password: string) {
@@ -29,6 +31,16 @@ export async function isValidDashboardCredentials(username: string, password: st
 export async function isValidStaffCredentials(username: string, password: string) {
   const user = await getValidUserByCredentials(username, password);
   return isUserRole(user, "staff");
+}
+
+export async function isValidKitchenCredentials(username: string, password: string) {
+  const user = await getValidUserByCredentials(username, password);
+  return isUserRole(user, "kitchen");
+}
+
+export async function isValidClientCredentials(username: string, password: string) {
+  const user = await getValidUserByCredentials(username, password);
+  return isUserRole(user, "client");
 }
 
 export async function isValidOwnerCredentials(username: string, password: string) {
@@ -83,6 +95,14 @@ export async function getStaffSessionUser(): Promise<User | null> {
   return getSessionUser(staffDashboardCookieName, "staff");
 }
 
+export async function getKitchenSessionUser(): Promise<User | null> {
+  return getSessionUser(kitchenDashboardCookieName, "kitchen");
+}
+
+export async function getClientSessionUser(): Promise<User | null> {
+  return getSessionUser(clientDashboardCookieName, "client");
+}
+
 export async function getOwnerSessionUser(): Promise<User | null> {
   return getSessionUser(ownerDashboardCookieName, "owner");
 }
@@ -93,6 +113,14 @@ export async function isDashboardAuthenticated() {
 
 export async function isStaffAuthenticated() {
   return Boolean(await getStaffSessionUser());
+}
+
+export async function isKitchenAuthenticated() {
+  return Boolean(await getKitchenSessionUser());
+}
+
+export async function isClientAuthenticated() {
+  return Boolean(await getClientSessionUser());
 }
 
 export async function isOwnerAuthenticated() {
@@ -113,6 +141,14 @@ export async function getManagerUserFromRequest(request: Request) {
 
 export async function getStaffUserFromRequest(request: Request) {
   return getSessionUserFromRequest(request, staffDashboardCookieName, "staff");
+}
+
+export async function getKitchenUserFromRequest(request: Request) {
+  return getSessionUserFromRequest(request, kitchenDashboardCookieName, "kitchen");
+}
+
+export async function getClientUserFromRequest(request: Request) {
+  return getSessionUserFromRequest(request, clientDashboardCookieName, "client");
 }
 
 export async function getOwnerUserFromRequest(request: Request) {

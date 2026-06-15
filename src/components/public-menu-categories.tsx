@@ -3,11 +3,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Locale, MenuCategory, MenuItem } from "@/lib/types";
 import { getMenuItemEffectivePrice } from "@/lib/types";
+import { addClientCartItem } from "@/lib/client-cart";
 
 type Props = {
   categories: MenuCategory[];
   locale: Locale;
   accent: string;
+  restaurantSlug: string;
+  orderFlowEnabled: boolean;
+  actionLabel?: string;
+  showItemModal?: boolean;
+  compact?: boolean;
+  onItemAction?: (item: MenuItem, categoryName: string) => void | Promise<void>;
 };
 
 type ItemModalState = {
@@ -76,11 +83,23 @@ function money(amount: number) {
   return `${formatted}€`;
 }
 
-export function PublicMenuCategories({ categories, locale, accent }: Props) {
+export function PublicMenuCategories({
+  categories,
+  locale,
+  accent,
+  restaurantSlug,
+  orderFlowEnabled,
+  actionLabel,
+  showItemModal = true,
+  compact = false,
+  onItemAction,
+}: Props) {
   const [openCategoryId, setOpenCategoryId] = useState<string | null>(null);
   const [modalState, setModalState] = useState<ItemModalState>(null);
   const [isModalClosing, setIsModalClosing] = useState(false);
+  const [cartNotice, setCartNotice] = useState<string | null>(null);
   const modalCloseTimer = useRef<number | null>(null);
+  const cartNoticeTimer = useRef<number | null>(null);
   const text = labels[locale];
 
   function openModal(item: MenuItem, categoryName: string) {
@@ -90,6 +109,37 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
     }
     setIsModalClosing(false);
     setModalState({ categoryName, item });
+  }
+
+  async function triggerItemAction(item: MenuItem, categoryName: string) {
+    if (!orderFlowEnabled) return;
+
+    if (onItemAction) {
+      await onItemAction(item, categoryName);
+    } else {
+      addClientCartItem(restaurantSlug, {
+        menuItemId: item.id,
+        name: item.name,
+        price: getMenuItemEffectivePrice(item),
+        quantity: 1,
+        categoryName,
+      });
+    }
+
+    const label = actionLabel?.toLowerCase().includes("bon") ? "au bon" : "au panier";
+    setCartNotice(locale === "fr" ? `Ajouté ${label}.` : "Added.");
+    if (cartNoticeTimer.current) {
+      window.clearTimeout(cartNoticeTimer.current);
+    }
+    cartNoticeTimer.current = window.setTimeout(() => {
+      setCartNotice(null);
+      cartNoticeTimer.current = null;
+    }, 1800);
+  }
+
+  async function handleAction() {
+    if (!modalState || !orderFlowEnabled) return;
+    await triggerItemAction(modalState.item, modalState.categoryName);
   }
 
   const closeModal = useCallback(() => {
@@ -121,6 +171,9 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
       if (modalCloseTimer.current) {
         window.clearTimeout(modalCloseTimer.current);
       }
+      if (cartNoticeTimer.current) {
+        window.clearTimeout(cartNoticeTimer.current);
+      }
     };
   }, []);
 
@@ -142,15 +195,25 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
           return (
             <section
               key={category.id}
-              className="overflow-hidden rounded-[2rem] border border-white/8 bg-[#141414] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition duration-300 hover:border-white/15"
+              className={`overflow-hidden rounded-[2rem] border border-white/8 bg-[#141414] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition duration-300 hover:border-white/15 ${
+                compact ? "rounded-[1.5rem]" : ""
+              }`}
             >
               <button
                 type="button"
                 onClick={() => setOpenCategoryId(isOpen ? null : category.id)}
-                className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left text-[#f5f1ea] transition duration-300 hover:bg-white/[0.02] sm:px-5 sm:py-5"
+                className={`flex w-full items-center justify-between gap-4 px-4 py-4 text-left text-[#f5f1ea] transition duration-300 hover:bg-white/[0.02] sm:px-5 sm:py-5 ${
+                  compact ? "px-4 py-3 sm:px-4 sm:py-3" : ""
+                }`}
               >
                 <div className="min-w-0">
-                  <h2 className="text-[1.32rem] font-semibold leading-[0.95] sm:text-[1.95rem] lg:text-[2.35rem]">
+                  <h2
+                    className={`font-semibold leading-[0.95] ${
+                      compact
+                        ? "text-[1rem] sm:text-[1.2rem] lg:text-[1.35rem]"
+                        : "text-[1.32rem] sm:text-[1.95rem] lg:text-[2.35rem]"
+                    }`}
+                  >
                     {category.name}
                   </h2>
                 </div>
@@ -169,26 +232,42 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
                 }`}
               >
                 <div className="overflow-hidden">
-                  <div className="border-t border-white/8 px-4 pb-2 pt-1 sm:px-5">
+                  <div className={`border-t border-white/8 px-4 pb-2 pt-1 sm:px-5 ${compact ? "px-3 pb-1 pt-0.5 sm:px-4" : ""}`}>
                     <div className="mt-2">
                       {category.items.map((item, index) => (
                         <button
                           key={item.id}
                           type="button"
-                          onClick={() => openModal(item, category.name)}
+                        onClick={() => {
+                          if (showItemModal) {
+                            openModal(item, category.name);
+                            return;
+                          }
+                          void triggerItemAction(item, category.name);
+                        }}
                           className={`group flex w-full items-center justify-between gap-4 py-3 text-left text-[#f5f1ea] transition duration-300 hover:translate-x-0.5 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/20 ${
+                            compact ? "py-2.5" : "py-3"
+                          } ${
                             index !== category.items.length - 1
                               ? "border-b border-dashed border-white/12"
                               : ""
                           }`}
                         >
                           <div className="min-w-0">
-                            <h3 className="text-[0.86rem] font-medium leading-[1.1] sm:text-[0.95rem]">
+                            <h3
+                              className={`font-medium leading-[1.1] ${
+                                compact ? "text-[0.75rem] sm:text-[0.82rem]" : "text-[0.86rem] sm:text-[0.95rem]"
+                              }`}
+                            >
                               {item.name}
                             </h3>
                           </div>
                           <div className="shrink-0 text-right">
-                            <span className="inline-block text-[0.85rem] font-medium leading-none text-white/90 sm:text-[0.95rem]">
+                            <span
+                              className={`inline-block font-medium leading-none text-white/90 ${
+                                compact ? "text-[0.8rem] sm:text-[0.86rem]" : "text-[0.85rem] sm:text-[0.95rem]"
+                              }`}
+                            >
                               {money(getMenuItemEffectivePrice(item))}
                             </span>
                           </div>
@@ -303,6 +382,23 @@ export function PublicMenuCategories({ categories, locale, accent }: Props) {
                       {money(getMenuItemEffectivePrice(modalState.item))}
                     </p>
                   </div>
+
+                  {orderFlowEnabled ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleAction()}
+                      className="w-full rounded-full border border-white/10 bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-white/90"
+                    >
+                      {actionLabel ?? "Ajouter au panier"}
+                    </button>
+                  ) : (
+                    <div className="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-center text-sm text-white/60">
+                      Commande désactivée pour ce restaurant.
+                    </div>
+                  )}
+                  {cartNotice ? (
+                    <p className="text-sm text-emerald-300">{cartNotice}</p>
+                  ) : null}
                 </div>
               </div>
             </section>
