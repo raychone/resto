@@ -10,6 +10,7 @@ import {
 
 const dataDir = path.join(process.cwd(), "data");
 const dataFile = path.join(dataDir, "users.json");
+const canPersistDataFiles = process.env.VERCEL !== "1";
 
 function hashPassword(value: string) {
   return createHash("sha256").update(value).digest("hex");
@@ -264,7 +265,9 @@ async function readUsersFile() {
   } catch {
     const restaurants = await listRestaurants();
     const seedUsers = createSeedUsers(getDemoRestaurantId(restaurants));
-    await fs.writeFile(dataFile, JSON.stringify(seedUsers, null, 2), "utf8");
+    if (canPersistDataFiles) {
+      await fs.writeFile(dataFile, JSON.stringify(seedUsers, null, 2), "utf8");
+    }
     return seedUsers;
   }
 
@@ -288,7 +291,9 @@ async function readUsersFile() {
 
   if (!Array.isArray(parsed) || parsed.length === 0) {
     const seedUsers = createSeedUsers(restaurants[0]?.id ?? null);
-    await fs.writeFile(dataFile, JSON.stringify(seedUsers, null, 2), "utf8");
+    if (canPersistDataFiles) {
+      await fs.writeFile(dataFile, JSON.stringify(seedUsers, null, 2), "utf8");
+    }
     return seedUsers;
   }
 
@@ -328,7 +333,7 @@ async function readUsersFile() {
   const withDemoUsers = demoUsers.length > 0 ? [...normalized, ...demoUsers] : normalized;
   const finalDirty = dirty || demoUsers.length > 0;
 
-  if (finalDirty) {
+  if (finalDirty && canPersistDataFiles) {
     await fs.writeFile(dataFile, JSON.stringify(withDemoUsers, null, 2), "utf8");
   }
 
