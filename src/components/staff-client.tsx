@@ -24,6 +24,7 @@ import type {
   Restaurant,
   RestaurantMessage,
   Table,
+  TableSessionParticipant,
 } from "@/lib/types";
 import { getMenuItemEffectivePrice } from "@/lib/types";
 
@@ -450,6 +451,19 @@ export function StaffClient({
     return currentTables.find((table) => table.id === selectedTarget)?.name ?? "Table";
   }, [currentTables, orders, selectedTarget]);
 
+  const currentTargetTable = useMemo(() => {
+    if (selectedTarget === "takeaway") {
+      return null;
+    }
+
+    const selectedOrder = orders.find((order) => order.id === selectedTarget);
+    if (selectedOrder?.tableId) {
+      return currentTables.find((table) => table.id === selectedOrder.tableId) ?? null;
+    }
+
+    return currentTables.find((table) => table.id === selectedTarget) ?? null;
+  }, [currentTables, orders, selectedTarget]);
+
   function jumpTo(id: string) {
     window.requestAnimationFrame(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -460,6 +474,34 @@ export function StaffClient({
     setStaffTab(tab);
     setStaffQuickNav(quickNav);
     setPendingScrollTarget(target);
+  }
+
+  async function patchTableSession(patch: Partial<{
+    guestCount: number;
+    note: string;
+    participants: TableSessionParticipant[];
+    tableId: string | null;
+  }>) {
+    if (!tableSession) return false;
+
+    const response = await fetch(`/api/restaurants/${restaurant.slug}/table-sessions/${tableSession.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(patch),
+    });
+
+    if (!response.ok) {
+      setNotice("Impossible de modifier la table.");
+      pushToast("Impossible de modifier la table.", "error");
+      return false;
+    }
+
+    const payload = (await response.json()) as { tableSession: TableSession };
+    setSplitDraft(payload.tableSession);
+    await loadData();
+    return true;
   }
 
   async function markWaiterCallsReadForTable(tableId: string) {
@@ -949,29 +991,19 @@ export function StaffClient({
 
   async function saveSplitDraft() {
     if (!tableSession || !splitDraft) return;
-
-    const response = await fetch(`/api/restaurants/${restaurant.slug}/table-sessions/${tableSession.id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        guestCount: splitDraft.guestCount,
-        participants: splitDraft.participants,
-      }),
+    const saved = await patchTableSession({
+      guestCount: splitDraft.guestCount,
+      tableId: splitDraft.tableId ?? null,
+      note: splitDraft.note ?? "",
+      participants: splitDraft.participants,
     });
 
-    if (!response.ok) {
-      setNotice("Impossible d'enregistrer la répartition.");
-      pushToast("Impossible d'enregistrer la répartition.", "error");
+    if (!saved) {
       return;
     }
 
-    const payload = (await response.json()) as { tableSession: TableSession };
-    setSplitDraft(payload.tableSession);
     setNotice("Répartition enregistrée.");
     pushToast("Répartition enregistrée.");
-    await loadData();
   }
 
   return (
@@ -1671,6 +1703,117 @@ export function StaffClient({
                     <p className="mt-2 text-[11px] uppercase tracking-[0.28em] text-black/40">
                       Origine: {currentOrder.source === "qr" ? "Commande QR" : currentOrder.source === "table" ? "Service" : "À emporter"}
                     </p>
+                  </div>
+                ) : null}
+
+                {selectedTarget !== "takeaway" ? (
+                  <div className="mt-4 rounded-[1.5rem] border border-black/8 bg-white/95 p-4 shadow-[0_12px_35px_rgba(15,23,42,0.04)]">
+                    <details open className="group">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.3em] text-black/35">
+                            Réglages de table
+                          </p>
+                          <p className="mt-1 text-sm text-black/60">
+                            Gestion rapide de la table et de la session active.
+                          </p>
+                        </div>
+                        <span className="rounded-full border border-black/10 bg-black/4 px-3 py-1 text-[11px] font-medium text-black/70 transition group-open:bg-black group-open:text-white">
+                          Avancé
+                        </span>
+                      </summary>
+                      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                        <label className="grid gap-1.5">
+                          <span className="text-[11px] uppercase tracking-[0.26em] text-black/40">
+                            Table active
+                          </span>
+                          <select
+                            value={splitDraft?.tableId ?? currentOrder?.tableId ?? selectedTarget}
+                            onChange={async (event) => {
+                              const nextTableId = event.target.value === "takeaway" ? null : event.target.value;
+                              const base = splitDraft ?? tableSession;
+                              if (!base) return;
+
+                              await patchTableSession({
+                                tableId: nextTableId,
+                                guestCount: base.guestCount,
+                                note: base.note ?? "",
+                                participants: base.participants,
+                              });
+                              setSelectedTarget(nextTableId ?? "takeaway");
+                              setStaffQuickNav("tables");
+                              setPendingScrollTarget("staff-bon");
+                            }}
+                            className="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm outline-none"
+                          >
+                            {selectedTarget === "takeaway" ? <option value="takeaway">À emporter</option> : null}
+                            {currentTables.map((table) => (
+                              <option key={table.id} value={table.id}>
+                                {table.name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="grid gap-1.5">
+                          <span className="text-[11px] uppercase tracking-[0.26em] text-black/40">
+                            Couverts
+                          </span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={splitDraft?.guestCount ?? tableSession?.guestCount ?? 1}
+                            onChange={async (event) => {
+                              const nextGuestCount = Math.max(1, Number(event.target.value || 1));
+                              const base = splitDraft ?? tableSession;
+                              if (!base) return;
+                              setSplitDraft({
+                                ...base,
+                                guestCount: nextGuestCount,
+                              });
+                            }}
+                            className="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm outline-none"
+                          />
+                        </label>
+                        <label className="grid gap-1.5 md:col-span-2">
+                          <span className="text-[11px] uppercase tracking-[0.26em] text-black/40">
+                            Note de table
+                          </span>
+                          <input
+                            value={splitDraft?.note ?? tableSession?.note ?? ""}
+                            onChange={(event) => {
+                              const base = splitDraft ?? tableSession;
+                              if (!base) return;
+                              setSplitDraft({
+                                ...base,
+                                note: event.target.value,
+                              });
+                            }}
+                            className="rounded-2xl border border-black/10 bg-white px-3 py-2 text-sm outline-none"
+                            placeholder="Ex: table proche terrasse, service lent, VIP..."
+                          />
+                        </label>
+                        <div className="flex items-end gap-2 md:col-span-2 xl:col-span-4">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedTarget(currentOrder?.id ?? currentTargetTable?.id ?? selectedTarget);
+                              setStaffQuickNav("bon");
+                              setPendingScrollTarget("staff-bon");
+                            }}
+                            className="rounded-full border border-black/10 bg-black px-3 py-2 text-xs font-medium text-white"
+                          >
+                            Aller au bon courant
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void saveSplitDraft()}
+                            className="rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-medium text-black"
+                          >
+                            Sauver réglages
+                          </button>
+                        </div>
+                      </div>
+                    </details>
                   </div>
                 ) : null}
 
