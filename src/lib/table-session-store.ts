@@ -6,6 +6,7 @@ import { listTablesForRestaurant } from "@/lib/table-store";
 
 const dataDir = path.join(process.cwd(), "data");
 const tableSessionsFile = path.join(dataDir, "table-sessions.json");
+const canPersistDataFiles = process.env.VERCEL !== "1";
 
 function normalizeParticipant(participant: TableSessionParticipant): TableSessionParticipant {
   return {
@@ -141,11 +142,22 @@ async function ensureStore() {
 async function readTableSessionsFile() {
   await ensureStore();
   const raw = await fs.readFile(tableSessionsFile, "utf8");
-  const parsed = JSON.parse(raw) as TableSession[];
+  let parsed: TableSession[] = [];
+
+  try {
+    parsed = JSON.parse(raw) as TableSession[];
+  } catch {
+    const seedSessions = await createSeedSessions();
+    if (canPersistDataFiles) {
+      await fs.writeFile(tableSessionsFile, JSON.stringify(seedSessions, null, 2), "utf8");
+    }
+    return seedSessions;
+  }
+
   const normalized = Array.isArray(parsed)
     ? await Promise.all(parsed.map((session) => normalizeTableSessionForRestaurant(session)))
     : [];
-  if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+  if (JSON.stringify(parsed) !== JSON.stringify(normalized) && canPersistDataFiles) {
     await fs.writeFile(tableSessionsFile, JSON.stringify(normalized, null, 2), "utf8");
   }
   return normalized;
@@ -188,10 +200,12 @@ export async function getOrCreateTableSessionForCustomer(
       normalized.tableId !== customerSession.tableId ||
       JSON.stringify(normalized.participants) !== JSON.stringify(customerSession.participants)
     ) {
-      await updateTableSession(customerSession.id, {
-        tableId: normalized.tableId,
-        participants: normalized.participants,
-      });
+      if (canPersistDataFiles) {
+        await updateTableSession(customerSession.id, {
+          tableId: normalized.tableId,
+          participants: normalized.participants,
+        });
+      }
       return normalized;
     }
 
@@ -204,7 +218,9 @@ export async function getOrCreateTableSessionForCustomer(
   if (activeSession) {
     const normalized = await normalizeTableSessionForRestaurant(activeSession);
     if (normalized.tableId !== activeSession.tableId) {
-      await updateTableSession(activeSession.id, { tableId: normalized.tableId });
+      if (canPersistDataFiles) {
+        await updateTableSession(activeSession.id, { tableId: normalized.tableId });
+      }
       return normalized;
     }
     return activeSession;
@@ -239,7 +255,9 @@ export async function getOrCreateTableSessionForCustomer(
     deletedAt: null,
   });
 
-  await writeTableSessionsFile([...sessions, session]);
+  if (canPersistDataFiles) {
+    await writeTableSessionsFile([...sessions, session]);
+  }
   return session;
 }
 
@@ -272,6 +290,8 @@ export async function updateTableSession(sessionId: string, patch: Partial<Table
 
   const nextSessions = [...sessions];
   nextSessions[index] = nextSession;
-  await writeTableSessionsFile(nextSessions);
+  if (canPersistDataFiles) {
+    await writeTableSessionsFile(nextSessions);
+  }
   return nextSession;
 }

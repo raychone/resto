@@ -5,6 +5,7 @@ import { createId, type Restaurant, type Table, type TableZone } from "@/lib/typ
 
 const dataDir = path.join(process.cwd(), "data");
 const dataFile = path.join(dataDir, "tables.json");
+const canPersistDataFiles = process.env.VERCEL !== "1";
 
 function normalizeZone(zone: string | undefined): TableZone {
   if (zone === "terrasse" || zone === "bar" || zone === "private") {
@@ -59,12 +60,25 @@ function createTablesForRestaurant(restaurant: Restaurant) {
 async function readTablesFile() {
   await ensureStore();
   const raw = await fs.readFile(dataFile, "utf8");
-  const parsed = JSON.parse(raw) as Table[];
+  let parsed: Table[] = [];
+
+  try {
+    parsed = JSON.parse(raw) as Table[];
+  } catch {
+    const restaurants = await listRestaurants();
+    const seedTables = restaurants.flatMap((restaurant) => createTablesForRestaurant(restaurant));
+    if (canPersistDataFiles) {
+      await fs.writeFile(dataFile, JSON.stringify(seedTables, null, 2), "utf8");
+    }
+    return seedTables;
+  }
 
   if (!Array.isArray(parsed)) {
     const restaurants = await listRestaurants();
     const seedTables = restaurants.flatMap((restaurant) => createTablesForRestaurant(restaurant));
-    await fs.writeFile(dataFile, JSON.stringify(seedTables, null, 2), "utf8");
+    if (canPersistDataFiles) {
+      await fs.writeFile(dataFile, JSON.stringify(seedTables, null, 2), "utf8");
+    }
     return seedTables;
   }
 
@@ -74,7 +88,7 @@ async function readTablesFile() {
   const merged = mergeTables(normalized, expectedTables);
   const dirty = JSON.stringify(parsed) !== JSON.stringify(merged);
 
-  if (dirty) {
+  if (dirty && canPersistDataFiles) {
     await fs.writeFile(dataFile, JSON.stringify(merged, null, 2), "utf8");
   }
 
@@ -176,6 +190,8 @@ export async function ensureRestaurantTableSeed(restaurant: Restaurant) {
     });
   }
 
-  await writeTablesFile(nextTables);
+  if (canPersistDataFiles) {
+    await writeTablesFile(nextTables);
+  }
   return nextTables.filter((table) => table.restaurantId === restaurant.id && !table.deletedAt);
 }

@@ -11,6 +11,7 @@ import {
 
 const dataDir = path.join(process.cwd(), "data");
 const dataFile = path.join(dataDir, "restaurants.json");
+const canPersistDataFiles = process.env.VERCEL !== "1";
 
 const seedRestaurants: Restaurant[] = [
   {
@@ -1844,7 +1845,16 @@ async function ensureStore() {
 async function readRestaurantsFile() {
   await ensureStore();
   const raw = await fs.readFile(dataFile, "utf8");
-  const parsed = JSON.parse(raw) as Restaurant[];
+  let parsed: Restaurant[] = [];
+
+  try {
+    parsed = JSON.parse(raw) as Restaurant[];
+  } catch {
+    if (canPersistDataFiles) {
+      await fs.writeFile(dataFile, JSON.stringify(seedRestaurants, null, 2), "utf8");
+    }
+    return seedRestaurants.map(normalizeRestaurant);
+  }
 
   if (
     !Array.isArray(parsed) ||
@@ -1854,12 +1864,14 @@ async function readRestaurantsFile() {
     !Array.isArray(parsed[0]?.weeklyHours) ||
     !Array.isArray(parsed[0]?.weeklyHours?.[0]?.intervals)
   ) {
-    await writeRestaurantsFile(seedRestaurants);
+    if (canPersistDataFiles) {
+      await writeRestaurantsFile(seedRestaurants);
+    }
     return seedRestaurants;
   }
 
   const normalized = parsed.map(normalizeRestaurant);
-  if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+  if (JSON.stringify(parsed) !== JSON.stringify(normalized) && canPersistDataFiles) {
     await writeRestaurantsFile(normalized);
   }
 

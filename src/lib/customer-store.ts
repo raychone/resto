@@ -7,6 +7,7 @@ import { listUsers } from "@/lib/user-store";
 
 const dataDir = path.join(process.cwd(), "data");
 const customersFile = path.join(dataDir, "customers.json");
+const canPersistDataFiles = process.env.VERCEL !== "1";
 
 function normalizeCustomer(customer: Customer): Customer {
   const now = new Date().toISOString();
@@ -116,9 +117,20 @@ async function ensureStore() {
 async function readCustomersFile() {
   await ensureStore();
   const raw = await fs.readFile(customersFile, "utf8");
-  const parsed = JSON.parse(raw) as Customer[];
+  let parsed: Customer[] = [];
+
+  try {
+    parsed = JSON.parse(raw) as Customer[];
+  } catch {
+    const seedCustomers = await createSeedCustomers();
+    if (canPersistDataFiles) {
+      await fs.writeFile(customersFile, JSON.stringify(seedCustomers, null, 2), "utf8");
+    }
+    return seedCustomers;
+  }
+
   const normalized = Array.isArray(parsed) ? parsed.map(normalizeCustomer) : [];
-  if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+  if (JSON.stringify(parsed) !== JSON.stringify(normalized) && canPersistDataFiles) {
     await fs.writeFile(customersFile, JSON.stringify(normalized, null, 2), "utf8");
   }
   return normalized;
@@ -173,7 +185,9 @@ export async function getOrCreateCustomerForUser(user: User, restaurantId: strin
   });
 
   const customers = await listCustomers();
-  await writeCustomersFile([...customers, customer]);
+  if (canPersistDataFiles) {
+    await writeCustomersFile([...customers, customer]);
+  }
   return customer;
 }
 
@@ -192,6 +206,8 @@ export async function updateCustomer(customerId: string, patch: Partial<Customer
 
   const nextCustomers = [...customers];
   nextCustomers[index] = nextCustomer;
-  await writeCustomersFile(nextCustomers);
+  if (canPersistDataFiles) {
+    await writeCustomersFile(nextCustomers);
+  }
   return nextCustomer;
 }

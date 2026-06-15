@@ -7,6 +7,7 @@ import { listTablesForRestaurant } from "@/lib/table-store";
 const dataDir = path.join(process.cwd(), "data");
 const ordersFile = path.join(dataDir, "orders.json");
 const paymentsFile = path.join(dataDir, "payments.json");
+const canPersistDataFiles = process.env.VERCEL !== "1";
 
 function normalizeOrder(order: Order): Order {
   const now = new Date().toISOString();
@@ -119,11 +120,21 @@ async function ensureStore(filePath: string) {
 async function readOrdersFile() {
   await ensureStore(ordersFile);
   const raw = await fs.readFile(ordersFile, "utf8");
-  const parsed = JSON.parse(raw) as Order[];
+  let parsed: Order[] = [];
+
+  try {
+    parsed = JSON.parse(raw) as Order[];
+  } catch {
+    if (canPersistDataFiles) {
+      await fs.writeFile(ordersFile, "[]", "utf8");
+    }
+    return [];
+  }
+
   const normalized = Array.isArray(parsed)
     ? await Promise.all(parsed.map((order) => normalizeOrderForRestaurant(order)))
     : [];
-  if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+  if (JSON.stringify(parsed) !== JSON.stringify(normalized) && canPersistDataFiles) {
     await fs.writeFile(ordersFile, JSON.stringify(normalized, null, 2), "utf8");
   }
   return normalized;
@@ -132,9 +143,19 @@ async function readOrdersFile() {
 async function readPaymentsFile() {
   await ensureStore(paymentsFile);
   const raw = await fs.readFile(paymentsFile, "utf8");
-  const parsed = JSON.parse(raw) as Payment[];
+  let parsed: Payment[] = [];
+
+  try {
+    parsed = JSON.parse(raw) as Payment[];
+  } catch {
+    if (canPersistDataFiles) {
+      await fs.writeFile(paymentsFile, "[]", "utf8");
+    }
+    return [];
+  }
+
   const normalized = Array.isArray(parsed) ? parsed.map(normalizePayment) : [];
-  if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+  if (JSON.stringify(parsed) !== JSON.stringify(normalized) && canPersistDataFiles) {
     await fs.writeFile(paymentsFile, JSON.stringify(normalized, null, 2), "utf8");
   }
   return normalized;

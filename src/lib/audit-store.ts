@@ -18,14 +18,17 @@ export type AuditEntry = {
 
 const dataDir = path.join(process.cwd(), "data");
 const auditFile = path.join(dataDir, "audit.json");
+const canPersistDataFiles = process.env.VERCEL !== "1";
 
 async function readJsonFile<T>(file: string, fallback: T): Promise<T> {
   try {
     const raw = await fs.readFile(file, "utf8");
     return JSON.parse(raw) as T;
   } catch {
-    await fs.mkdir(dataDir, { recursive: true });
-    await fs.writeFile(file, JSON.stringify(fallback, null, 2), "utf8");
+    if (canPersistDataFiles) {
+      await fs.mkdir(dataDir, { recursive: true });
+      await fs.writeFile(file, JSON.stringify(fallback, null, 2), "utf8");
+    }
     return fallback;
   }
 }

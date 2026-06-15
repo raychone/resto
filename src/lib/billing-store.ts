@@ -30,14 +30,17 @@ type InvoiceInput = Omit<Invoice, "id" | "createdAt" | "updatedAt" | "status"> &
 
 const dataDir = path.join(process.cwd(), "data");
 const filePath = path.join(dataDir, "invoices.json");
+const canPersistDataFiles = process.env.VERCEL !== "1";
 
 async function readJsonFile<T>(fallback: T): Promise<T> {
   try {
     const raw = await fs.readFile(filePath, "utf8");
     return JSON.parse(raw) as T;
   } catch {
-    await fs.mkdir(dataDir, { recursive: true });
-    await fs.writeFile(filePath, JSON.stringify(fallback, null, 2), "utf8");
+    if (canPersistDataFiles) {
+      await fs.mkdir(dataDir, { recursive: true });
+      await fs.writeFile(filePath, JSON.stringify(fallback, null, 2), "utf8");
+    }
     return fallback;
   }
 }
