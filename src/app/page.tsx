@@ -33,6 +33,44 @@ export default async function HomePage() {
   const restaurants = await listRestaurants();
   const restaurant = restaurants.find((entry) => entry.slug === "bar-1") ?? restaurants[0];
 
+  const demoAccounts = [
+    {
+      role: "Client",
+      username: "client",
+      password: "client123!",
+      href: "/client",
+      description: "Ouvre le menu, le panier et le suivi de commande.",
+    },
+    {
+      role: "Staff",
+      username: "user",
+      password: "pass123!",
+      href: "/staff",
+      description: "Tables, bon, alertes et service en salle.",
+    },
+    {
+      role: "Kitchen",
+      username: "kitchen",
+      password: "kitchen123!",
+      href: "/kitchen",
+      description: "File de cuisine et statuts préparation.",
+    },
+    {
+      role: "Manager",
+      username: "raych",
+      password: "raychone!",
+      href: "/dashboard",
+      description: "Menu, branding, utilisateurs staff et audit.",
+    },
+    {
+      role: "Owner",
+      username: "owner",
+      password: "owner123!",
+      href: "/owner",
+      description: "Portefeuille global, modules et facturation.",
+    },
+  ];
+
   const roleCards = [
     {
       title: "Client",
@@ -195,6 +233,62 @@ export default async function HomePage() {
           {roleCards.map((card) => (
             <SectionCard key={card.title} {...card} />
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-[1440px] px-3 pb-8 sm:px-4 lg:px-6">
+        <div className="rounded-[2rem] border border-white/10 bg-[#151515] p-5 shadow-[0_25px_80px_rgba(0,0,0,0.25)] sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.35em] text-white/35">Comptes de démo</p>
+              <h2 className="mt-2 text-2xl font-semibold text-[#f5f1ea]">Teste directement chaque rôle</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
+                Les comptes ci-dessous correspondent au restaurant démo <span className="font-semibold text-white">Noir 1</span>.
+                Tu peux ouvrir chaque écran directement depuis cette page, sans chercher les routes ailleurs.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/r/${restaurant?.slug ?? "bar-1"}?lang=fr`}
+                className="rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-medium text-black"
+              >
+                Ouvrir Noir 1
+              </Link>
+              <Link
+                href="/client/signup"
+                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white"
+              >
+                Signup client
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            {demoAccounts.map((account) => (
+              <Link
+                key={account.role}
+                href={account.href}
+                className="group rounded-[1.5rem] border border-white/10 bg-black/20 p-4 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-black/30"
+              >
+                <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">{account.role}</p>
+                <h3 className="mt-2 text-xl font-semibold text-[#f5f1ea]">{account.username}</h3>
+                <p className="mt-1 text-sm text-white/60">{account.description}</p>
+                <div className="mt-4 grid gap-2 text-xs text-white/65">
+                  <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
+                    <span>Identifiant</span>
+                    <span className="font-medium text-white">{account.username}</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
+                    <span>Mot de passe</span>
+                    <span className="font-medium text-white">{account.password}</span>
+                  </div>
+                </div>
+                <span className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white transition group-hover:bg-white/10">
+                  Ouvrir →
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </main>
