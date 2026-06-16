@@ -154,12 +154,6 @@ export default async function HomePage() {
       href: "/dashboard",
       label: "Manager",
     },
-    {
-      title: "Owner",
-      text: "Voir tous les restaurants, les plans, la facturation et les notifications.",
-      href: "/owner",
-      label: "Owner",
-    },
   ];
 
   const testLinks = [
@@ -170,7 +164,6 @@ export default async function HomePage() {
     { label: "Staff", href: "/staff" },
     { label: "Kitchen", href: "/kitchen" },
     { label: "Client", href: "/client" },
-    { label: "Owner", href: "/owner" },
   ];
 
   return (
