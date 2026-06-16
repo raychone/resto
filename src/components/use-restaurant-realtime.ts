@@ -1,0 +1,73 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import type { RestaurantRealtimeEvent } from "@/lib/realtime";
+
+type UseRestaurantRealtimeOptions = {
+  restaurantSlug: string;
+  enabled: boolean;
+  onEvent: (event: RestaurantRealtimeEvent) => void;
+};
+
+export function useRestaurantRealtime({
+  restaurantSlug,
+  enabled,
+  onEvent,
+}: UseRestaurantRealtimeOptions) {
+  const onEventRef = useRef(onEvent);
+
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  }, [onEvent]);
+
+  useEffect(() => {
+    if (!enabled || !restaurantSlug || typeof window === "undefined" || !("EventSource" in window)) {
+      return;
+    }
+
+    let cancelled = false;
+    let reconnectTimer: number | null = null;
+    let source: EventSource | null = null;
+
+    const connect = () => {
+      if (cancelled) return;
+
+      source = new EventSource(`/api/restaurants/${restaurantSlug}/realtime`);
+      source.onmessage = (event) => {
+        if (!event.data) return;
+
+        try {
+          const payload = JSON.parse(event.data) as RestaurantRealtimeEvent;
+          if (payload.type === "ping") return;
+          onEventRef.current(payload);
+        } catch {
+          onEventRef.current({
+            type: "restaurants",
+            restaurantId: "",
+            restaurantSlug,
+            action: "message",
+            occurredAt: new Date().toISOString(),
+          });
+        }
+      };
+
+      source.onerror = () => {
+        source?.close();
+        source = null;
+        if (!cancelled) {
+          reconnectTimer = window.setTimeout(connect, 1500);
+        }
+      };
+    };
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      source?.close();
+      if (reconnectTimer) {
+        window.clearTimeout(reconnectTimer);
+      }
+    };
+  }, [enabled, restaurantSlug]);
+}

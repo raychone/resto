@@ -13,6 +13,7 @@ import {
   sendBrowserNotification,
 } from "@/lib/browser-notifications";
 import { PublicMenuCategories } from "@/components/public-menu-categories";
+import { useRestaurantRealtime } from "@/components/use-restaurant-realtime";
 import { formatLoyaltyPoints, getLoyaltySummary } from "@/lib/loyalty";
 import type { Customer, Order, Restaurant, Table, TableSession, User } from "@/lib/types";
 
@@ -176,58 +177,59 @@ export function ClientPortal({
     cartSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [focusCart]);
 
+  const refreshLiveOrder = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/restaurants/${restaurant.slug}/client-orders`, {
+        cache: "no-store",
+      });
+      if (!response.ok) return;
+
+      const payload = (await response.json()) as {
+        order: Order | null;
+        tableSession?: TableSession | null;
+      };
+
+      const nextOrder = payload.order ?? null;
+      const previousStatus = previousOrderStatusRef.current;
+      const nextStatus = nextOrder?.status ?? null;
+
+      if (nextStatus && nextStatus !== previousStatus) {
+        previousOrderStatusRef.current = nextStatus;
+        setLiveOrder(nextOrder);
+        if (nextStatus === "sent_to_kitchen") {
+          setClientNotice("La commande a été validée par le serveur et envoyée en cuisine.");
+          sendBrowserNotification("Noir 1 — commande validée", "La commande a été envoyée en cuisine.");
+        } else if (nextStatus === "ready") {
+          setClientNotice("La commande est prête. Le serveur peut la livrer.");
+          sendBrowserNotification("Noir 1 — commande prête", "Le serveur peut livrer la commande à la table.");
+        } else if (nextStatus === "served") {
+          setClientNotice("La commande a été servie à la table.");
+          sendBrowserNotification("Noir 1 — commande servie", "La commande est arrivée à la table.");
+        } else if (nextStatus === "paid") {
+          setClientNotice("La commande a été réglée.");
+          sendBrowserNotification("Noir 1 — commande réglée", "La commande a été encaissée.");
+        }
+      } else {
+        setLiveOrder(nextOrder);
+      }
+    } catch {
+      // silent polling fallback
+    }
+  }, [restaurant.slug]);
+
   useEffect(() => {
     if (!orderFlowEnabled) return;
 
     let cancelled = false;
     let visibilityListener: (() => void) | null = null;
 
-    async function refreshLiveOrder() {
-      try {
-        const response = await fetch(`/api/restaurants/${restaurant.slug}/client-orders`, {
-          cache: "no-store",
-        });
-        if (!response.ok) return;
-
-        const payload = (await response.json()) as {
-          order: Order | null;
-          tableSession?: TableSession | null;
-        };
-
-        if (cancelled) return;
-
-        const nextOrder = payload.order ?? null;
-        const previousStatus = previousOrderStatusRef.current;
-        const nextStatus = nextOrder?.status ?? null;
-
-        if (nextStatus && nextStatus !== previousStatus) {
-          previousOrderStatusRef.current = nextStatus;
-          setLiveOrder(nextOrder);
-          if (nextStatus === "sent_to_kitchen") {
-            setClientNotice("La commande a été validée par le serveur et envoyée en cuisine.");
-            sendBrowserNotification("Noir 1 — commande validée", "La commande a été envoyée en cuisine.");
-          } else if (nextStatus === "ready") {
-            setClientNotice("La commande est prête. Le serveur peut la livrer.");
-            sendBrowserNotification("Noir 1 — commande prête", "Le serveur peut livrer la commande à la table.");
-          } else if (nextStatus === "served") {
-            setClientNotice("La commande a été servie à la table.");
-            sendBrowserNotification("Noir 1 — commande servie", "La commande est arrivée à la table.");
-          } else if (nextStatus === "paid") {
-            setClientNotice("La commande a été réglée.");
-            sendBrowserNotification("Noir 1 — commande réglée", "La commande a été encaissée.");
-          }
-        } else {
-          setLiveOrder(nextOrder);
-        }
-      } catch {
-        // silent polling fallback
-      }
-    }
-
     void refreshLiveOrder();
-    const interval = window.setInterval(() => {
-      void refreshLiveOrder();
-    }, 2500);
+    const supportsRealtime = typeof window !== "undefined" && "EventSource" in window;
+    const interval = supportsRealtime
+      ? null
+      : window.setInterval(() => {
+          void refreshLiveOrder();
+        }, 1200);
 
     visibilityListener = () => {
       if (!document.hidden) {
@@ -235,18 +237,34 @@ export function ClientPortal({
       }
     };
 
-    window.addEventListener("focus", refreshLiveOrder);
+    const onFocus = () => {
+      if (!cancelled) {
+        void refreshLiveOrder();
+      }
+    };
+
+    window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", visibilityListener);
 
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
-      window.removeEventListener("focus", refreshLiveOrder);
+      if (interval) {
+        window.clearInterval(interval);
+      }
+      window.removeEventListener("focus", onFocus);
       if (visibilityListener) {
         document.removeEventListener("visibilitychange", visibilityListener);
       }
     };
-  }, [orderFlowEnabled, restaurant.slug]);
+  }, [orderFlowEnabled, refreshLiveOrder]);
+
+  useRestaurantRealtime({
+    restaurantSlug: restaurant.slug,
+    enabled: orderFlowEnabled,
+    onEvent: () => {
+      void refreshLiveOrder();
+    },
+  });
 
   async function enableNotifications() {
     const permission = await requestBrowserNotificationPermission();

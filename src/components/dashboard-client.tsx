@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   createBlankRestaurant,
   createId,
@@ -22,6 +22,7 @@ import {
   buildWhatsAppReservationMessage,
   buildGoogleReviewsUrl,
 } from "@/lib/contact-links";
+import { useRestaurantRealtime } from "@/components/use-restaurant-realtime";
 
 type Props = {
   initialRestaurants: Restaurant[];
@@ -344,6 +345,15 @@ export function DashboardClient({
     setLoadingAudit(false);
   }
 
+  const refreshActiveRestaurant = useCallback(() => {
+    if (!activeSlug) return;
+    void loadReservations(activeSlug);
+    void loadOrders(activeSlug);
+    void loadMessages(activeSlug);
+    void loadUsers(activeSlug);
+    void loadAudit(activeSlug);
+  }, [activeSlug]);
+
   function updateField<K extends keyof Restaurant>(key: K, value: Restaurant[K]) {
     setDraft((current) => (current ? { ...current, [key]: value } : current));
   }
@@ -366,15 +376,19 @@ export function DashboardClient({
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      void loadReservations(activeSlug);
-      void loadOrders(activeSlug);
-      void loadMessages(activeSlug);
-      void loadUsers(activeSlug);
-      void loadAudit(activeSlug);
+      refreshActiveRestaurant();
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, [activeSlug]);
+  }, [refreshActiveRestaurant]);
+
+  useRestaurantRealtime({
+    restaurantSlug: activeSlug,
+    enabled: Boolean(activeSlug),
+    onEvent: () => {
+      refreshActiveRestaurant();
+    },
+  });
 
   function updateWeeklyHourField(
     index: number,

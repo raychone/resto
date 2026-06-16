@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { createId, type Customer, type TableSession, type TableSessionParticipant } from "@/lib/types";
 import { listRestaurants } from "@/lib/restaurant-store";
+import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
 import { listTablesForRestaurant } from "@/lib/table-store";
 
 const dataDir = path.join(process.cwd(), "data");
@@ -258,6 +259,12 @@ export async function getOrCreateTableSessionForCustomer(
   if (canPersistDataFiles) {
     await writeTableSessionsFile([...sessions, session]);
   }
+  publishRestaurantRealtimeEvent({
+    type: "table_sessions",
+    restaurantId,
+    entityId: session.id,
+    action: "created",
+  });
   return session;
 }
 
@@ -293,5 +300,11 @@ export async function updateTableSession(sessionId: string, patch: Partial<Table
   if (canPersistDataFiles) {
     await writeTableSessionsFile(nextSessions);
   }
+  publishRestaurantRealtimeEvent({
+    type: "table_sessions",
+    restaurantId: nextSession.restaurantId,
+    entityId: nextSession.id,
+    action: "updated",
+  });
   return nextSession;
 }

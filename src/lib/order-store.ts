@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { listRestaurants } from "@/lib/restaurant-store";
+import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
 import { createId, type Order, type OrderItem, type Payment } from "@/lib/types";
 import { listTablesForRestaurant } from "@/lib/table-store";
 
@@ -171,6 +172,28 @@ async function writePaymentsFile(payments: Payment[]) {
   await fs.writeFile(paymentsFile, JSON.stringify(payments, null, 2), "utf8");
 }
 
+function publishOrderEvent(order: Order, action: string, details?: string | null) {
+  publishRestaurantRealtimeEvent({
+    type: "orders",
+    restaurantId: order.restaurantId,
+    restaurantSlug: "",
+    entityId: order.id,
+    action,
+    details: details ?? null,
+  });
+}
+
+function publishPaymentEvent(payment: Payment, action: string, details?: string | null) {
+  publishRestaurantRealtimeEvent({
+    type: "orders",
+    restaurantId: payment.restaurantId,
+    restaurantSlug: "",
+    entityId: payment.orderId,
+    action,
+    details: details ?? null,
+  });
+}
+
 export async function listOrders() {
   return readOrdersFile();
 }
@@ -210,6 +233,7 @@ export async function createOrder(input: Omit<Order, "id" | "createdAt" | "updat
 
   const nextOrders = [...orders, order];
   await writeOrdersFile(nextOrders);
+  publishOrderEvent(order, "created");
   return order;
 }
 
@@ -227,6 +251,7 @@ export async function updateOrder(orderId: string, patch: Partial<Omit<Order, "i
   const nextOrders = [...orders];
   nextOrders[index] = nextOrder;
   await writeOrdersFile(nextOrders);
+  publishOrderEvent(nextOrder, "updated");
   return nextOrder;
 }
 
@@ -256,6 +281,7 @@ export async function addOrderItem(
   const nextOrders = [...orders];
   nextOrders[index] = nextOrder;
   await writeOrdersFile(nextOrders);
+  publishOrderEvent(nextOrder, "item_added");
   return nextOrder;
 }
 
@@ -293,6 +319,7 @@ export async function updateOrderItem(
   const nextOrders = [...orders];
   nextOrders[index] = nextOrder;
   await writeOrdersFile(nextOrders);
+  publishOrderEvent(nextOrder, "item_updated");
   return nextOrder;
 }
 
@@ -313,6 +340,7 @@ export async function removeOrderItem(orderId: string, itemId: string) {
   const nextOrders = [...orders];
   nextOrders[index] = nextOrder;
   await writeOrdersFile(nextOrders);
+  publishOrderEvent(nextOrder, "item_removed");
   return nextOrder;
 }
 
@@ -361,6 +389,8 @@ export async function createPayment(input: Omit<Payment, "id" | "createdAt" | "u
   const nextOrders = [...orders];
   nextOrders[orderIndex] = nextOrder;
   await writeOrdersFile(nextOrders);
+  publishPaymentEvent(payment, "payment_created");
+  publishOrderEvent(nextOrder, "payment_created");
 
   return payment;
 }

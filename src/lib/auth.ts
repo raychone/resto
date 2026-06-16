@@ -113,6 +113,25 @@ async function getSessionUserFromRequest(
   return user;
 }
 
+export async function getAnySessionUserFromRequest(request: Request) {
+  const cookieNames: Array<[string, UserRole]> = [
+    [managerDashboardCookieName, "manager"],
+    [staffDashboardCookieName, "staff"],
+    [kitchenDashboardCookieName, "kitchen"],
+    [clientDashboardCookieName, "client"],
+    [ownerDashboardCookieName, "owner"],
+  ];
+
+  for (const [cookieName, role] of cookieNames) {
+    const user = await getSessionUserFromRequest(request, cookieName, role);
+    if (user) {
+      return user;
+    }
+  }
+
+  return null;
+}
+
 export async function getDashboardSessionUser(): Promise<User | null> {
   return getSessionUser(managerDashboardCookieName, "manager");
 }

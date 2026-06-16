@@ -7,6 +7,7 @@ import {
   requestBrowserNotificationPermission,
   sendBrowserNotification,
 } from "@/lib/browser-notifications";
+import { useRestaurantRealtime } from "@/components/use-restaurant-realtime";
 
 type Props = {
   restaurant: Restaurant;
@@ -90,12 +91,27 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled }: P
   useEffect(() => {
     if (!orderFlowEnabled) return;
 
-    const intervalId = window.setInterval(() => {
-      void loadData();
-    }, 7000);
+    const supportsRealtime = typeof window !== "undefined" && "EventSource" in window;
+    const intervalId = supportsRealtime
+      ? null
+      : window.setInterval(() => {
+          void loadData();
+        }, 1200);
 
-    return () => window.clearInterval(intervalId);
+    return () => {
+      if (intervalId) {
+        window.clearInterval(intervalId);
+      }
+    };
   }, [loadData, orderFlowEnabled]);
+
+  useRestaurantRealtime({
+    restaurantSlug: restaurant.slug,
+    enabled: orderFlowEnabled,
+    onEvent: () => {
+      void loadData();
+    },
+  });
 
   async function enableNotifications() {
     const permission = await requestBrowserNotificationPermission();

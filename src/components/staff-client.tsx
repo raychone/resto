@@ -12,6 +12,7 @@ import {
   sendBrowserNotification,
 } from "@/lib/browser-notifications";
 import { PublicMenuCategories } from "@/components/public-menu-categories";
+import { useRestaurantRealtime } from "@/components/use-restaurant-realtime";
 import { createId } from "@/lib/types";
 import type {
   TableSession,
@@ -249,9 +250,12 @@ export function StaffClient({
   useEffect(() => {
     if (!orderFlowEnabled) return;
 
-    const intervalId = window.setInterval(() => {
-      void loadData();
-    }, 2500);
+    const supportsRealtime = typeof window !== "undefined" && "EventSource" in window;
+    const intervalId = supportsRealtime
+      ? null
+      : window.setInterval(() => {
+          void loadData();
+        }, 1200);
 
     const refreshOnFocus = () => {
       void loadData();
@@ -267,11 +271,21 @@ export function StaffClient({
     document.addEventListener("visibilitychange", refreshOnVisibility);
 
     return () => {
-      window.clearInterval(intervalId);
+      if (intervalId) {
+        window.clearInterval(intervalId);
+      }
       window.removeEventListener("focus", refreshOnFocus);
       document.removeEventListener("visibilitychange", refreshOnVisibility);
     };
   }, [loadData, orderFlowEnabled]);
+
+  useRestaurantRealtime({
+    restaurantSlug: restaurant.slug,
+    enabled: orderFlowEnabled,
+    onEvent: () => {
+      void loadData();
+    },
+  });
 
   useEffect(() => {
     const availableTabs: Array<"reservations" | "tables" | "menu"> = [];

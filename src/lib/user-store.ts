@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { listRestaurants } from "@/lib/restaurant-store";
+import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
 import {
   createId,
   type User,
@@ -386,6 +387,21 @@ export async function createUser(input: Omit<User, "id" | "createdAt" | "updated
   if (canPersistDataFiles) {
     await writeUsersFile(nextUsers);
   }
+  if (user.restaurantId) {
+    publishRestaurantRealtimeEvent({
+      type: "users",
+      restaurantId: user.restaurantId,
+      entityId: user.id,
+      action: "created",
+    });
+  } else {
+    publishRestaurantRealtimeEvent({
+      type: "users",
+      restaurantId: "",
+      entityId: user.id,
+      action: "created",
+    });
+  }
   return user;
 }
 
@@ -410,6 +426,14 @@ export async function updateUser(
   nextUsers[index] = nextUser;
   if (canPersistDataFiles) {
     await writeUsersFile(nextUsers);
+  }
+  if (nextUser.restaurantId) {
+    publishRestaurantRealtimeEvent({
+      type: "users",
+      restaurantId: nextUser.restaurantId,
+      entityId: nextUser.id,
+      action: "updated",
+    });
   }
   return nextUser;
 }

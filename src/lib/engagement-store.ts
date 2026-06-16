@@ -5,6 +5,7 @@ import {
   getAvailableDays,
 } from "@/lib/booking";
 import { recordAuditEntry, type AuditActorRole } from "@/lib/audit-store";
+import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
 import { createId, type Locale, type Reservation, type Restaurant, type RestaurantMessage } from "@/lib/types";
 
 const dataDir = path.join(process.cwd(), "data");
@@ -122,6 +123,14 @@ export async function createReservation(
 
   const nextReservations = [...reservations, reservation];
   await writeJsonFile(reservationsFile, nextReservations);
+  publishRestaurantRealtimeEvent({
+    type: "reservations",
+    restaurantId: restaurant.id,
+    restaurantSlug: restaurant.slug,
+    entityId: reservation.id,
+    action: "created",
+    details: `${reservation.firstName} ${reservation.lastName} · ${reservation.date} ${reservation.time}`,
+  });
   await recordAuditEntry({
     restaurantId: restaurant.id,
     restaurantSlug: restaurant.slug,
@@ -161,6 +170,13 @@ export async function updateReservationStatus(
   const nextReservations = [...reservations];
   nextReservations[index] = nextReservation;
   await writeJsonFile(reservationsFile, nextReservations);
+  publishRestaurantRealtimeEvent({
+    type: "reservations",
+    restaurantId: current.restaurantId ?? "",
+    restaurantSlug,
+    entityId: reservationId,
+    action: `status_${status}`,
+  });
   await recordAuditEntry({
     restaurantId: current.restaurantId,
     restaurantSlug,
@@ -189,6 +205,13 @@ export async function deleteReservation(
 
   const nextReservations = reservations.filter((entry) => entry.id !== reservationId);
   await writeJsonFile(reservationsFile, nextReservations);
+  publishRestaurantRealtimeEvent({
+    type: "reservations",
+    restaurantId: reservation.restaurantId ?? "",
+    restaurantSlug,
+    entityId: reservationId,
+    action: "deleted",
+  });
   await recordAuditEntry({
     restaurantId: reservation.restaurantId,
     restaurantSlug,
@@ -244,6 +267,13 @@ export async function createMessage(
 
   const nextMessages = [...messages, message];
   await writeJsonFile(messagesFile, nextMessages);
+  publishRestaurantRealtimeEvent({
+    type: "messages",
+    restaurantId: restaurant.id,
+    restaurantSlug: restaurant.slug,
+    entityId: message.id,
+    action: "created",
+  });
   return message;
 }
 
@@ -256,6 +286,15 @@ export async function updateMessageStatus(
   },
 ) {
   const messages = await listMessages();
+  const matchedMessage = messages.find((message) => {
+    if (message.restaurantSlug !== restaurantSlug) {
+      return false;
+    }
+
+    const matchesId = options.ids?.includes(message.id) ?? false;
+    const matchesTable = options.tableId ? message.tableId === options.tableId : false;
+    return matchesId || matchesTable;
+  });
   const nextMessages = messages.map((message) => {
     if (message.restaurantSlug !== restaurantSlug) {
       return message;
@@ -274,5 +313,14 @@ export async function updateMessageStatus(
   });
 
   await writeJsonFile(messagesFile, nextMessages);
+  if (matchedMessage) {
+    publishRestaurantRealtimeEvent({
+      type: "messages",
+      restaurantId: matchedMessage.restaurantId ?? "",
+      restaurantSlug,
+      entityId: options.ids?.[0] ?? options.tableId ?? matchedMessage.id,
+      action: `status_${options.status}`,
+    });
+  }
   return nextMessages.filter((message) => message.restaurantSlug === restaurantSlug);
 }

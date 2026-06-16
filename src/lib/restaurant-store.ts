@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
 import {
   createBlankRestaurant,
   createDefaultWeeklyHours,
@@ -1912,6 +1913,13 @@ export async function saveRestaurant(input: Restaurant) {
   }
 
   await writeRestaurantsFile(restaurants);
+  publishRestaurantRealtimeEvent({
+    type: "restaurants",
+    restaurantId: restaurant.id,
+    restaurantSlug: restaurant.slug,
+    entityId: restaurant.id,
+    action: "saved",
+  });
   return restaurant;
 }
 
@@ -1932,6 +1940,13 @@ export async function updateRestaurant(slug: string, input: Restaurant) {
   nextRestaurants.push(restaurant);
 
   await writeRestaurantsFile(nextRestaurants);
+  publishRestaurantRealtimeEvent({
+    type: "restaurants",
+    restaurantId: restaurant.id,
+    restaurantSlug: restaurant.slug,
+    entityId: restaurant.id,
+    action: "updated",
+  });
   return restaurant;
 }
 
@@ -1948,6 +1963,13 @@ export async function createRestaurant(input?: Partial<Restaurant>) {
   const restaurants = await readRestaurantsFile();
   const nextRestaurants = [...restaurants, restaurant];
   await writeRestaurantsFile(nextRestaurants);
+  publishRestaurantRealtimeEvent({
+    type: "restaurants",
+    restaurantId: restaurant.id,
+    restaurantSlug: restaurant.slug,
+    entityId: restaurant.id,
+    action: "created",
+  });
   return restaurant;
 }
 
@@ -1955,4 +1977,14 @@ export async function deleteRestaurant(slug: string) {
   const restaurants = await readRestaurantsFile();
   const nextRestaurants = restaurants.filter((entry) => entry.slug !== slug);
   await writeRestaurantsFile(nextRestaurants);
+  const restaurant = restaurants.find((entry) => entry.slug === slug);
+  if (restaurant) {
+    publishRestaurantRealtimeEvent({
+      type: "restaurants",
+      restaurantId: restaurant.id,
+      restaurantSlug: restaurant.slug,
+      entityId: restaurant.id,
+      action: "deleted",
+    });
+  }
 }
