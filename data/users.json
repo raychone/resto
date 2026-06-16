@@ -10,7 +10,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -18,14 +18,14 @@
     "id": "manager-root",
     "restaurantId": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
     "role": "manager",
-    "name": "Raych",
-    "username": "raych",
+    "name": "Manager",
+    "username": "manager",
     "passwordHash": "8b71fd8493bfda37d97ef508d975cce4087571d6a88a09d1ce3aa245ee0b061e",
     "temporaryPassword": "manager123!",
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:44:33.221Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -40,7 +40,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -55,7 +55,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -70,7 +70,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -85,7 +85,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -100,7 +100,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -115,7 +115,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -130,7 +130,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -145,7 +145,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -160,7 +160,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -175,7 +175,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -190,7 +190,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -205,7 +205,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -220,7 +220,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   },
@@ -235,7 +235,7 @@
     "mustChangePassword": false,
     "status": "active",
     "createdAt": "2026-06-16T13:39:54.902Z",
-    "updatedAt": "2026-06-16T13:43:12.451Z",
+    "updatedAt": "2026-06-16T13:49:05.468Z",
     "deletedAt": null,
     "pinEnabled": false
   }

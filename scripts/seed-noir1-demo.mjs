@@ -246,8 +246,8 @@ async function main() {
     createUser({
       id: "manager-root",
       role: "manager",
-      name: "Raych",
-      username: "raych",
+      name: "Manager",
+      username: "manager",
       password: "manager123!",
       restaurantId: bar1.id,
       now,
@@ -327,7 +327,7 @@ async function main() {
   ]);
   const demoUsernames = new Set([
     "owner",
-    "raych",
+    "manager",
     "user",
     "waiter2",
     "waiter3",

@@ -125,7 +125,7 @@ export default async function HomePage() {
       role: "Manager",
       href: "/dashboard",
       description: "Menu, branding, utilisateurs staff et audit du restaurant.",
-      accounts: [{ username: "raych", password: "manager123!", label: "Manager" }],
+      accounts: [{ username: "manager", password: "manager123!", label: "Manager" }],
     },
   ];
 

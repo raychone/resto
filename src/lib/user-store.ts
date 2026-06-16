@@ -32,8 +32,8 @@ type DemoUserSpec = {
 const demoManagerUser: DemoUserSpec = {
   id: "manager-root",
   role: "manager",
-  name: "Raych",
-  username: "raych",
+  name: "Manager",
+  username: "manager",
   password: "manager123!",
 };
 

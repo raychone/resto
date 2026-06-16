@@ -158,7 +158,7 @@ Rutele importante sunt:
 ## 6. Credentiale demo
 
 - owner: `owner / owner123!`
-- manager: `raych / manager123!`
+- manager: `manager / manager123!`
 - staff: `user / pass123!`
 - kitchen: `kitchen / kitchen123!`
 - client: `client / client123!`

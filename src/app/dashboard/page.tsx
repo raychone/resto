@@ -24,8 +24,8 @@ export default async function DashboardPage({ searchParams }: Props) {
     return (
       <DashboardLogin
         title="Connexion au tableau de bord manager"
-        description="Utilise raych / manager123! pour gérer le contenu, le branding et les menus."
-        defaultUsername="raych"
+        description="Utilise manager / manager123! pour gérer le contenu, le branding et les menus."
+        defaultUsername="manager"
         defaultPassword="manager123!"
         endpoint="/api/auth/login"
         backAction={{ label: "Accueil", href: "/" }}
