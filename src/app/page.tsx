@@ -29,45 +29,103 @@ function SectionCard({
   );
 }
 
+function RoleAccordion({
+  role,
+  description,
+  href,
+  accounts,
+}: {
+  role: string;
+  description: string;
+  href: string;
+  accounts: Array<{ username: string; password: string; label?: string }>;
+}) {
+  return (
+    <details className="group rounded-[1.5rem] border border-white/10 bg-black/20 p-4 open:bg-black/30">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">{role}</p>
+          <h3 className="mt-2 text-xl font-semibold text-[#f5f1ea]">{accounts[0]?.username}</h3>
+        </div>
+        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white transition group-open:bg-white/10">
+          Voir les comptes
+        </span>
+      </summary>
+
+      <p className="mt-3 text-sm leading-6 text-white/65">{description}</p>
+
+      <div className="mt-4 grid gap-2">
+        {accounts.map((account) => (
+          <div
+            key={`${role}-${account.username}`}
+            className="rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs text-white/70"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-medium text-white">{account.label ?? account.username}</span>
+              <Link href={href} className="text-white/45 transition hover:text-white">
+                Ouvrir →
+              </Link>
+            </div>
+            <div className="mt-2 grid gap-1 text-white/55">
+              <div className="flex items-center justify-between gap-3">
+                <span>Identifiant</span>
+                <span className="font-medium text-white">{account.username}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>Mot de passe</span>
+                <span className="font-medium text-white">{account.password}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 export default async function HomePage() {
   const restaurants = await listRestaurants();
   const restaurant = restaurants.find((entry) => entry.slug === "bar-1") ?? restaurants[0];
 
-  const demoAccounts = [
+  const roleSeeds = [
     {
       role: "Client",
-      username: "client",
-      password: "client123!",
       href: "/client",
-      description: "Ouvre le menu, le panier et le suivi de commande.",
+      description: "Ouvre le menu, le panier, le suivi et le split de note. Les clients démo sont liés à Noir 1.",
+      accounts: [
+        { username: "client", password: "client123!", label: "Client principal" },
+        { username: "client2", password: "client2!", label: "Client 2" },
+        { username: "client3", password: "client3!", label: "Client 3" },
+        { username: "client4", password: "client4!", label: "Client 4" },
+        { username: "client5", password: "client5!", label: "Client 5" },
+        { username: "client6", password: "client6!", label: "Client 6" },
+        { username: "client7", password: "client7!", label: "Client 7" },
+        { username: "client8", password: "client8!", label: "Client 8" },
+        { username: "client9", password: "client9!", label: "Client 9" },
+        { username: "client10", password: "client10!", label: "Client 10" },
+      ],
     },
     {
       role: "Staff",
-      username: "user",
-      password: "pass123!",
       href: "/staff",
-      description: "Tables, bon, alertes et service en salle.",
+      description: "Tables, bon, alertes, service en salle et réglages de table.",
+      accounts: [
+        { username: "user", password: "pass123!", label: "Staff principal" },
+        { username: "waiter2", password: "waiter2!", label: "Staff 2" },
+        { username: "waiter3", password: "waiter3!", label: "Staff 3" },
+      ],
     },
     {
       role: "Kitchen",
-      username: "kitchen",
-      password: "kitchen123!",
       href: "/kitchen",
-      description: "File de cuisine et statuts préparation.",
+      description: "File cuisine et statuts préparation / prêt / servi.",
+      accounts: [{ username: "kitchen", password: "kitchen123!", label: "Kitchen" }],
     },
     {
       role: "Manager",
-      username: "raych",
-      password: "raychone!",
       href: "/dashboard",
-      description: "Menu, branding, utilisateurs staff et audit.",
-    },
-    {
-      role: "Owner",
-      username: "owner",
-      password: "owner123!",
-      href: "/owner",
-      description: "Portefeuille global, modules et facturation.",
+      description: "Menu, branding, utilisateurs staff et audit du restaurant.",
+      accounts: [{ username: "raych", password: "manager123!", label: "Manager" }],
     },
   ];
 
@@ -263,30 +321,15 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {demoAccounts.map((account) => (
-              <Link
-                key={account.role}
-                href={account.href}
-                className="group rounded-[1.5rem] border border-white/10 bg-black/20 p-4 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-black/30"
-              >
-                <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">{account.role}</p>
-                <h3 className="mt-2 text-xl font-semibold text-[#f5f1ea]">{account.username}</h3>
-                <p className="mt-1 text-sm text-white/60">{account.description}</p>
-                <div className="mt-4 grid gap-2 text-xs text-white/65">
-                  <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
-                    <span>Identifiant</span>
-                    <span className="font-medium text-white">{account.username}</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
-                    <span>Mot de passe</span>
-                    <span className="font-medium text-white">{account.password}</span>
-                  </div>
-                </div>
-                <span className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white transition group-hover:bg-white/10">
-                  Ouvrir →
-                </span>
-              </Link>
+          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+            {roleSeeds.map((entry) => (
+              <RoleAccordion
+                key={entry.role}
+                role={entry.role}
+                description={entry.description}
+                href={entry.href}
+                accounts={entry.accounts}
+              />
             ))}
           </div>
         </div>

@@ -248,7 +248,7 @@ async function main() {
       role: "manager",
       name: "Raych",
       username: "raych",
-      password: "raychone!",
+      password: "manager123!",
       restaurantId: bar1.id,
       now,
     }),

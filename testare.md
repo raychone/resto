@@ -6,7 +6,7 @@ Acesta este ghidul de testare manuală pentru aplicația curentă. Urmează paș
 
 - public: `http://localhost:3000/r/bar-1?lang=fr`
 - QR direct: `http://localhost:3000/qr/bar-1`
-- manager: `/dashboard` cu `raych / raychone!`
+- manager: `/dashboard` cu `raych / manager123!`
 - staff: `/staff` cu `user / pass123!`
 - kitchen: `/kitchen` cu `kitchen / kitchen123!`
 - client: `/client` cu `client / client123!`
@@ -140,7 +140,7 @@ La `dashboard` și `staff` verifici strict `Noir 1`; acesta este clientul demo p
 1. Deschide `http://localhost:3000/dashboard`.
 2. Loghează-te cu:
    - user: `raych`
-   - parolă: `raychone!`
+   - parolă: `manager123!`
 3. Verifică dacă vezi doar restaurantul tău.
 4. Verifică dacă interfața este pe tema dark / whitesmoke.
 

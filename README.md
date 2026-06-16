@@ -70,7 +70,7 @@ Acesta este restaurantul demo principal și este tratat ca un client real:
 
 - public: `http://localhost:3000/r/bar-1?lang=fr`
 - QR direct către meniu: `http://localhost:3000/qr/bar-1`
-- manager: `http://localhost:3000/dashboard` cu `raych / raychone!`
+- manager: `http://localhost:3000/dashboard` cu `raych / manager123!`
 - staff: `http://localhost:3000/staff` cu `user / pass123!`
 - kitchen: `http://localhost:3000/kitchen` cu `kitchen / kitchen123!`
 - client: `http://localhost:3000/client` cu `client / client123!`
@@ -164,7 +164,7 @@ Reguli practice pentru Noir 1:
 ## Credentiale demo
 
 - owner: `owner / owner123!`
-- manager: `raych / raychone!`
+- manager: `raych / manager123!`
 - staff: `user / pass123!`
 - kitchen: `kitchen / kitchen123!`
 - client: `client / client123!`
@@ -217,7 +217,7 @@ Pentru login Google OAuth ai nevoie de:
 3. Intră în `/r/bar-1?lang=fr`, apoi schimbă în `en`, `it`, `es`.
 4. Deschide `/qr/bar-1` și verifică faptul că QR-ul deschide direct meniul web, cu logo suprapus.
 5. Deschide `/pdf/bar-1` doar dacă vrei să verifici varianta A3 de print.
-6. Intră în `/dashboard` cu `raych / raychone!`.
+6. Intră în `/dashboard` cu `raych / manager123!`.
 7. Verifică faptul că vezi doar restaurantul tău.
 8. În cardul de utilizatori staff, creează un angajat nou și verifică statusul / resetarea parolei.
 9. În `/dashboard`, schimbă `plan`, `status` și modulele comerciale.
@@ -379,7 +379,7 @@ Reguli simple:
 
 ### Manager
 
-1. Intră în `/dashboard` cu `raych / raychone!`.
+1. Intră în `/dashboard` cu `raych / manager123!`.
 2. Verifică faptul că vezi doar restaurantul tău.
 3. Modifică meniul, programul și datele restaurantului.
 4. Creează, dezactivează și resetează un user staff.
@@ -415,7 +415,7 @@ Ordinea corectă de verificare este asta:
 4. Intră în pagina publică a restaurantului și schimbă limba.
 5. Deschide QR-ul și verifică unde duce.
 6. Deschide PDF-ul A3 și verifică aspectul de meniu printabil.
-7. Intră în `/dashboard` cu `raych / raychone!`.
+7. Intră în `/dashboard` cu `raych / manager123!`.
 8. Creează sau dezactivează un user staff.
 9. Schimbă planul, statusul și modulele comerciale.
 10. Verifică auditul managerului.

@@ -34,7 +34,7 @@ const demoManagerUser: DemoUserSpec = {
   role: "manager",
   name: "Raych",
   username: "raych",
-  password: "raychone!",
+  password: "manager123!",
 };
 
 const demoStaffUsers: DemoUserSpec[] = [
