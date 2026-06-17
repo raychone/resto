@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="128" fill="#FFF8F1"/>
+  <circle cx="256" cy="184" r="100" fill="#C41E1E" opacity="0.14"/>
+  <circle cx="256" cy="184" r="68" fill="#FFFFFF" stroke="#C41E1E" stroke-width="10"/>
+  <path d="M256 128c18 0 34 8 45 21l-15 12c-7-8-18-13-30-13-12 0-23 5-30 13l-15-12c11-13 27-21 45-21Z" fill="#C41E1E"/>
+  <path d="M156 332c26-36 61-55 100-55s74 19 100 55" stroke="#C41E1E" stroke-width="14" stroke-linecap="round"/>
+  <path d="M166 346h180" stroke="#24170F" stroke-width="18" stroke-linecap="round"/>
+  <path d="M188 366h136" stroke="#24170F" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+  <path d="M202 216h108" stroke="#C41E1E" stroke-width="10" stroke-linecap="round" opacity="0.7"/>
+  <path d="M220 238h72" stroke="#C41E1E" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+  <text x="256" y="420" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="700" fill="#24170F" letter-spacing="4">
+    FOOD 1
+  </text>
+</svg>

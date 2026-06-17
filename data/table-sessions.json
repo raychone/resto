@@ -28,7 +28,7 @@
       }
     ],
     "createdAt": "2026-06-12T17:48:31.492Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "updatedAt": "2026-06-17T21:14:41.539Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -52,8 +52,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-17T19:16:34.580Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "createdAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-17T21:16:13.079Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -77,8 +77,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-17T19:16:34.580Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "createdAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-17T21:16:13.079Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -102,8 +102,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-17T19:16:34.580Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "createdAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-17T21:16:13.079Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -127,8 +127,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-17T19:16:34.580Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "createdAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-17T21:16:13.079Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -152,8 +152,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-17T19:16:34.580Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "createdAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-17T21:16:13.079Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -177,8 +177,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-17T19:16:34.580Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "createdAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-17T21:16:13.079Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -202,8 +202,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-17T19:16:34.580Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "createdAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-17T21:16:13.079Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -227,8 +227,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-17T19:16:34.580Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "createdAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-17T21:16:13.079Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -252,8 +252,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-17T19:16:34.580Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "createdAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-17T21:16:13.079Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -277,8 +277,108 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-17T19:16:34.580Z",
-    "updatedAt": "2026-06-17T19:17:12.390Z",
+    "createdAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "food-1-restaurant-table-1-session",
+    "restaurantId": "food-1-restaurant",
+    "tableId": "food-1-restaurant-table-1",
+    "orderId": "food-1-restaurant-table-1-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 27,
+    "paidTotal": 0,
+    "note": "Session Food 1 pour Marco Rossi",
+    "participants": [
+      {
+        "id": "food-1-restaurant-table-1-participant",
+        "customerId": "food1-client-root-customer",
+        "name": "Marco Rossi",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client Food 1 connecté"
+      }
+    ],
+    "createdAt": "2026-06-17T21:16:13.893Z",
+    "updatedAt": "2026-06-17T21:16:13.893Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "food-1-restaurant-table-2-session",
+    "restaurantId": "food-1-restaurant",
+    "tableId": "food-1-restaurant-table-2",
+    "orderId": "food-1-restaurant-table-2-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 29,
+    "paidTotal": 0,
+    "note": "Session Food 1 pour Giulia Bianchi",
+    "participants": [
+      {
+        "id": "food-1-restaurant-table-2-participant",
+        "customerId": "food1-client-02-customer",
+        "name": "Giulia Bianchi",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client Food 1 connecté"
+      }
+    ],
+    "createdAt": "2026-06-17T21:16:13.893Z",
+    "updatedAt": "2026-06-17T21:16:13.893Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "food-1-restaurant-table-3-session",
+    "restaurantId": "food-1-restaurant",
+    "tableId": "food-1-restaurant-table-3",
+    "orderId": "food-1-restaurant-table-3-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 28,
+    "paidTotal": 0,
+    "note": "Session Food 1 pour Luca Ferrari",
+    "participants": [
+      {
+        "id": "food-1-restaurant-table-3-participant",
+        "customerId": "food1-client-03-customer",
+        "name": "Luca Ferrari",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client Food 1 connecté"
+      }
+    ],
+    "createdAt": "2026-06-17T21:16:13.893Z",
+    "updatedAt": "2026-06-17T21:16:13.893Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "food-1-restaurant-table-4-session",
+    "restaurantId": "food-1-restaurant",
+    "tableId": "food-1-restaurant-table-4",
+    "orderId": "food-1-restaurant-table-4-order",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 35,
+    "paidTotal": 0,
+    "note": "Session Food 1 pour Sofia Gallo",
+    "participants": [
+      {
+        "id": "food-1-restaurant-table-4-participant",
+        "customerId": "food1-client-04-customer",
+        "name": "Sofia Gallo",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client Food 1 connecté"
+      }
+    ],
+    "createdAt": "2026-06-17T21:16:13.893Z",
+    "updatedAt": "2026-06-17T21:16:13.893Z",
     "closedAt": null,
     "deletedAt": null
   }

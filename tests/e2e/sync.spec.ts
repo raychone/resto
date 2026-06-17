@@ -1,7 +1,17 @@
+import { execFileSync } from "node:child_process";
 import { expect, test, type BrowserContext } from "@playwright/test";
 import type { Order } from "@/lib/types";
 
 test.describe.configure({ mode: "serial" });
+
+test.beforeAll(() => {
+  for (const script of ["seed:noir1", "seed:food1"]) {
+    execFileSync("npm", ["run", script], {
+      stdio: "inherit",
+      env: process.env,
+    });
+  }
+});
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
 

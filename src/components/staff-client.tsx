@@ -207,14 +207,14 @@ export function StaffClient({
         if (newOrders.some((order) => order.status === "sent_to_kitchen" || order.status === "open")) {
           pushToast("Nouvelle commande reçue.");
           sendBrowserNotification(
-            "Noir 1 — nouvelle commande",
+            `${restaurant.name} — nouvelle commande`,
             "Une nouvelle commande attend la validation du serveur.",
           );
         }
 
         if (updatedOrders.some((order) => order.status === "ready")) {
           pushToast("Une commande est prête en cuisine.");
-          sendBrowserNotification("Noir 1 — commande prête", "Une commande est prête pour le service.");
+          sendBrowserNotification(`${restaurant.name} — commande prête`, "Une commande est prête pour le service.");
         }
 
         previousOrdersRef.current = nextOrders;
@@ -232,7 +232,7 @@ export function StaffClient({
     }
 
     setLoading(false);
-  }, [restaurant.slug]);
+  }, [restaurant.name, restaurant.slug]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -306,7 +306,7 @@ export function StaffClient({
     const permission = await requestBrowserNotificationPermission();
     setNotificationPermission(permission);
     if (permission === "granted") {
-      sendBrowserNotification("Noir 1", "Les notifications staff sont activées.");
+      sendBrowserNotification(restaurant.name, "Les notifications staff sont activées.");
     }
   }
 

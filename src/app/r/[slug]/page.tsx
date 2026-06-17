@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getAvailabilityForRestaurant } from "@/lib/engagement-store";
 import { listRestaurants } from "@/lib/restaurant-store";
 import { locales, translateRestaurant, type Locale } from "@/lib/types";
+import { FoodPublicMenu } from "@/components/food-public-menu";
 import { PublicMenu } from "@/components/public-menu";
 
 export const dynamic = "force-dynamic";
@@ -63,6 +65,23 @@ export default async function RestaurantMenuPage({ params, searchParams }: Props
 
   const locale = resolveLocale(query.lang);
   const localizedRestaurant = translateRestaurant(restaurant, locale);
+  const foodTheme = restaurant.slug === "food-1";
+
+  if (foodTheme) {
+    const availability = await getAvailabilityForRestaurant(restaurant, {
+      locale,
+      startDate: new Date(),
+      dayCount: 42,
+    });
+
+    return (
+      <FoodPublicMenu
+        restaurant={localizedRestaurant}
+        locale={locale}
+        initialAvailability={availability}
+      />
+    );
+  }
 
   return <PublicMenu restaurant={localizedRestaurant} locale={locale} />;
 }

@@ -6,6 +6,7 @@ Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și o
 
 - meniu public per restaurant, cu limbi `fr / en / it / es`
 - landing page principală la `/` cu rolurile, scopul aplicației și butoane directe de test
+- al doilea demo separat `Food 1`, cu temă light, meniu food-only și flow complet de comandă / rezervare
 - categoriile din meniu sunt afișate ca acordeon/listă, închise by default, fără număr de produse și fără etichetă duplicată
 - preparatele se deschid într-un modal scrollabil cu imagine, recipe, ingredients și allergens, iar signature apare pe imagine
 - rândurile din meniu sunt list-style, fără carduri, iar în listă apar doar numele și prețul
@@ -77,6 +78,14 @@ Acesta este restaurantul demo principal și este tratat ca un client real:
 - clienți demo suplimentari: `client2 / client2!` … `client10 / client10!`
 - owner: `http://localhost:3000/owner` cu `owner / owner123!`
 - seed rapid Noir 1: `npm run seed:noir1`
+- Food 1 public: `http://localhost:3000/r/food-1?lang=fr`
+- Food 1 QR: `http://localhost:3000/qr/food-1`
+- Food 1 manager: `http://localhost:3000/dashboard` cu `foodmanager / manager123!`
+- Food 1 staff: `http://localhost:3000/staff` cu `foodstaff / pass123!`
+- Food 1 kitchen: `http://localhost:3000/kitchen` cu `foodkitchen / kitchen123!`
+- Food 1 client: `http://localhost:3000/client` cu `foodclient / client123!`
+- Food 1 clienți suplimentari: `foodclient2 / foodclient2!`
+- seed rapid Food 1: `npm run seed:food1`
 
 Reguli practice pentru Noir 1:
 
@@ -168,6 +177,11 @@ Reguli practice pentru Noir 1:
 - staff: `user / pass123!`
 - kitchen: `kitchen / kitchen123!`
 - client: `client / client123!`
+- Food 1 manager: `foodmanager / manager123!`
+- Food 1 staff: `foodstaff / pass123!`
+- Food 1 kitchen: `foodkitchen / kitchen123!`
+- Food 1 client: `foodclient / client123!`
+- Food 1 clienți suplimentari: `foodclient2 / foodclient2!`
 - clienți demo suplimentari: `client2 / client2!` … `client10 / client10!`
 - signup client: `http://localhost:3000/client/signup`
 - seed rapid Noir 1: `npm run seed:noir1`

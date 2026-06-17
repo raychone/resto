@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { StaffClient } from "@/components/staff-client";
 import { StaffLogin } from "@/components/staff-login";
 import { StaffLogoutButton } from "@/components/staff-logout-button";
-import { getRestaurantById, getRestaurantBySlug } from "@/lib/restaurant-store";
+import { getRestaurantById } from "@/lib/restaurant-store";
 import { getStaffSessionUser, isStaffAuthenticated } from "@/lib/auth";
 import { getActiveTableSessionForRestaurant } from "@/lib/table-session-store";
 
@@ -32,15 +32,7 @@ export default async function StaffPage() {
   if (!restaurant) {
     return <div>Aucun restaurant configuré.</div>;
   }
-
-  const noirOneRestaurant =
-    restaurant.slug === "bar-1" ? restaurant : await getRestaurantBySlug("bar-1");
-
-  if (!noirOneRestaurant) {
-    return <div>Aucun restaurant configuré.</div>;
-  }
-
-  const tableSession = await getActiveTableSessionForRestaurant(noirOneRestaurant.id);
+  const tableSession = await getActiveTableSessionForRestaurant(restaurant.id);
 
   return (
     <main className="internal-dark min-h-screen w-full">
@@ -48,17 +40,17 @@ export default async function StaffPage() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">Staff</p>
-            <h1 className="text-3xl font-semibold">{noirOneRestaurant.name}</h1>
+            <h1 className="text-3xl font-semibold">{restaurant.name}</h1>
           </div>
           <StaffLogoutButton label="Déconnexion" />
         </div>
       </div>
       <StaffClient
-        restaurant={noirOneRestaurant}
+        restaurant={restaurant}
         staffUserId={staffUser.id}
         locale="fr"
         tableSession={tableSession}
-        orderFlowEnabled={noirOneRestaurant.features.orderFlowEnabled}
+        orderFlowEnabled={restaurant.features.orderFlowEnabled}
       />
     </main>
   );

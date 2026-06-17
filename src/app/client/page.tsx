@@ -4,7 +4,7 @@ import { DashboardLogoutButton } from "@/components/dashboard-logout-button";
 import { ClientPortal } from "@/components/client-portal";
 import { getClientSessionUser, isClientAuthenticated } from "@/lib/auth";
 import { getOrCreateCustomerForUser } from "@/lib/customer-store";
-import { getRestaurantById, getRestaurantBySlug } from "@/lib/restaurant-store";
+import { getRestaurantById } from "@/lib/restaurant-store";
 import { listOrdersForRestaurant } from "@/lib/order-store";
 import { getOrCreateTableSessionForCustomer } from "@/lib/table-session-store";
 import { listTablesForRestaurant } from "@/lib/table-store";
@@ -68,17 +68,10 @@ export default async function ClientPage({
     return <div>Aucun restaurant configuré.</div>;
   }
 
-  const noirOneRestaurant =
-    restaurant.slug === "bar-1" ? restaurant : await getRestaurantBySlug("bar-1");
-
-  if (!noirOneRestaurant) {
-    return <div>Aucun restaurant configuré.</div>;
-  }
-
-  const customer = await getOrCreateCustomerForUser(clientUser, noirOneRestaurant.id);
-  const tableSession = await getOrCreateTableSessionForCustomer(noirOneRestaurant.id, customer);
-  const tables = await listTablesForRestaurant(noirOneRestaurant.id);
-  const orders = await listOrdersForRestaurant(noirOneRestaurant.id);
+  const customer = await getOrCreateCustomerForUser(clientUser, restaurant.id);
+  const tableSession = await getOrCreateTableSessionForCustomer(restaurant.id, customer);
+  const tables = await listTablesForRestaurant(restaurant.id);
+  const orders = await listOrdersForRestaurant(restaurant.id);
   const activeOrder =
     (tableSession.orderId ? orders.find((order) => order.id === tableSession.orderId) : null) ??
     orders.find(
@@ -95,20 +88,20 @@ export default async function ClientPage({
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">Client</p>
-            <h1 className="text-3xl font-semibold">{noirOneRestaurant.name}</h1>
+            <h1 className="text-3xl font-semibold">{restaurant.name}</h1>
           </div>
           <DashboardLogoutButton endpoint="/api/client-auth/logout" label="Déconnexion" />
         </div>
       </div>
       <ClientPortal
-        restaurant={noirOneRestaurant}
+        restaurant={restaurant}
         clientUser={clientUser}
         customer={customer}
         tables={tables}
         tableSession={tableSession}
         activeOrder={activeOrder}
         focusCart={resolvedSearchParams?.focus === "cart"}
-        orderFlowEnabled={noirOneRestaurant.features.orderFlowEnabled}
+        orderFlowEnabled={restaurant.features.orderFlowEnabled}
       />
     </main>
   );

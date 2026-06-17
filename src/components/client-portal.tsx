@@ -145,7 +145,11 @@ export function ClientPortal({
 
   const refreshCart = useCallback(() => {
     setCartItems(listClientCartItems(restaurant.slug));
-  }, [restaurant.slug]);
+  }, [restaurant.name, restaurant.slug]);
+
+  useEffect(() => {
+    refreshCart();
+  }, [refreshCart]);
 
   useEffect(() => {
     const onStorage = () => refreshCart();
@@ -193,21 +197,21 @@ export function ClientPortal({
       const previousStatus = previousOrderStatusRef.current;
       const nextStatus = nextOrder?.status ?? null;
 
-      if (nextStatus && nextStatus !== previousStatus) {
+        if (nextStatus && nextStatus !== previousStatus) {
         previousOrderStatusRef.current = nextStatus;
         setLiveOrder(nextOrder);
         if (nextStatus === "sent_to_kitchen") {
           setClientNotice("La commande a été validée par le serveur et envoyée en cuisine.");
-          sendBrowserNotification("Noir 1 — commande validée", "La commande a été envoyée en cuisine.");
+          sendBrowserNotification(`${restaurant.name} — commande validée`, "La commande a été envoyée en cuisine.");
         } else if (nextStatus === "ready") {
           setClientNotice("La commande est prête. Le serveur peut la livrer.");
-          sendBrowserNotification("Noir 1 — commande prête", "Le serveur peut livrer la commande à la table.");
+          sendBrowserNotification(`${restaurant.name} — commande prête`, "Le serveur peut livrer la commande à la table.");
         } else if (nextStatus === "served") {
           setClientNotice("La commande a été servie à la table.");
-          sendBrowserNotification("Noir 1 — commande servie", "La commande est arrivée à la table.");
+          sendBrowserNotification(`${restaurant.name} — commande servie`, "La commande est arrivée à la table.");
         } else if (nextStatus === "paid") {
           setClientNotice("La commande a été réglée.");
-          sendBrowserNotification("Noir 1 — commande réglée", "La commande a été encaissée.");
+          sendBrowserNotification(`${restaurant.name} — commande réglée`, "La commande a été encaissée.");
         }
       } else {
         setLiveOrder(nextOrder);
@@ -215,7 +219,7 @@ export function ClientPortal({
     } catch {
       // silent polling fallback
     }
-  }, [restaurant.slug]);
+  }, [restaurant.name, restaurant.slug]);
 
   useEffect(() => {
     if (!orderFlowEnabled) return;
@@ -270,7 +274,7 @@ export function ClientPortal({
     const permission = await requestBrowserNotificationPermission();
     setNotificationPermission(permission);
     if (permission === "granted") {
-      sendBrowserNotification("Noir 1", "Les notifications client sont activées.");
+      sendBrowserNotification(restaurant.name, "Les notifications client sont activées.");
     }
   }
 
@@ -336,7 +340,7 @@ export function ClientPortal({
       }
 
       setWaiterNotice(`Le serveur viendra à ${tableLabel}.`);
-      sendBrowserNotification("Noir 1 — serveur appelé", `Le serveur viendra à ${tableLabel}.`);
+      sendBrowserNotification(`${restaurant.name} — serveur appelé`, `Le serveur viendra à ${tableLabel}.`);
     } finally {
       setCallingWaiter(false);
     }

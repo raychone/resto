@@ -1,7 +1,17 @@
+import { execFileSync } from "node:child_process";
 import { expect, test, type Page } from "@playwright/test";
 import type { Order, Table } from "@/lib/types";
 
 test.describe.configure({ mode: "serial" });
+
+test.beforeAll(() => {
+  for (const script of ["seed:noir1", "seed:food1"]) {
+    execFileSync("npm", ["run", script], {
+      stdio: "inherit",
+      env: process.env,
+    });
+  }
+});
 
 type CreatedOrder = {
   id: string;

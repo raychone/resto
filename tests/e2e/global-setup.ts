@@ -1,8 +1,10 @@
 import { execFileSync } from "node:child_process";
 
 export default async function globalSetup() {
-  execFileSync("npm", ["run", "seed:noir1"], {
-    stdio: "inherit",
-    env: process.env,
-  });
+  for (const script of ["seed:noir1", "seed:food1"]) {
+    execFileSync("npm", ["run", script], {
+      stdio: "inherit",
+      env: process.env,
+    });
+  }
 }

@@ -86,6 +86,7 @@ function RoleAccordion({
 export default async function HomePage() {
   const restaurants = await listRestaurants();
   const restaurant = restaurants.find((entry) => entry.slug === "bar-1") ?? restaurants[0];
+  const foodRestaurant = restaurants.find((entry) => entry.slug === "food-1") ?? null;
 
   const roleSeeds = [
     {
@@ -129,6 +130,36 @@ export default async function HomePage() {
     },
   ];
 
+  const foodRoleSeeds = [
+    {
+      role: "Client",
+      href: "/client",
+      description: "Compte client lié à Food 1 pour tester menu, panier, commande et suivi live.",
+      accounts: [
+        { username: "foodclient", password: "client123!", label: "Food client principal" },
+        { username: "foodclient2", password: "foodclient2!", label: "Food client 2" },
+      ],
+    },
+    {
+      role: "Staff",
+      href: "/staff",
+      description: "Validation, réservation et service dédiés à Food 1.",
+      accounts: [{ username: "foodstaff", password: "pass123!", label: "Food staff" }],
+    },
+    {
+      role: "Kitchen",
+      href: "/kitchen",
+      description: "File cuisine Food 1, séparée de Noir 1.",
+      accounts: [{ username: "foodkitchen", password: "kitchen123!", label: "Food kitchen" }],
+    },
+    {
+      role: "Manager",
+      href: "/dashboard",
+      description: "Gestion du menu, du branding et de l’audit pour Food 1.",
+      accounts: [{ username: "foodmanager", password: "manager123!", label: "Food manager" }],
+    },
+  ];
+
   const roleCards = [
     {
       title: "Client",
@@ -156,9 +187,34 @@ export default async function HomePage() {
     },
   ];
 
+  const demoRestaurants = [
+    {
+      name: restaurant?.name ?? "Noir 1",
+      slug: restaurant?.slug ?? "bar-1",
+      tagline: restaurant?.tagline ?? "Bar mobile-first avec happy hour.",
+      accent: restaurant?.accent ?? "#7C3AED",
+      note: "Bar / dark theme / happy hour",
+      route: `/r/${restaurant?.slug ?? "bar-1"}?lang=fr`,
+      qrRoute: `/qr/${restaurant?.slug ?? "bar-1"}`,
+      logo: restaurant?.logoUrl || "/bar-1-logo.svg",
+    },
+    {
+      name: foodRestaurant?.name ?? "Food 1",
+      slug: foodRestaurant?.slug ?? "food-1",
+      tagline: foodRestaurant?.tagline ?? "Italian casual food, light theme.",
+      accent: foodRestaurant?.accent ?? "#c41e1e",
+      note: "Food-only / light theme / reservations",
+      route: `/r/${foodRestaurant?.slug ?? "food-1"}?lang=fr`,
+      qrRoute: `/qr/${foodRestaurant?.slug ?? "food-1"}`,
+      logo: foodRestaurant?.logoUrl || "/food-1-logo.svg",
+    },
+  ];
+
   const testLinks = [
     { label: "Menu Noir 1", href: `/r/${restaurant?.slug ?? "bar-1"}?lang=fr` },
     { label: "QR Noir 1", href: `/qr/${restaurant?.slug ?? "bar-1"}` },
+    { label: "Menu Food 1", href: `/r/${foodRestaurant?.slug ?? "food-1"}?lang=fr` },
+    { label: "QR Food 1", href: `/qr/${foodRestaurant?.slug ?? "food-1"}` },
     { label: "Client signup", href: "/client/signup" },
     { label: "Dashboard", href: "/dashboard" },
     { label: "Staff", href: "/staff" },
@@ -178,7 +234,7 @@ export default async function HomePage() {
                   alt="Logo"
                   className="h-7 w-7 rounded-lg object-cover"
                 />
-                <span>Noir 1 demo</span>
+                <span>Restaurant demos</span>
               </div>
 
               <div className="space-y-4">
@@ -186,7 +242,8 @@ export default async function HomePage() {
                   Plateforme SaaS pour restaurants, bars et service en salle.
                 </h1>
                 <p className="max-w-2xl text-base leading-7 text-white/70 sm:text-lg">
-                  Démo active sur <span className="font-semibold text-white">Noir 1</span> :
+                  Démo active sur <span className="font-semibold text-white">Noir 1</span> et{" "}
+                  <span className="font-semibold text-white">Food 1</span> :
                   menu QR, commandes, validation serveur, cuisine, réservations, loyalty,
                   dashboard manager et owner global.
                 </p>
@@ -243,6 +300,47 @@ export default async function HomePage() {
                   </div>
                 ))}
               </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {demoRestaurants.map((demoRestaurant) => (
+                  <Link
+                    key={demoRestaurant.slug}
+                    href={demoRestaurant.route}
+                    className="group rounded-[1.75rem] border border-white/10 bg-white/5 p-4 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/10"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={demoRestaurant.logo}
+                        alt={demoRestaurant.name}
+                        className="h-14 w-14 rounded-2xl object-cover"
+                      />
+                      <div>
+                        <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">
+                          {demoRestaurant.note}
+                        </p>
+                        <h3 className="mt-1 text-2xl font-semibold text-[#f5f1ea]">
+                          {demoRestaurant.name}
+                        </h3>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-white/65">{demoRestaurant.tagline}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span
+                        className="rounded-full border border-white/10 px-3 py-2 text-xs font-medium text-white"
+                        style={{ backgroundColor: `${demoRestaurant.accent}26` }}
+                      >
+                        Menu
+                      </span>
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white">
+                        QR
+                      </span>
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white">
+                        {demoRestaurant.slug}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -294,8 +392,9 @@ export default async function HomePage() {
               <p className="text-[11px] uppercase tracking-[0.35em] text-white/35">Comptes de démo</p>
               <h2 className="mt-2 text-2xl font-semibold text-[#f5f1ea]">Teste directement chaque rôle</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
-                Les comptes ci-dessous correspondent au restaurant démo <span className="font-semibold text-white">Noir 1</span>.
-                Tu peux ouvrir chaque écran directement depuis cette page, sans chercher les routes ailleurs.
+                Les comptes ci-dessous couvrent <span className="font-semibold text-white">Noir 1</span>{" "}
+                et <span className="font-semibold text-white">Food 1</span>. Tu peux ouvrir chaque écran
+                directement depuis cette page, sans chercher les routes ailleurs.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -314,7 +413,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+              <div className="mt-5 grid gap-3 lg:grid-cols-2">
             {roleSeeds.map((entry) => (
               <RoleAccordion
                 key={entry.role}
@@ -324,6 +423,21 @@ export default async function HomePage() {
                 accounts={entry.accounts}
               />
             ))}
+          </div>
+          <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+              <p className="text-[11px] uppercase tracking-[0.35em] text-white/35">Food 1 comptes</p>
+              <h3 className="mt-2 text-xl font-semibold text-[#f5f1ea]">Démo séparée, thème clair</h3>
+            <div className="mt-4 grid gap-3 lg:grid-cols-2">
+              {foodRoleSeeds.map((entry) => (
+                <RoleAccordion
+                  key={`food-${entry.role}`}
+                  role={entry.role}
+                  description={entry.description}
+                  href={entry.href}
+                  accounts={entry.accounts}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>

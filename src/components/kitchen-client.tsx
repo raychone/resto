@@ -55,14 +55,14 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled }: P
         if (newOrders.some((order) => order.status === "sent_to_kitchen" || order.status === "preparing")) {
           setNotice("Nouvelle commande en cuisine.");
           sendBrowserNotification(
-            "Noir 1 — nouvelle commande",
+            `${restaurant.name} — nouvelle commande`,
             "Une nouvelle commande a été envoyée à la cuisine.",
           );
         }
 
         if (readyOrders.some((order) => order.status === "ready")) {
           setNotice("Commande prête pour le serveur.");
-          sendBrowserNotification("Noir 1 — commande prête", "Le serveur peut livrer la commande.");
+          sendBrowserNotification(`${restaurant.name} — commande prête`, "Le serveur peut livrer la commande.");
         }
 
         previousOrdersRef.current = nextOrders;
@@ -73,7 +73,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled }: P
       setOrders(payload.orders);
     }
     setLoading(false);
-  }, [initializedOrders, restaurant.slug]);
+  }, [initializedOrders, restaurant.name, restaurant.slug]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -117,7 +117,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled }: P
     const permission = await requestBrowserNotificationPermission();
     setNotificationPermission(permission);
     if (permission === "granted") {
-      sendBrowserNotification("Noir 1", "Les notifications cuisine sont activées.");
+      sendBrowserNotification(restaurant.name, "Les notifications cuisine sont activées.");
     }
   }
 

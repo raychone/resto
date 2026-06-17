@@ -2,8 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function ClientSignupPage() {
+  const searchParams = useSearchParams();
+  const restaurantSlug = searchParams.get("restaurantSlug") || "bar-1";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +22,7 @@ export default function ClientSignupPage() {
     const response = await fetch("/api/client-auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, restaurantSlug }),
     });
 
     if (!response.ok) {
@@ -52,7 +55,7 @@ export default function ClientSignupPage() {
         <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
           <p className="text-[11px] uppercase tracking-[0.32em] text-white/35">Connexion rapide</p>
           <a
-            href={`/api/client-auth/google/start?restaurantSlug=bar-1&returnTo=${encodeURIComponent(
+            href={`/api/client-auth/google/start?restaurantSlug=${encodeURIComponent(restaurantSlug)}&returnTo=${encodeURIComponent(
               "/client?focus=cart",
             )}`}
             className="mt-3 flex items-center justify-center gap-3 rounded-full border border-white/10 bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-white/95"

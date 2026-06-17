@@ -12,17 +12,18 @@ function encodeSessionPayload(user: User) {
 }
 
 export async function POST(request: Request) {
-  const { name, email, password } = (await request.json()) as {
+  const { name, email, password, restaurantSlug } = (await request.json()) as {
     name?: string;
     email?: string;
     password?: string;
+    restaurantSlug?: string;
   };
 
   if (!name || !email || !password) {
     return NextResponse.json({ ok: false, error: "Missing fields" }, { status: 400 });
   }
 
-  const restaurant = (await getRestaurantBySlug("bar-1")) ?? null;
+  const restaurant = (await getRestaurantBySlug(restaurantSlug || "bar-1")) ?? null;
   if (!restaurant) {
     return NextResponse.json({ ok: false, error: "Restaurant not found" }, { status: 404 });
   }

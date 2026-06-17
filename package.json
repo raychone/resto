@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed:noir1": "node scripts/seed-noir1-demo.mjs",
+    "seed:food1": "node scripts/seed-food1-demo.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
