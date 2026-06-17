@@ -4,7 +4,7 @@ import { DashboardLogoutButton } from "@/components/dashboard-logout-button";
 import { ClientPortal } from "@/components/client-portal";
 import { getClientSessionUser, isClientAuthenticated } from "@/lib/auth";
 import { getOrCreateCustomerForUser } from "@/lib/customer-store";
-import { getRestaurantById } from "@/lib/restaurant-store";
+import { getRestaurantById, getRestaurantBySlug } from "@/lib/restaurant-store";
 import { listOrdersForRestaurant } from "@/lib/order-store";
 import { getOrCreateTableSessionForCustomer } from "@/lib/table-session-store";
 import { listTablesForRestaurant } from "@/lib/table-store";
@@ -19,16 +19,18 @@ export const metadata: Metadata = {
 export default async function ClientPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ focus?: string; google?: string }>;
+  searchParams?: Promise<{ focus?: string; google?: string; restaurantSlug?: string }>;
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : null;
   const authenticated = await isClientAuthenticated();
+  const requestedRestaurantSlug = resolvedSearchParams?.restaurantSlug?.trim() || "bar-1";
+  const requestedRestaurant = await getRestaurantBySlug(requestedRestaurantSlug);
 
   if (!authenticated) {
     return (
       <DashboardLogin
         title="Connexion client"
-        description="Utilise client / client123! ou ton e-mail pour ouvrir ton compte client."
+        description={`Utilise client / client123! ou ton e-mail pour ouvrir ton compte client${requestedRestaurant?.name ? ` sur ${requestedRestaurant.name}` : ""}.`}
         defaultUsername="client"
         defaultPassword="client123!"
         endpoint="/api/client-auth/login"
@@ -44,7 +46,7 @@ export default async function ClientPage({
         }
         oauthAction={{
           label: "Continuer avec Google",
-          href: `/api/client-auth/google/start?restaurantSlug=bar-1&returnTo=${encodeURIComponent(
+          href: `/api/client-auth/google/start?restaurantSlug=${encodeURIComponent(requestedRestaurantSlug)}&returnTo=${encodeURIComponent(
             "/client?focus=cart",
           )}`,
           helperText:
@@ -52,7 +54,7 @@ export default async function ClientPage({
         }}
         secondaryAction={{
           label: "Créer un compte client",
-          href: "/client/signup",
+          href: `/client/signup?restaurantSlug=${encodeURIComponent(requestedRestaurantSlug)}`,
         }}
       />
     );

@@ -34,6 +34,7 @@ const copy: Record<
     loyalty: string;
     offers: string;
     reviews: string;
+    contact: string;
     delivery: string;
     takeAway: string;
     onSite: string;
@@ -61,6 +62,7 @@ const copy: Record<
     loyalty: "Loyalty",
     offers: "Offres",
     reviews: "Avis",
+    contact: "Contact",
     delivery: "Livraison",
     takeAway: "À emporter",
     onSite: "Sur place",
@@ -87,6 +89,7 @@ const copy: Record<
     loyalty: "Loyalty",
     offers: "Offers",
     reviews: "Reviews",
+    contact: "Contact",
     delivery: "Delivery",
     takeAway: "Take away",
     onSite: "On site",
@@ -113,6 +116,7 @@ const copy: Record<
     loyalty: "Loyalty",
     offers: "Offerte",
     reviews: "Recensioni",
+    contact: "Contatti",
     delivery: "Delivery",
     takeAway: "Da asporto",
     onSite: "In sala",
@@ -139,6 +143,7 @@ const copy: Record<
     loyalty: "Loyalty",
     offers: "Ofertas",
     reviews: "Reseñas",
+    contact: "Contacto",
     delivery: "Delivery",
     takeAway: "Para llevar",
     onSite: "En sala",
@@ -521,6 +526,8 @@ export function FoodPublicMenu({
     { label: text.takeAway, tone: "bg-[#f3e7d9] text-[#7d291f] border border-[#e3cdbb]" },
     { label: text.delivery, tone: "bg-[#fff3f0] text-[#c41e1e] border border-[#f0cbc8]" },
   ];
+  const cleanPhone = restaurant.phone.replace(/[^\d+]/g, "");
+  const cleanWhatsapp = restaurant.whatsappNumber.replace(/[^\d+]/g, "");
 
   return (
     <>
@@ -585,6 +592,7 @@ export function FoodPublicMenu({
                   { href: "#loyalty", label: text.loyalty },
                   { href: "#offers", label: text.offers },
                   { href: "#reviews", label: text.reviews },
+                  { href: "#contact", label: text.contact },
                 ].map((item) => (
                   <a
                     key={item.href}
@@ -807,6 +815,65 @@ export function FoodPublicMenu({
                   {text.reviews}
                 </a>
               </div>
+            </div>
+          </section>
+
+          <section id="contact" className="scroll-mt-28 rounded-[2rem] border border-[#eadfce] bg-[#fff8f2] p-5 shadow-[0_20px_70px_rgba(70,35,22,0.05)] lg:scroll-mt-32 lg:p-6">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">{text.contact}</p>
+                <h2 className="mt-2 text-3xl font-semibold">{text.contact}</h2>
+              </div>
+              <HoursOpenButton className="rounded-full border border-[#eadfce] bg-white px-4 py-2 text-sm font-semibold text-[#24170f]">
+                Hours
+              </HoursOpenButton>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <a
+                href={`tel:${cleanPhone}`}
+                className="rounded-[1.5rem] border border-[#eadfce] bg-white p-4 transition hover:border-[#c41e1e]/30 hover:shadow-[0_12px_30px_rgba(196,30,30,0.08)]"
+              >
+                <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Phone</p>
+                <p className="mt-2 text-base font-semibold text-[#24170f]">{restaurant.phone}</p>
+                <p className="mt-2 text-sm text-[#6f5b4a]">Call the restaurant</p>
+              </a>
+              <div className="rounded-[1.5rem] border border-[#eadfce] bg-white p-4">
+                <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Address</p>
+                <p className="mt-2 text-base font-semibold text-[#24170f]">{restaurant.address}</p>
+                <p className="mt-2 text-sm text-[#6f5b4a]">Central location and easy access.</p>
+              </div>
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-[1.5rem] border border-[#eadfce] bg-white p-4 transition hover:border-[#c41e1e]/30 hover:shadow-[0_12px_30px_rgba(196,30,30,0.08)]"
+              >
+                <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Google Maps</p>
+                <p className="mt-2 text-base font-semibold text-[#24170f]">Open directions</p>
+                <p className="mt-2 text-sm text-[#6f5b4a]">Route, parking and access.</p>
+              </a>
+              {cleanWhatsapp ? (
+                <a
+                  href={`https://wa.me/${cleanWhatsapp.replace(/^\+/, "")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-[1.5rem] border border-[#eadfce] bg-white p-4 transition hover:border-[#c41e1e]/30 hover:shadow-[0_12px_30px_rgba(196,30,30,0.08)]"
+                >
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">WhatsApp</p>
+                  <p className="mt-2 text-base font-semibold text-[#24170f]">{restaurant.whatsappNumber}</p>
+                  <p className="mt-2 text-sm text-[#6f5b4a]">Tap to open chat from the mobile app.</p>
+                </a>
+              ) : (
+                <div className="rounded-[1.5rem] border border-[#eadfce] bg-white p-4">
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">WhatsApp</p>
+                  <p className="mt-2 text-base font-semibold text-[#24170f]">
+                    {cleanWhatsapp ? restaurant.whatsappNumber : "Not configured"}
+                  </p>
+                  <p className="mt-2 text-sm text-[#6f5b4a]">
+                    {cleanWhatsapp ? "Tap to open chat from the mobile app." : "Add a WhatsApp number from manager or owner."}
+                  </p>
+                </div>
+              )}
             </div>
           </section>
 

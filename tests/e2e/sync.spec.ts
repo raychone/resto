@@ -44,12 +44,17 @@ async function attachRealtimeCollector(page: import("@playwright/test").Page) {
         entityId?: string | null;
         action?: string | null;
       }>;
+      __meniuRealtimeReady?: boolean;
       __meniuRealtimeSource?: EventSource | null;
     };
 
     globalWindow.__meniuRealtimeEvents = [];
+    globalWindow.__meniuRealtimeReady = false;
     globalWindow.__meniuRealtimeSource?.close();
     const source = new EventSource("/api/restaurants/bar-1/realtime");
+    source.addEventListener("open", () => {
+      globalWindow.__meniuRealtimeReady = true;
+    });
     source.onmessage = (event) => {
       if (!event.data) return;
       try {
@@ -68,6 +73,15 @@ async function attachRealtimeCollector(page: import("@playwright/test").Page) {
       }
     };
     globalWindow.__meniuRealtimeSource = source;
+  });
+}
+
+async function waitForRealtimeCollectorReady(page: import("@playwright/test").Page) {
+  await page.waitForFunction(() => {
+    const globalWindow = window as typeof window & {
+      __meniuRealtimeReady?: boolean;
+    };
+    return Boolean(globalWindow.__meniuRealtimeReady);
   });
 }
 
@@ -162,26 +176,44 @@ test("orders sync across manager, staff, kitchen and client in real time", async
     await expect(kitchenPage.getByText("Commandes directes pour la cuisine.")).toBeVisible();
     await expect(clientPage.getByText("Compte client connecté")).toBeVisible();
 
-    const clientOrdersResponse = await clientContext.request.get("/api/restaurants/bar-1/client-orders", {
-      headers: {
-        cookie: "meniu_client_session=client-root",
-      },
-    });
-    expect(clientOrdersResponse.ok()).toBeTruthy();
-    const clientOrdersPayload = (await clientOrdersResponse.json()) as {
-      order?: Order | null;
-      tableSession?: { tableId?: string | null } | null;
-    };
-    const orderId = clientOrdersPayload.order?.id;
-    const tableId = clientOrdersPayload.order?.tableId ?? clientOrdersPayload.tableSession?.tableId;
-    expect(orderId).toBeTruthy();
-    expect(tableId).toBeTruthy();
-
     await Promise.all([
       attachRealtimeCollector(staffPage),
       attachRealtimeCollector(kitchenPage),
       attachRealtimeCollector(clientPage),
     ]);
+    await Promise.all([
+      waitForRealtimeCollectorReady(staffPage),
+      waitForRealtimeCollectorReady(kitchenPage),
+      waitForRealtimeCollectorReady(clientPage),
+    ]);
+
+    const createOrderResponse = await clientContext.request.post("/api/restaurants/bar-1/client-orders", {
+      headers: {
+        cookie: "meniu_client_session=client-root",
+      },
+      data: {
+        note: "Realtime sync order",
+        items: [
+          {
+            menuItemId: "item-hh-spritz",
+            name: "Spritz",
+            price: 10,
+            quantity: 1,
+            categoryName: "Happy Hour 6:30pm - 8:30pm",
+          },
+        ],
+      },
+    });
+    expect(createOrderResponse.ok()).toBeTruthy();
+    expect(createOrderResponse.status()).toBe(201);
+    const createOrderPayload = (await createOrderResponse.json()) as {
+      order?: Order | null;
+      tableSession?: { tableId?: string | null } | null;
+    };
+    const orderId = createOrderPayload.order?.id;
+    const tableId = createOrderPayload.order?.tableId ?? createOrderPayload.tableSession?.tableId;
+    expect(orderId).toBeTruthy();
+    expect(tableId).toBeTruthy();
 
     const updateOrder = async (status: "sent_to_kitchen" | "preparing" | "ready" | "served") => {
       const response = await managerContext.request.patch(`/api/restaurants/bar-1/orders/${orderId}`, {
@@ -294,6 +326,11 @@ test("reservations sync across manager, staff and client in real time", async ({
       attachRealtimeCollector(managerPage),
       attachRealtimeCollector(staffPage),
       attachRealtimeCollector(clientPage),
+    ]);
+    await Promise.all([
+      waitForRealtimeCollectorReady(managerPage),
+      waitForRealtimeCollectorReady(staffPage),
+      waitForRealtimeCollectorReady(clientPage),
     ]);
 
     const managerBeforeCreate = await managerPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
@@ -414,6 +451,11 @@ test("messages sync across manager, staff and client in real time", async ({ bro
       attachRealtimeCollector(managerPage),
       attachRealtimeCollector(staffPage),
       attachRealtimeCollector(clientPage),
+    ]);
+    await Promise.all([
+      waitForRealtimeCollectorReady(managerPage),
+      waitForRealtimeCollectorReady(staffPage),
+      waitForRealtimeCollectorReady(clientPage),
     ]);
 
     const managerBeforeCreate = await managerPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);

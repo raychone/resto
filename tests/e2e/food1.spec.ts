@@ -82,6 +82,11 @@ test("landing exposes Food 1 as a separate demo", async ({ page }) => {
   await expect(page).toHaveURL(/\/r\/food-1\?lang=fr/);
   await expect(page.getByRole("heading", { name: "Food 1", exact: true }).first()).toBeVisible();
   await expect(page.getByText("Italian casual food", { exact: false }).first()).toBeVisible();
+  await page.goto("/");
+  const foodClientLink = page.getByRole("link", { name: "Food client principal" }).first();
+  await expect(foodClientLink).toBeVisible();
+  await foodClientLink.click();
+  await expect(page).toHaveURL(/\/client\?restaurantSlug=food-1/);
 });
 
 test("Food 1 client order syncs through staff and kitchen", async ({ browser }) => {
@@ -274,4 +279,12 @@ test("Food 1 reservation is visible to staff and manager", async ({ browser }) =
     await staffContext.close();
     await managerContext.close();
   }
+});
+
+test("Food 1 public menu exposes contact details", async ({ page }) => {
+  await page.goto("/r/food-1?lang=fr");
+  await expect(page.getByRole("heading", { name: "Contact", exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Phone", { exact: false }).first()).toBeVisible();
+  await expect(page.getByText("Address", { exact: false }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /Google Maps/i }).first()).toBeVisible();
 });

@@ -38,7 +38,7 @@ function RoleAccordion({
   role: string;
   description: string;
   href: string;
-  accounts: Array<{ username: string; password: string; label?: string }>;
+  accounts: Array<{ username: string; password: string; label?: string; href?: string }>;
 }) {
   return (
     <details className="group rounded-[1.5rem] border border-white/10 bg-black/20 p-4 open:bg-black/30">
@@ -60,12 +60,13 @@ function RoleAccordion({
             key={`${role}-${account.username}`}
             className="rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-xs text-white/70"
           >
-            <div className="flex items-center justify-between gap-3">
+            <Link
+              href={account.href ?? href}
+              className="group flex items-center justify-between gap-3 text-left transition hover:text-white"
+            >
               <span className="font-medium text-white">{account.label ?? account.username}</span>
-              <Link href={href} className="text-white/45 transition hover:text-white">
-                Ouvrir →
-              </Link>
-            </div>
+              <span className="text-white/45 transition group-hover:text-white">Ouvrir →</span>
+            </Link>
             <div className="mt-2 grid gap-1 text-white/55">
               <div className="flex items-center justify-between gap-3">
                 <span>Identifiant</span>
@@ -133,30 +134,61 @@ export default async function HomePage() {
   const foodRoleSeeds = [
     {
       role: "Client",
-      href: "/client",
+      href: "/client?restaurantSlug=food-1",
       description: "Compte client lié à Food 1 pour tester menu, panier, commande et suivi live.",
       accounts: [
-        { username: "foodclient", password: "client123!", label: "Food client principal" },
-        { username: "foodclient2", password: "foodclient2!", label: "Food client 2" },
+        {
+          username: "foodclient",
+          password: "client123!",
+          label: "Food client principal",
+          href: "/client?restaurantSlug=food-1",
+        },
+        {
+          username: "foodclient2",
+          password: "foodclient2!",
+          label: "Food client 2",
+          href: "/client?restaurantSlug=food-1",
+        },
       ],
     },
     {
       role: "Staff",
-      href: "/staff",
+      href: "/staff?restaurantSlug=food-1",
       description: "Validation, réservation et service dédiés à Food 1.",
-      accounts: [{ username: "foodstaff", password: "pass123!", label: "Food staff" }],
+      accounts: [
+        {
+          username: "foodstaff",
+          password: "pass123!",
+          label: "Food staff",
+          href: "/staff?restaurantSlug=food-1",
+        },
+      ],
     },
     {
       role: "Kitchen",
-      href: "/kitchen",
+      href: "/kitchen?restaurantSlug=food-1",
       description: "File cuisine Food 1, séparée de Noir 1.",
-      accounts: [{ username: "foodkitchen", password: "kitchen123!", label: "Food kitchen" }],
+      accounts: [
+        {
+          username: "foodkitchen",
+          password: "kitchen123!",
+          label: "Food kitchen",
+          href: "/kitchen?restaurantSlug=food-1",
+        },
+      ],
     },
     {
       role: "Manager",
-      href: "/dashboard",
+      href: "/dashboard?restaurant=food-1",
       description: "Gestion du menu, du branding et de l’audit pour Food 1.",
-      accounts: [{ username: "foodmanager", password: "manager123!", label: "Food manager" }],
+      accounts: [
+        {
+          username: "foodmanager",
+          password: "manager123!",
+          label: "Food manager",
+          href: "/dashboard?restaurant=food-1",
+        },
+      ],
     },
   ];
 
@@ -425,8 +457,29 @@ export default async function HomePage() {
             ))}
           </div>
           <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-              <p className="text-[11px] uppercase tracking-[0.35em] text-white/35">Food 1 comptes</p>
-              <h3 className="mt-2 text-xl font-semibold text-[#f5f1ea]">Démo séparée, thème clair</h3>
+            <p className="text-[11px] uppercase tracking-[0.35em] text-white/35">Food 1 comptes</p>
+            <h3 className="mt-2 text-xl font-semibold text-[#f5f1ea]">Démo séparée, thème clair</h3>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {foodRoleSeeds.map((entry) => {
+                const firstAccount = entry.accounts[0];
+                const targetHref = firstAccount?.href ?? entry.href;
+
+                return (
+                  <Link
+                    key={`${entry.role}-quick`}
+                    href={targetHref}
+                    className="rounded-[1.25rem] border border-white/10 bg-[#1d1d1d] px-4 py-4 transition hover:border-white/20 hover:bg-[#232323]"
+                  >
+                    <p className="text-[11px] uppercase tracking-[0.32em] text-white/35">{entry.role}</p>
+                    <p className="mt-2 text-lg font-semibold text-white">
+                      {firstAccount?.label ?? firstAccount?.username}
+                    </p>
+                    <p className="mt-2 text-sm text-white/60">{firstAccount?.username}</p>
+                    <p className="mt-1 text-sm text-white/40">Ouvrir Food 1 →</p>
+                  </Link>
+                );
+              })}
+            </div>
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
               {foodRoleSeeds.map((entry) => (
                 <RoleAccordion
