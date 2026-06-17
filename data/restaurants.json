@@ -2292,5 +2292,1151 @@
     },
     "uberEatsUrl": "www.usereats.fr",
     "tripAdvisorUrl": "www.tripadvisor.com"
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "slug": "pw-e2e-mqigan5e",
+    "name": "Playwright MQIGAN5E",
+    "status": "trial",
+    "plan": "starter",
+    "tagline": "Modifiable depuis le tableau de bord",
+    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
+    "accent": "#8B5CF6",
+    "logoUrl": "",
+    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+    "address": "12 Rue Exemple, Paris",
+    "phone": "+33 1 00 00 00 00",
+    "whatsappNumber": "+33 1 00 00 00 00",
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": "",
+    "googleRating": 4.8,
+    "googleReviewsCount": 128,
+    "googleReviewsUrl": "",
+    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
+    "tableCount": 12,
+    "seatsPerTable": 4,
+    "weeklyHours": [
+      {
+        "day": "mon",
+        "label": "Lundi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "tue",
+        "label": "Mardi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "wed",
+        "label": "Mercredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "thu",
+        "label": "Jeudi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "fri",
+        "label": "Vendredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sat",
+        "label": "Samedi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sun",
+        "label": "Dimanche",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "22:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      }
+    ],
+    "happyHourSchedule": null,
+    "features": {
+      "orderFlowEnabled": true,
+      "clientLoginEnabled": true,
+      "waiterValidationEnabled": true,
+      "kitchenWorkflowEnabled": true,
+      "servedConfirmationEnabled": true,
+      "bookingEnabled": true,
+      "qrMode": "pdf",
+      "notificationProvider": "android",
+      "whatsappAlertsEnabled": true,
+      "smsAlertsEnabled": false,
+      "googleReviewsEnabled": true
+    },
+    "currency": "EUR",
+    "createdAt": "2026-06-17T19:15:12.467Z",
+    "updatedAt": "2026-06-17T19:15:12.467Z",
+    "deletedAt": null,
+    "categories": [
+      {
+        "id": "category-ho1n22a7",
+        "name": "Signature",
+        "description": "Les plats principaux de la maison.",
+        "items": [
+          {
+            "id": "item-thpi091q",
+            "name": "Nom du plat",
+            "description": "Description du plat.",
+            "recipe": "Une courte note de préparation ou l'histoire du plat.",
+            "ingredients": [
+              "ingredient 1",
+              "ingredient 2",
+              "ingredient 3"
+            ],
+            "allergens": [
+              "gluten"
+            ],
+            "price": 42,
+            "happyHourEnabled": false,
+            "happyHourPrice": null,
+            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          }
+        ]
+      }
+    ],
+    "initialUsers": [
+      {
+        "role": "manager",
+        "name": "Manager E2E",
+        "username": "pw-manager",
+        "temporaryPassword": "Tmp#2026!"
+      },
+      {
+        "role": "staff",
+        "name": "Staff E2E",
+        "username": "pw-staff",
+        "temporaryPassword": "Tmp#2026!"
+      }
+    ],
+    "translations": {}
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "slug": "pw-e2e-mqigb6s7",
+    "name": "Playwright MQIGB6S7",
+    "status": "trial",
+    "plan": "starter",
+    "tagline": "Modifiable depuis le tableau de bord",
+    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
+    "accent": "#8B5CF6",
+    "logoUrl": "",
+    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+    "address": "12 Rue Exemple, Paris",
+    "phone": "+33 1 00 00 00 00",
+    "whatsappNumber": "+33 1 00 00 00 00",
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": "",
+    "googleRating": 4.8,
+    "googleReviewsCount": 128,
+    "googleReviewsUrl": "",
+    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
+    "tableCount": 12,
+    "seatsPerTable": 4,
+    "weeklyHours": [
+      {
+        "day": "mon",
+        "label": "Lundi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "tue",
+        "label": "Mardi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "wed",
+        "label": "Mercredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "thu",
+        "label": "Jeudi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "fri",
+        "label": "Vendredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sat",
+        "label": "Samedi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sun",
+        "label": "Dimanche",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "22:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      }
+    ],
+    "happyHourSchedule": null,
+    "features": {
+      "orderFlowEnabled": true,
+      "clientLoginEnabled": true,
+      "waiterValidationEnabled": true,
+      "kitchenWorkflowEnabled": true,
+      "servedConfirmationEnabled": true,
+      "bookingEnabled": true,
+      "qrMode": "pdf",
+      "notificationProvider": "android",
+      "whatsappAlertsEnabled": true,
+      "smsAlertsEnabled": false,
+      "googleReviewsEnabled": true
+    },
+    "currency": "EUR",
+    "createdAt": "2026-06-17T19:15:37.891Z",
+    "updatedAt": "2026-06-17T19:15:37.891Z",
+    "deletedAt": null,
+    "categories": [
+      {
+        "id": "category-wfidxaoj",
+        "name": "Signature",
+        "description": "Les plats principaux de la maison.",
+        "items": [
+          {
+            "id": "item-kw9irpzn",
+            "name": "Nom du plat",
+            "description": "Description du plat.",
+            "recipe": "Une courte note de préparation ou l'histoire du plat.",
+            "ingredients": [
+              "ingredient 1",
+              "ingredient 2",
+              "ingredient 3"
+            ],
+            "allergens": [
+              "gluten"
+            ],
+            "price": 42,
+            "happyHourEnabled": false,
+            "happyHourPrice": null,
+            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          }
+        ]
+      }
+    ],
+    "initialUsers": [
+      {
+        "role": "manager",
+        "name": "Manager E2E",
+        "username": "pw-manager",
+        "temporaryPassword": "Tmp#2026!"
+      },
+      {
+        "role": "staff",
+        "name": "Staff E2E",
+        "username": "pw-staff",
+        "temporaryPassword": "Tmp#2026!"
+      }
+    ],
+    "translations": {}
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "slug": "pw-e2e-mqigbq4b",
+    "name": "Playwright MQIGBQ4B",
+    "status": "trial",
+    "plan": "starter",
+    "tagline": "Modifiable depuis le tableau de bord",
+    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
+    "accent": "#8B5CF6",
+    "logoUrl": "",
+    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+    "address": "12 Rue Exemple, Paris",
+    "phone": "+33 1 00 00 00 00",
+    "whatsappNumber": "+33 1 00 00 00 00",
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": "",
+    "googleRating": 4.8,
+    "googleReviewsCount": 128,
+    "googleReviewsUrl": "",
+    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
+    "tableCount": 12,
+    "seatsPerTable": 4,
+    "weeklyHours": [
+      {
+        "day": "mon",
+        "label": "Lundi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "tue",
+        "label": "Mardi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "wed",
+        "label": "Mercredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "thu",
+        "label": "Jeudi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "fri",
+        "label": "Vendredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sat",
+        "label": "Samedi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sun",
+        "label": "Dimanche",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "22:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      }
+    ],
+    "happyHourSchedule": null,
+    "features": {
+      "orderFlowEnabled": true,
+      "clientLoginEnabled": true,
+      "waiterValidationEnabled": true,
+      "kitchenWorkflowEnabled": true,
+      "servedConfirmationEnabled": true,
+      "bookingEnabled": true,
+      "qrMode": "pdf",
+      "notificationProvider": "android",
+      "whatsappAlertsEnabled": true,
+      "smsAlertsEnabled": false,
+      "googleReviewsEnabled": true
+    },
+    "currency": "EUR",
+    "createdAt": "2026-06-17T19:16:02.955Z",
+    "updatedAt": "2026-06-17T19:16:02.955Z",
+    "deletedAt": null,
+    "categories": [
+      {
+        "id": "category-gyw2j32s",
+        "name": "Signature",
+        "description": "Les plats principaux de la maison.",
+        "items": [
+          {
+            "id": "item-4wmzxfos",
+            "name": "Nom du plat",
+            "description": "Description du plat.",
+            "recipe": "Une courte note de préparation ou l'histoire du plat.",
+            "ingredients": [
+              "ingredient 1",
+              "ingredient 2",
+              "ingredient 3"
+            ],
+            "allergens": [
+              "gluten"
+            ],
+            "price": 42,
+            "happyHourEnabled": false,
+            "happyHourPrice": null,
+            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          }
+        ]
+      }
+    ],
+    "initialUsers": [
+      {
+        "role": "manager",
+        "name": "Manager E2E",
+        "username": "pw-manager",
+        "temporaryPassword": "Tmp#2026!"
+      },
+      {
+        "role": "staff",
+        "name": "Staff E2E",
+        "username": "pw-staff",
+        "temporaryPassword": "Tmp#2026!"
+      }
+    ],
+    "translations": {}
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "slug": "pw-e2e-mqigckvw",
+    "name": "Playwright MQIGCKVW",
+    "status": "trial",
+    "plan": "starter",
+    "tagline": "Modifiable depuis le tableau de bord",
+    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
+    "accent": "#8B5CF6",
+    "logoUrl": "",
+    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+    "address": "12 Rue Exemple, Paris",
+    "phone": "+33 1 00 00 00 00",
+    "whatsappNumber": "+33 1 00 00 00 00",
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": "",
+    "googleRating": 4.8,
+    "googleReviewsCount": 128,
+    "googleReviewsUrl": "",
+    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
+    "tableCount": 12,
+    "seatsPerTable": 4,
+    "weeklyHours": [
+      {
+        "day": "mon",
+        "label": "Lundi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "tue",
+        "label": "Mardi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "wed",
+        "label": "Mercredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "thu",
+        "label": "Jeudi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "fri",
+        "label": "Vendredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sat",
+        "label": "Samedi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sun",
+        "label": "Dimanche",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "22:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      }
+    ],
+    "happyHourSchedule": null,
+    "features": {
+      "orderFlowEnabled": true,
+      "clientLoginEnabled": true,
+      "waiterValidationEnabled": true,
+      "kitchenWorkflowEnabled": true,
+      "servedConfirmationEnabled": true,
+      "bookingEnabled": true,
+      "qrMode": "pdf",
+      "notificationProvider": "android",
+      "whatsappAlertsEnabled": true,
+      "smsAlertsEnabled": false,
+      "googleReviewsEnabled": true
+    },
+    "currency": "EUR",
+    "createdAt": "2026-06-17T19:16:42.824Z",
+    "updatedAt": "2026-06-17T19:16:42.824Z",
+    "deletedAt": null,
+    "categories": [
+      {
+        "id": "category-zt4g1zb7",
+        "name": "Signature",
+        "description": "Les plats principaux de la maison.",
+        "items": [
+          {
+            "id": "item-y5x4u67k",
+            "name": "Nom du plat",
+            "description": "Description du plat.",
+            "recipe": "Une courte note de préparation ou l'histoire du plat.",
+            "ingredients": [
+              "ingredient 1",
+              "ingredient 2",
+              "ingredient 3"
+            ],
+            "allergens": [
+              "gluten"
+            ],
+            "price": 42,
+            "happyHourEnabled": false,
+            "happyHourPrice": null,
+            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          }
+        ]
+      }
+    ],
+    "initialUsers": [
+      {
+        "role": "manager",
+        "name": "Manager E2E",
+        "username": "pw-manager",
+        "temporaryPassword": "Tmp#2026!"
+      },
+      {
+        "role": "staff",
+        "name": "Staff E2E",
+        "username": "pw-staff",
+        "temporaryPassword": "Tmp#2026!"
+      }
+    ],
+    "translations": {}
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675",
+    "slug": "pw-e2e-mqigcv55",
+    "name": "Playwright MQIGCV55",
+    "status": "trial",
+    "plan": "starter",
+    "tagline": "Modifiable depuis le tableau de bord",
+    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
+    "accent": "#8B5CF6",
+    "logoUrl": "",
+    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+    "address": "12 Rue Exemple, Paris",
+    "phone": "+33 1 00 00 00 00",
+    "whatsappNumber": "+33 1 00 00 00 00",
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": "",
+    "googleRating": 4.8,
+    "googleReviewsCount": 128,
+    "googleReviewsUrl": "",
+    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
+    "tableCount": 12,
+    "seatsPerTable": 4,
+    "weeklyHours": [
+      {
+        "day": "mon",
+        "label": "Lundi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "tue",
+        "label": "Mardi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "wed",
+        "label": "Mercredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "thu",
+        "label": "Jeudi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "fri",
+        "label": "Vendredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sat",
+        "label": "Samedi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sun",
+        "label": "Dimanche",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "22:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      }
+    ],
+    "happyHourSchedule": null,
+    "features": {
+      "orderFlowEnabled": true,
+      "clientLoginEnabled": true,
+      "waiterValidationEnabled": true,
+      "kitchenWorkflowEnabled": true,
+      "servedConfirmationEnabled": true,
+      "bookingEnabled": true,
+      "qrMode": "pdf",
+      "notificationProvider": "android",
+      "whatsappAlertsEnabled": true,
+      "smsAlertsEnabled": false,
+      "googleReviewsEnabled": true
+    },
+    "currency": "EUR",
+    "createdAt": "2026-06-17T19:16:56.117Z",
+    "updatedAt": "2026-06-17T19:16:56.117Z",
+    "deletedAt": null,
+    "categories": [
+      {
+        "id": "category-snt08rvj",
+        "name": "Signature",
+        "description": "Les plats principaux de la maison.",
+        "items": [
+          {
+            "id": "item-oqz4xx3q",
+            "name": "Nom du plat",
+            "description": "Description du plat.",
+            "recipe": "Une courte note de préparation ou l'histoire du plat.",
+            "ingredients": [
+              "ingredient 1",
+              "ingredient 2",
+              "ingredient 3"
+            ],
+            "allergens": [
+              "gluten"
+            ],
+            "price": 42,
+            "happyHourEnabled": false,
+            "happyHourPrice": null,
+            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          }
+        ]
+      }
+    ],
+    "initialUsers": [
+      {
+        "role": "manager",
+        "name": "Manager E2E",
+        "username": "pw-manager",
+        "temporaryPassword": "Tmp#2026!"
+      },
+      {
+        "role": "staff",
+        "name": "Staff E2E",
+        "username": "pw-staff",
+        "temporaryPassword": "Tmp#2026!"
+      }
+    ],
+    "translations": {}
+  },
+  {
+    "id": "32aa4d01-e5b7-4e9f-93be-bd5dcb1818c3",
+    "slug": "pw-e2e-mqigd93v",
+    "name": "Playwright MQIGD93V",
+    "status": "trial",
+    "plan": "starter",
+    "tagline": "Modifiable depuis le tableau de bord",
+    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
+    "accent": "#8B5CF6",
+    "logoUrl": "",
+    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+    "address": "12 Rue Exemple, Paris",
+    "phone": "+33 1 00 00 00 00",
+    "whatsappNumber": "+33 1 00 00 00 00",
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": "",
+    "googleRating": 4.8,
+    "googleReviewsCount": 128,
+    "googleReviewsUrl": "",
+    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
+    "tableCount": 12,
+    "seatsPerTable": 4,
+    "weeklyHours": [
+      {
+        "day": "mon",
+        "label": "Lundi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "tue",
+        "label": "Mardi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "wed",
+        "label": "Mercredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "thu",
+        "label": "Jeudi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "fri",
+        "label": "Vendredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sat",
+        "label": "Samedi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sun",
+        "label": "Dimanche",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "22:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      }
+    ],
+    "happyHourSchedule": null,
+    "features": {
+      "orderFlowEnabled": true,
+      "clientLoginEnabled": true,
+      "waiterValidationEnabled": true,
+      "kitchenWorkflowEnabled": true,
+      "servedConfirmationEnabled": true,
+      "bookingEnabled": true,
+      "qrMode": "pdf",
+      "notificationProvider": "android",
+      "whatsappAlertsEnabled": true,
+      "smsAlertsEnabled": false,
+      "googleReviewsEnabled": true
+    },
+    "currency": "EUR",
+    "createdAt": "2026-06-17T19:17:14.219Z",
+    "updatedAt": "2026-06-17T19:17:14.219Z",
+    "deletedAt": null,
+    "categories": [
+      {
+        "id": "category-5x5z2jk2",
+        "name": "Signature",
+        "description": "Les plats principaux de la maison.",
+        "items": [
+          {
+            "id": "item-19z2zvpf",
+            "name": "Nom du plat",
+            "description": "Description du plat.",
+            "recipe": "Une courte note de préparation ou l'histoire du plat.",
+            "ingredients": [
+              "ingredient 1",
+              "ingredient 2",
+              "ingredient 3"
+            ],
+            "allergens": [
+              "gluten"
+            ],
+            "price": 42,
+            "happyHourEnabled": false,
+            "happyHourPrice": null,
+            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          }
+        ]
+      }
+    ],
+    "initialUsers": [
+      {
+        "role": "manager",
+        "name": "Manager E2E",
+        "username": "pw-manager",
+        "temporaryPassword": "Tmp#2026!"
+      },
+      {
+        "role": "staff",
+        "name": "Staff E2E",
+        "username": "pw-staff",
+        "temporaryPassword": "Tmp#2026!"
+      }
+    ],
+    "translations": {}
   }
 ]

@@ -1,5 +1,137 @@
 [
   {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-1",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 1",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-10",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 10",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-11",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 11",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-12",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 12",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-2",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 2",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-3",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 3",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-4",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 4",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-5",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 5",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-6",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 6",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-7",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 7",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-8",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 8",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778-table-9",
+    "restaurantId": "0e93949c-17ac-4b61-8131-7d27cba6d778",
+    "name": "Table 9",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:04.310Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
     "id": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe-table-1",
     "restaurantId": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
     "name": "Table 1",
@@ -7,7 +139,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -18,7 +150,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -29,7 +161,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -40,7 +172,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -51,7 +183,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -62,7 +194,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -73,7 +205,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -84,7 +216,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -95,7 +227,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -106,7 +238,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -117,7 +249,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -128,7 +260,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -139,7 +271,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -150,7 +282,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -161,7 +293,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -172,7 +304,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -183,7 +315,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -194,7 +326,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -205,7 +337,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -216,7 +348,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -227,7 +359,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -238,7 +370,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -249,7 +381,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -260,7 +392,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -271,7 +403,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -282,7 +414,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -293,7 +425,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -304,7 +436,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -315,7 +447,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -326,7 +458,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -337,7 +469,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -348,7 +480,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -359,7 +491,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -370,7 +502,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -381,7 +513,7 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -392,7 +524,535 @@
     "seats": 4,
     "active": true,
     "createdAt": "2026-06-10T22:57:07.114Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-1",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 1",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-10",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 10",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-11",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 11",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-12",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 12",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-2",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 2",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-3",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 3",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-4",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 4",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-5",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 5",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-6",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 6",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-7",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 7",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-8",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 8",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3-table-9",
+    "restaurantId": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
+    "name": "Table 9",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:39.617Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-1",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 1",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-10",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 10",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-11",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 11",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-12",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 12",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-2",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 2",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-3",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 3",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-4",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 4",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-5",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 5",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-6",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 6",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-7",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 7",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-8",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 8",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64-table-9",
+    "restaurantId": "d9bc8f64-19d9-4441-af61-26f7de162f64",
+    "name": "Table 9",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:16:49.243Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-1",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 1",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-10",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 10",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-11",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 11",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-12",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 12",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-2",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 2",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-3",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 3",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-4",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 4",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-5",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 5",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-6",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 6",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-7",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 7",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-8",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 8",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "e16b5401-8240-4a42-a243-9725f7834675-table-9",
+    "restaurantId": "e16b5401-8240-4a42-a243-9725f7834675",
+    "name": "Table 9",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:17:02.898Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-1",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 1",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-10",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 10",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-11",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 11",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-12",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 12",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-2",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 2",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-3",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 3",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-4",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 4",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-5",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 5",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-6",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 6",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-7",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 7",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-8",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 8",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
+    "deletedAt": null
+  },
+  {
+    "id": "eed532f5-b420-4fa2-9452-232daa5acc57-table-9",
+    "restaurantId": "eed532f5-b420-4fa2-9452-232daa5acc57",
+    "name": "Table 9",
+    "zone": "salle",
+    "seats": 4,
+    "active": true,
+    "createdAt": "2026-06-17T19:15:13.495Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -402,8 +1062,8 @@
     "zone": "salle",
     "seats": 2,
     "active": true,
-    "createdAt": "2026-06-15T13:22:30.313Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "createdAt": "2026-06-17T19:16:34.580Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -413,8 +1073,8 @@
     "zone": "salle",
     "seats": 2,
     "active": true,
-    "createdAt": "2026-06-15T13:22:30.313Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "createdAt": "2026-06-17T19:16:34.580Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -424,8 +1084,8 @@
     "zone": "salle",
     "seats": 2,
     "active": true,
-    "createdAt": "2026-06-15T13:22:30.313Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "createdAt": "2026-06-17T19:16:34.580Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -435,8 +1095,8 @@
     "zone": "salle",
     "seats": 2,
     "active": true,
-    "createdAt": "2026-06-15T13:22:30.313Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "createdAt": "2026-06-17T19:16:34.580Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -446,8 +1106,8 @@
     "zone": "salle",
     "seats": 2,
     "active": true,
-    "createdAt": "2026-06-15T13:22:30.313Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "createdAt": "2026-06-17T19:16:34.580Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -457,8 +1117,8 @@
     "zone": "salle",
     "seats": 2,
     "active": true,
-    "createdAt": "2026-06-15T13:22:30.313Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "createdAt": "2026-06-17T19:16:34.580Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -468,8 +1128,8 @@
     "zone": "salle",
     "seats": 2,
     "active": true,
-    "createdAt": "2026-06-15T13:22:30.313Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "createdAt": "2026-06-17T19:16:34.580Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -479,8 +1139,8 @@
     "zone": "salle",
     "seats": 2,
     "active": true,
-    "createdAt": "2026-06-15T13:22:30.313Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "createdAt": "2026-06-17T19:16:34.580Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -490,8 +1150,8 @@
     "zone": "salle",
     "seats": 2,
     "active": true,
-    "createdAt": "2026-06-15T13:22:30.313Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "createdAt": "2026-06-17T19:16:34.580Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   },
   {
@@ -501,8 +1161,8 @@
     "zone": "salle",
     "seats": 2,
     "active": true,
-    "createdAt": "2026-06-15T13:22:30.313Z",
-    "updatedAt": "2026-06-15T20:01:18.781Z",
+    "createdAt": "2026-06-17T19:16:34.580Z",
+    "updatedAt": "2026-06-17T19:17:12.486Z",
     "deletedAt": null
   }
 ]
