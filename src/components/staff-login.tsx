@@ -1,12 +1,22 @@
 import { DashboardLogin } from "@/components/dashboard-login";
 
-export function StaffLogin() {
+type Props = {
+  restaurantSlug?: string;
+  restaurantName?: string | null;
+};
+
+export function StaffLogin({ restaurantSlug, restaurantName }: Props) {
+  const isFoodDemo = restaurantSlug === "food-1";
   return (
     <DashboardLogin
       title="Connexion à la page staff"
-      description="Utilise user / pass123! pour gérer les demandes de réservation."
-      defaultUsername="user"
-      defaultPassword="pass123!"
+      description={
+        isFoodDemo
+          ? `Utilise foodstaff / pass123! pour gérer les demandes de réservation${restaurantName ? ` de ${restaurantName}` : ""}.`
+          : "Utilise user / pass123! pour gérer les demandes de réservation."
+      }
+      defaultUsername={isFoodDemo ? "foodstaff" : "user"}
+      defaultPassword={isFoodDemo ? "pass123!" : "pass123!"}
       endpoint="/api/staff-auth/login"
       backAction={{ label: "Accueil", href: "/" }}
     />

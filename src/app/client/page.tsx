@@ -23,7 +23,9 @@ export default async function ClientPage({
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : null;
   const authenticated = await isClientAuthenticated();
-  const requestedRestaurantSlug = resolvedSearchParams?.restaurantSlug?.trim() || "bar-1";
+  const clientUser = authenticated ? await getClientSessionUser() : null;
+  const sessionRestaurant = clientUser?.restaurantId ? await getRestaurantById(clientUser.restaurantId) : null;
+  const requestedRestaurantSlug = resolvedSearchParams?.restaurantSlug?.trim() || sessionRestaurant?.slug || "bar-1";
   const requestedRestaurant = await getRestaurantBySlug(requestedRestaurantSlug);
 
   if (!authenticated) {
@@ -47,7 +49,7 @@ export default async function ClientPage({
         oauthAction={{
           label: "Continuer avec Google",
           href: `/api/client-auth/google/start?restaurantSlug=${encodeURIComponent(requestedRestaurantSlug)}&returnTo=${encodeURIComponent(
-            "/client?focus=cart",
+            `/client?restaurantSlug=${encodeURIComponent(requestedRestaurantSlug)}&focus=cart`,
           )}`,
           helperText:
             "Connexion sans mot de passe. Si le compte n'existe pas, il est créé automatiquement.",
@@ -60,14 +62,40 @@ export default async function ClientPage({
     );
   }
 
-  const clientUser = await getClientSessionUser();
   if (!clientUser) {
     return <div>Aucun utilisateur client connecté.</div>;
   }
 
-  const restaurant = clientUser.restaurantId ? await getRestaurantById(clientUser.restaurantId) : null;
+  const restaurant = sessionRestaurant;
   if (!restaurant) {
     return <div>Aucun restaurant configuré.</div>;
+  }
+
+  if (requestedRestaurantSlug && requestedRestaurantSlug !== restaurant.slug) {
+    return (
+      <main className="internal-dark flex min-h-screen w-full items-center justify-center px-4">
+        <section className="w-full max-w-md rounded-[2rem] border border-white/10 bg-[#171717]/95 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.45)] backdrop-blur">
+          <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">Changer de démo</p>
+          <h1 className="mt-2 text-3xl font-semibold">Tu es connecté à {restaurant.name}</h1>
+          <p className="mt-2 text-sm leading-6 text-white/65">
+            Le lien demandé pointe vers {requestedRestaurant?.name ?? requestedRestaurantSlug}. Déconnecte-toi puis rouvre ce lien pour charger la bonne démo.
+          </p>
+          <div className="mt-5 flex flex-col gap-3">
+            <DashboardLogoutButton
+              endpoint="/api/client-auth/logout"
+              label="Se déconnecter"
+              redirectTo={`/client?restaurantSlug=${encodeURIComponent(requestedRestaurantSlug)}`}
+            />
+            <a
+              href={`/client?restaurantSlug=${encodeURIComponent(requestedRestaurantSlug)}`}
+              className="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-white/10"
+            >
+              Rouvrir Food 1
+            </a>
+          </div>
+        </section>
+      </main>
+    );
   }
 
   const customer = await getOrCreateCustomerForUser(clientUser, restaurant.id);

@@ -32,7 +32,7 @@ export default function ClientSignupPage() {
       return;
     }
 
-    window.location.href = "/client";
+    window.location.href = `/client?restaurantSlug=${encodeURIComponent(restaurantSlug)}&focus=cart`;
   }
 
   return (
@@ -56,7 +56,7 @@ export default function ClientSignupPage() {
           <p className="text-[11px] uppercase tracking-[0.32em] text-white/35">Connexion rapide</p>
           <a
             href={`/api/client-auth/google/start?restaurantSlug=${encodeURIComponent(restaurantSlug)}&returnTo=${encodeURIComponent(
-              "/client?focus=cart",
+              `/client?restaurantSlug=${encodeURIComponent(restaurantSlug)}&focus=cart`,
             )}`}
             className="mt-3 flex items-center justify-center gap-3 rounded-full border border-white/10 bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-white/95"
           >

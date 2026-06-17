@@ -4,7 +4,7 @@ import { DashboardClient } from "@/components/dashboard-client";
 import { DashboardLogin } from "@/components/dashboard-login";
 import { DashboardLogoutButton } from "@/components/dashboard-logout-button";
 import { getDashboardSessionUser, isDashboardAuthenticated } from "@/lib/auth";
-import { getRestaurantById } from "@/lib/restaurant-store";
+import { getRestaurantById, getRestaurantBySlug } from "@/lib/restaurant-store";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +18,9 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage({ searchParams }: Props) {
+  const resolvedSearchParams = await searchParams;
+  const requestedRestaurantSlug = resolvedSearchParams.restaurant?.trim() || null;
+  const requestedRestaurant = requestedRestaurantSlug ? await getRestaurantBySlug(requestedRestaurantSlug) : null;
   const authenticated = await isDashboardAuthenticated();
 
   if (!authenticated) {
@@ -33,13 +36,40 @@ export default async function DashboardPage({ searchParams }: Props) {
     );
   }
 
-  const [dashboardUser, query] = await Promise.all([getDashboardSessionUser(), searchParams]);
+  const [dashboardUser] = await Promise.all([getDashboardSessionUser(), searchParams]);
   const restaurant = dashboardUser?.restaurantId
     ? await getRestaurantById(dashboardUser.restaurantId)
     : null;
 
   if (!restaurant) {
     return <div>Aucun restaurant configuré.</div>;
+  }
+
+  if (requestedRestaurantSlug && requestedRestaurantSlug !== restaurant.slug) {
+    return (
+      <main className="internal-dark flex min-h-screen w-full items-center justify-center px-4">
+        <section className="w-full max-w-md rounded-[2rem] border border-white/10 bg-[#171717]/95 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.45)] backdrop-blur">
+          <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">Changer de démo</p>
+          <h1 className="mt-2 text-3xl font-semibold">Tu es connecté à {restaurant.name}</h1>
+          <p className="mt-2 text-sm leading-6 text-white/65">
+            Le lien demandé pointe vers {requestedRestaurant?.name ?? requestedRestaurantSlug}. Déconnecte-toi puis rouvre ce lien pour charger la bonne démo.
+          </p>
+          <div className="mt-5 flex flex-col gap-3">
+            <DashboardLogoutButton
+              endpoint="/api/auth/logout"
+              label="Se déconnecter"
+              redirectTo={`/dashboard?restaurant=${encodeURIComponent(requestedRestaurantSlug)}`}
+            />
+            <a
+              href={`/dashboard?restaurant=${encodeURIComponent(requestedRestaurantSlug)}`}
+              className="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-white/10"
+            >
+              Rouvrir Food 1
+            </a>
+          </div>
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -62,7 +92,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           <div className="flex flex-wrap gap-3">
             <DashboardLogoutButton endpoint="/api/auth/logout" label="Déconnexion" redirectTo="/" />
             <Link
-              href={`/r/${query.restaurant ?? restaurant.slug}`}
+              href={`/r/${resolvedSearchParams.restaurant ?? restaurant.slug}`}
               className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"
             >
               Voir le menu public
@@ -74,7 +104,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       <div className="px-0 py-0">
         <DashboardClient
           initialRestaurants={[restaurant]}
-          initialSelectedSlug={query.restaurant ?? restaurant.slug}
+          initialSelectedSlug={resolvedSearchParams.restaurant ?? restaurant.slug}
         />
       </div>
     </main>

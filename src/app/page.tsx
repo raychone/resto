@@ -3,6 +3,10 @@ import { listRestaurants } from "@/lib/restaurant-store";
 
 export const dynamic = "force-dynamic";
 
+function switchDemoHref(target: string) {
+  return `/api/demo-switch?to=${encodeURIComponent(target)}`;
+}
+
 function SectionCard({
   title,
   text,
@@ -141,13 +145,13 @@ export default async function HomePage() {
           username: "foodclient",
           password: "client123!",
           label: "Food client principal",
-          href: "/client?restaurantSlug=food-1",
+          href: switchDemoHref("/client?restaurantSlug=food-1"),
         },
         {
           username: "foodclient2",
           password: "foodclient2!",
           label: "Food client 2",
-          href: "/client?restaurantSlug=food-1",
+          href: switchDemoHref("/client?restaurantSlug=food-1"),
         },
       ],
     },
@@ -160,7 +164,7 @@ export default async function HomePage() {
           username: "foodstaff",
           password: "pass123!",
           label: "Food staff",
-          href: "/staff?restaurantSlug=food-1",
+          href: switchDemoHref("/staff?restaurantSlug=food-1"),
         },
       ],
     },
@@ -173,7 +177,7 @@ export default async function HomePage() {
           username: "foodkitchen",
           password: "kitchen123!",
           label: "Food kitchen",
-          href: "/kitchen?restaurantSlug=food-1",
+          href: switchDemoHref("/kitchen?restaurantSlug=food-1"),
         },
       ],
     },
@@ -186,7 +190,7 @@ export default async function HomePage() {
           username: "foodmanager",
           password: "manager123!",
           label: "Food manager",
-          href: "/dashboard?restaurant=food-1",
+          href: switchDemoHref("/dashboard?restaurant=food-1"),
         },
       ],
     },

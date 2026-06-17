@@ -89,6 +89,21 @@ test("landing exposes Food 1 as a separate demo", async ({ page }) => {
   await expect(page).toHaveURL(/\/client\?restaurantSlug=food-1/);
 });
 
+test("Food 1 staff link asks to switch when Noir 1 session is active", async ({ page }) => {
+  await page.context().addCookies([
+    {
+      name: "meniu_staff_session",
+      value: "staff-root",
+      url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000",
+    },
+  ]);
+
+  await page.goto("/staff?restaurantSlug=food-1");
+  await expect(page.getByText("Changer de démo")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Se déconnecter" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Rouvrir Food 1" })).toBeVisible();
+});
+
 test("Food 1 client order syncs through staff and kitchen", async ({ browser }) => {
   const clientContext = await browser.newContext();
   const staffContext = await browser.newContext();
@@ -120,7 +135,7 @@ test("Food 1 client order syncs through staff and kitchen", async ({ browser }) 
       "kitchen123!",
     );
 
-    const clientPage = await openAuthenticatedPage(clientContext, "/client");
+    const clientPage = await openAuthenticatedPage(clientContext, "/client?restaurantSlug=food-1");
     await expect(clientPage.getByRole("heading", { name: "Food 1", exact: true }).first()).toBeVisible();
     const orderResponse = await clientContext.request.post("/api/restaurants/food-1/client-orders", {
       headers: {
