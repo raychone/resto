@@ -1787,24 +1787,6 @@ export function StaffClient({
                                 label: "Appels",
                                 value: waiterCallsByTable[selectedTableModal.id] ?? 0,
                               },
-                              {
-                                label: "Statut",
-                                value: selectedTableModalOpenOrder
-                                  ? selectedTableModalOpenOrder.status === "open"
-                                    ? "Ouvert"
-                                    : selectedTableModalOpenOrder.status === "sent_to_kitchen"
-                                      ? "Cuisine"
-                                      : selectedTableModalOpenOrder.status === "preparing"
-                                        ? "Prep"
-                                        : selectedTableModalOpenOrder.status === "ready"
-                                          ? "Prêt"
-                                          : selectedTableModalOpenOrder.status === "served"
-                                            ? "Servi"
-                                            : selectedTableModalOpenOrder.status === "paid"
-                                              ? "Payé"
-                                              : "Archivé"
-                                  : "Libre",
-                              },
                             ].map((item) => (
                               <div key={item.label} className="min-w-[6rem] flex-1 rounded-[1.25rem] border border-[#eadfce] bg-white px-3 py-3 text-center">
                                 <p className="text-[10px] uppercase tracking-[0.28em] text-[#a38d7c]">{item.label}</p>
@@ -1813,7 +1795,7 @@ export function StaffClient({
                             ))}
                           </div>
 
-                          <div className="rounded-[1.5rem] border border-[#eadfce] bg-[#fff8f2] p-4">
+                          <div className="rounded-[1.5rem] border border-[#eadfce] bg-gradient-to-br from-[#fff7f2] via-[#fffaf8] to-[#fff0e7] p-3 shadow-[0_10px_30px_rgba(124,77,44,0.06)] sm:p-4">
                             <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">Statut</p>
                             <p className="mt-1 text-sm text-[#6f5b4a]">
                               {selectedTableModalOpenOrder
@@ -1833,31 +1815,40 @@ export function StaffClient({
                                 : "Aucun bon ouvert."}
                             </p>
                             {selectedTableModalOpenOrder ? (
-                              <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-                                <div className="min-w-[7rem] flex-1 rounded-2xl border border-[#eadfce] bg-white px-3 py-3 text-center">
-                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Total</p>
-                                  <p className="mt-1 text-base font-semibold text-[#24170f]">{formatMoney(orderTotal(selectedTableModalOpenOrder), restaurant.currency)}</p>
-                                </div>
-                                <div className="min-w-[7rem] flex-1 rounded-2xl border border-[#eadfce] bg-white px-3 py-3 text-center">
-                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Déjà payé</p>
-                                  <p className="mt-1 text-base font-semibold text-[#24170f]">
-                                    {formatMoney(paidTotalForOrder(payments, selectedTableModalOpenOrder.id), restaurant.currency)}
-                                  </p>
-                                </div>
-                                <div className="min-w-[7rem] flex-1 rounded-2xl border border-[#eadfce] bg-white px-3 py-3 text-center">
-                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Reste</p>
-                                  <p className="mt-1 text-base font-semibold text-[#24170f]">
-                                    {formatMoney(
+                              <dl className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                {[
+                                  {
+                                    label: "Total",
+                                    value: formatMoney(orderTotal(selectedTableModalOpenOrder), restaurant.currency),
+                                  },
+                                  {
+                                    label: "Déjà payé",
+                                    value: formatMoney(
+                                      paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
+                                      restaurant.currency,
+                                    ),
+                                  },
+                                  {
+                                    label: "Reste",
+                                    value: formatMoney(
                                       Math.max(
                                         0,
                                         orderTotal(selectedTableModalOpenOrder) -
                                           paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
                                       ),
                                       restaurant.currency,
-                                    )}
-                                  </p>
-                                </div>
-                              </div>
+                                    ),
+                                  },
+                                ].map((entry) => (
+                                  <div
+                                    key={entry.label}
+                                    className="flex items-center justify-between rounded-2xl border border-[#eadfce] bg-white/85 px-3 py-2 text-sm text-[#24170f] shadow-[0_6px_16px_rgba(124,77,44,0.05)]"
+                                  >
+                                    <dt className="text-[10px] uppercase tracking-[0.28em] text-[#a38d7c]">{entry.label}</dt>
+                                    <dd className="text-sm font-semibold">{entry.value}</dd>
+                                  </div>
+                                ))}
+                              </dl>
                             ) : null}
                           </div>
 
