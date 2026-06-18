@@ -1,6 +1,6 @@
 # Meniu restaurant SaaS
 
-Aplicație Next.js pentru meniuri digitale, QR, rezervări, staff, manager și owner.
+Aplicație Next.js pentru meniuri digitale, QR, rezertvări, staff, manager și owner.
 
 ## Ce este implementat acum
 
