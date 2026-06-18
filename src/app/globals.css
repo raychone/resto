@@ -45,6 +45,80 @@
   color: inherit;
 }
 
+.food-theme {
+  color: #24170f;
+  background: #fffdf8;
+}
+
+.food-theme [class*="text-white"] {
+  color: #24170f !important;
+}
+
+.food-theme [class*="text-black"] {
+  color: #24170f !important;
+}
+
+.food-theme [class*="text-[#f5f1ea]"] {
+  color: #24170f !important;
+}
+
+.food-theme [class*="text-white/"] {
+  color: rgba(36, 23, 15, 0.72) !important;
+}
+
+.food-theme [class*="text-black/"] {
+  color: rgba(36, 23, 15, 0.72) !important;
+}
+
+.food-theme [class*="bg-[#171717]"],
+.food-theme [class*="bg-[#1a1a1a]"],
+.food-theme [class*="bg-[#1d1d1d]"],
+.food-theme [class*="bg-[#202020]"],
+.food-theme [class*="bg-[#111111]"],
+.food-theme [class*="bg-black"],
+.food-theme [class*="bg-black/20"],
+.food-theme [class*="bg-black/25"],
+.food-theme [class*="bg-black/30"],
+.food-theme [class*="bg-black/2"],
+.food-theme [class*="bg-black/3"],
+.food-theme [class*="bg-black/4"],
+.food-theme [class*="bg-black/5"],
+.food-theme [class*="bg-black/8"],
+.food-theme [class*="bg-black/10"] {
+  background-color: #fff !important;
+}
+
+.food-theme [class*="bg-white/5"],
+.food-theme [class*="bg-white/10"],
+.food-theme [class*="bg-white/20"] {
+  background-color: #faf7f2 !important;
+}
+
+.food-theme [class*="border-white/10"],
+.food-theme [class*="border-white/20"],
+.food-theme [class*="border-black"],
+.food-theme [class*="border-black/10"],
+.food-theme [class*="border-black/8"] {
+  border-color: rgba(234, 223, 206, 0.9) !important;
+}
+
+.food-theme input,
+.food-theme select,
+.food-theme textarea {
+  color: #24170f !important;
+  background-color: #fff !important;
+  border-color: rgba(234, 223, 206, 0.95) !important;
+}
+
+.food-theme input::placeholder,
+.food-theme textarea::placeholder {
+  color: rgba(127, 108, 90, 0.72) !important;
+}
+
+.food-theme a {
+  color: inherit;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

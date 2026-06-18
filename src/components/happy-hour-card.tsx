@@ -16,7 +16,9 @@ function formatCountdown(milliseconds: number) {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  return `${hours}h ${minutes.toString().padStart(2, "0")}m ${seconds.toString().padStart(2, "0")}s`;
+  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 export function HappyHourCard({
@@ -55,7 +57,7 @@ export function HappyHourCard({
             {happyHour.active ? "Open" : "Starts in"}
           </p>
           <p
-            className="mt-1 font-mono text-[1.12rem] font-semibold tracking-[0.12em] text-white sm:text-[1.22rem]"
+            className="mt-1 font-mono text-[1.12rem] font-semibold tracking-[0.2em] text-white tabular-nums sm:text-[1.22rem]"
             suppressHydrationWarning
           >
             {countdown}

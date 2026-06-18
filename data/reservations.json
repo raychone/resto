@@ -74,7 +74,7 @@
     "restaurantSlug": "food-1",
     "tablesNeeded": 1,
     "status": "pending",
-    "createdAt": "2026-06-17T21:16:13.893Z",
+    "createdAt": "2026-06-18T03:42:12.260Z",
     "firstName": "Marco",
     "lastName": "Rossi",
     "name": "Marco Rossi",
@@ -82,7 +82,7 @@
     "email": "foodclient@demo.local",
     "note": "Anniversary dinner",
     "locale": "fr",
-    "date": "2026-06-17",
+    "date": "2026-06-18",
     "time": "19:00",
     "guestCount": 2,
     "confirmedAt": null
@@ -93,7 +93,7 @@
     "restaurantSlug": "food-1",
     "tablesNeeded": 1,
     "status": "confirmed",
-    "createdAt": "2026-06-17T21:16:13.893Z",
+    "createdAt": "2026-06-18T03:42:12.260Z",
     "firstName": "Giulia",
     "lastName": "Bianchi",
     "name": "Giulia Bianchi",
@@ -101,9 +101,28 @@
     "email": "foodclient2@demo.local",
     "note": "Family booking",
     "locale": "fr",
-    "date": "2026-06-17",
+    "date": "2026-06-18",
     "time": "20:30",
     "guestCount": 4,
-    "confirmedAt": "2026-06-17T21:16:13.893Z"
+    "confirmedAt": "2026-06-18T03:42:12.260Z"
+  },
+  {
+    "id": "reservation-m6v0wxh4",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "restaurantSlug": "bar-1",
+    "tablesNeeded": 1,
+    "status": "confirmed",
+    "createdAt": "2026-06-18T03:42:31.860Z",
+    "firstName": "Playwright",
+    "lastName": "Playwright-mqiyf2bm",
+    "name": "Playwright Playwright-mqiyf2bm",
+    "phone": "0600000000",
+    "email": "playwright@example.com",
+    "note": "Réservation Playwright",
+    "locale": "fr",
+    "date": "2026-06-18",
+    "time": "19:30",
+    "guestCount": 2,
+    "confirmedAt": "2026-06-18T03:42:31.966Z"
   }
 ]

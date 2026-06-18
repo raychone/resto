@@ -35,6 +35,13 @@ type Props = {
   locale: Locale;
   tableSession: TableSession | null;
   orderFlowEnabled: boolean;
+  theme?: "dark" | "food";
+  initialSelectedTableId?: string | null;
+  initialReservations: Reservation[];
+  initialTables: Table[];
+  initialOrders: Order[];
+  initialPayments: Payment[];
+  initialMessages: RestaurantMessage[];
 };
 
 function formatDate(date: string) {
@@ -44,6 +51,15 @@ function formatDate(date: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(`${date}T12:00:00`));
+}
+
+function formatDateTime(date: string) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(date));
 }
 
 function formatMoney(amount: number, currency: string) {
@@ -136,12 +152,19 @@ export function StaffClient({
   locale,
   tableSession,
   orderFlowEnabled,
+  theme = "dark",
+  initialSelectedTableId = null,
+  initialReservations,
+  initialTables,
+  initialOrders,
+  initialPayments,
+  initialMessages,
 }: Props) {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [tables, setTables] = useState<Table[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [messages, setMessages] = useState<RestaurantMessage[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
+  const [tables, setTables] = useState<Table[]>(initialTables);
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [payments, setPayments] = useState<Payment[]>(initialPayments);
+  const [messages, setMessages] = useState<RestaurantMessage[]>(initialMessages);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [reservationFilter, setReservationFilter] = useState<
@@ -164,7 +187,10 @@ export function StaffClient({
   const [staffQuickNav, setStaffQuickNav] = useState<"reservations" | "alerts" | "tables" | "bon" | "menu">(
     orderFlowEnabled ? "tables" : "reservations",
   );
+  const [selectedTableModalId, setSelectedTableModalId] = useState<string | null>(initialSelectedTableId);
   const [pendingScrollTarget, setPendingScrollTarget] = useState<string | null>(null);
+  const [burgerOpen, setBurgerOpen] = useState(false);
+  const isFoodTheme = theme === "food";
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -178,60 +204,63 @@ export function StaffClient({
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    try {
+      const [reservationResponse, tablesResponse, ordersResponse, messagesResponse] = await Promise.all([
+        fetch(`/api/restaurants/${restaurant.slug}/reservations`, { cache: "no-store" }),
+        fetch(`/api/restaurants/${restaurant.slug}/tables`, { cache: "no-store" }),
+        fetch(`/api/restaurants/${restaurant.slug}/orders`, { cache: "no-store" }),
+        fetch(`/api/restaurants/${restaurant.slug}/messages`, { cache: "no-store" }),
+      ]);
 
-    const [reservationResponse, tablesResponse, ordersResponse, messagesResponse] = await Promise.all([
-      fetch(`/api/restaurants/${restaurant.slug}/reservations`, { cache: "no-store" }),
-      fetch(`/api/restaurants/${restaurant.slug}/tables`, { cache: "no-store" }),
-      fetch(`/api/restaurants/${restaurant.slug}/orders`, { cache: "no-store" }),
-      fetch(`/api/restaurants/${restaurant.slug}/messages`, { cache: "no-store" }),
-    ]);
-
-    if (reservationResponse.ok) {
-      const payload = (await reservationResponse.json()) as { reservations: Reservation[] };
-      setReservations(payload.reservations);
-    }
-
-    if (tablesResponse.ok) {
-      const payload = (await tablesResponse.json()) as { tables: Table[] };
-      setTables(payload.tables);
-    }
-
-    if (ordersResponse.ok) {
-      const payload = (await ordersResponse.json()) as { orders: Order[]; payments: Payment[] };
-      if (initializedOrdersRef.current) {
-        const previousOrders = previousOrdersRef.current;
-        const nextOrders = new Map(payload.orders.map((order) => [order.id, order.status] as const));
-        const newOrders = payload.orders.filter((order) => !previousOrders.has(order.id));
-        const updatedOrders = payload.orders.filter((order) => previousOrders.get(order.id) !== order.status);
-
-        if (newOrders.some((order) => order.status === "sent_to_kitchen" || order.status === "open")) {
-          pushToast("Nouvelle commande reçue.");
-          sendBrowserNotification(
-            `${restaurant.name} — nouvelle commande`,
-            "Une nouvelle commande attend la validation du serveur.",
-          );
-        }
-
-        if (updatedOrders.some((order) => order.status === "ready")) {
-          pushToast("Une commande est prête en cuisine.");
-          sendBrowserNotification(`${restaurant.name} — commande prête`, "Une commande est prête pour le service.");
-        }
-
-        previousOrdersRef.current = nextOrders;
-      } else {
-        previousOrdersRef.current = new Map(payload.orders.map((order) => [order.id, order.status] as const));
-        initializedOrdersRef.current = true;
+      if (reservationResponse.ok) {
+        const payload = (await reservationResponse.json()) as { reservations: Reservation[] };
+        setReservations(payload.reservations);
       }
-      setOrders(payload.orders);
-      setPayments(payload.payments);
-    }
 
-    if (messagesResponse.ok) {
-      const payload = (await messagesResponse.json()) as { messages: RestaurantMessage[] };
-      setMessages(payload.messages);
-    }
+      if (tablesResponse.ok) {
+        const payload = (await tablesResponse.json()) as { tables: Table[] };
+        setTables(payload.tables);
+      }
 
-    setLoading(false);
+      if (ordersResponse.ok) {
+        const payload = (await ordersResponse.json()) as { orders: Order[]; payments: Payment[] };
+        if (initializedOrdersRef.current) {
+          const previousOrders = previousOrdersRef.current;
+          const nextOrders = new Map(payload.orders.map((order) => [order.id, order.status] as const));
+          const newOrders = payload.orders.filter((order) => !previousOrders.has(order.id));
+          const updatedOrders = payload.orders.filter((order) => previousOrders.get(order.id) !== order.status);
+
+          if (newOrders.some((order) => order.status === "sent_to_kitchen" || order.status === "open")) {
+            pushToast("Nouvelle commande reçue.");
+            sendBrowserNotification(
+              `${restaurant.name} — nouvelle commande`,
+              "Une nouvelle commande attend la validation du serveur.",
+            );
+          }
+
+          if (updatedOrders.some((order) => order.status === "ready")) {
+            pushToast("Une commande est prête en cuisine.");
+            sendBrowserNotification(`${restaurant.name} — commande prête`, "Une commande est prête pour le service.");
+          }
+
+          previousOrdersRef.current = nextOrders;
+        } else {
+          previousOrdersRef.current = new Map(payload.orders.map((order) => [order.id, order.status] as const));
+          initializedOrdersRef.current = true;
+        }
+        setOrders(payload.orders);
+        setPayments(payload.payments);
+      }
+
+      if (messagesResponse.ok) {
+        const payload = (await messagesResponse.json()) as { messages: RestaurantMessage[] };
+        setMessages(payload.messages);
+      }
+    } catch {
+      setNotice("Synchronisation temporairement indisponible.");
+    } finally {
+      setLoading(false);
+    }
   }, [restaurant.name, restaurant.slug]);
 
   useEffect(() => {
@@ -477,6 +506,47 @@ export function StaffClient({
 
     return currentTables.find((table) => table.id === selectedTarget) ?? null;
   }, [currentTables, orders, selectedTarget]);
+
+  const selectedTableModal = useMemo(() => {
+    if (!selectedTableModalId) return null;
+    return currentTables.find((table) => table.id === selectedTableModalId) ?? null;
+  }, [currentTables, selectedTableModalId]);
+
+  const selectedTableModalOpenOrder = useMemo(() => {
+    if (!selectedTableModal) return null;
+
+    return (
+      orders.find((order) => {
+        if (!isActiveOrder(order)) return false;
+        return (order.source === "table" || order.source === "qr") && order.tableId === selectedTableModal.id;
+      }) ?? null
+    );
+  }, [orders, selectedTableModal]);
+
+  useEffect(() => {
+    if (!selectedTableModalId) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedTableModalId(null);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedTableModalId]);
+
+  useEffect(() => {
+    if (selectedTableModalId && !currentTables.some((table) => table.id === selectedTableModalId)) {
+      setSelectedTableModalId(null);
+    }
+  }, [currentTables, selectedTableModalId]);
 
   function jumpTo(id: string) {
     window.requestAnimationFrame(() => {
@@ -1021,7 +1091,7 @@ export function StaffClient({
   }
 
   return (
-    <main className="internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28">
+    <main className={theme === "food" ? "food-theme mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28" : "internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28"}>
       <section className="rounded-[2rem] border border-black/8 bg-white/85 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -1155,12 +1225,14 @@ export function StaffClient({
       ) : null}
 
       {orderFlowEnabled ? (
-        <div className="fixed bottom-3 left-1/2 z-30 w-[calc(100%-1.5rem)] max-w-[46rem] -translate-x-1/2 rounded-[1.75rem] border border-black/10 bg-[#0f0f0f]/96 px-2 py-2 shadow-[0_16px_45px_rgba(0,0,0,0.38)] backdrop-blur">
-          <div
-            className={`grid gap-1 ${
-              bookingEnabled ? "grid-cols-5" : "grid-cols-4"
-            }`}
-          >
+        <div
+          className={`fixed bottom-3 left-1/2 z-30 w-[calc(100%-1.5rem)] max-w-[46rem] -translate-x-1/2 rounded-[1.75rem] border px-2 py-2 shadow-[0_16px_45px_rgba(0,0,0,0.38)] backdrop-blur ${
+            isFoodTheme
+              ? "border-[#eadfce] bg-[#fffdf8]/96"
+              : "border-black/10 bg-[#0f0f0f]/96"
+          }`}
+        >
+          <div className={`grid gap-1 ${bookingEnabled ? "grid-cols-4" : "grid-cols-3"}`}>
             {bookingEnabled ? (
               <button
                 type="button"
@@ -1169,55 +1241,53 @@ export function StaffClient({
                 }}
                 className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
                   staffQuickNav === "reservations"
-                    ? "border-white bg-white text-black"
-                    : "border-white/8 bg-white/5 text-white/78 hover:bg-white/10"
+                    ? isFoodTheme
+                      ? "border-[#c41e1e] bg-[#c41e1e] text-white"
+                      : "border-white bg-white text-black"
+                    : isFoodTheme
+                      ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
+                      : "border-white/8 bg-white/5 text-white/78 hover:bg-white/10"
                 }`}
               >
                 <span className="text-base leading-none">📅</span>
                 <span className="mt-1">Réserv.</span>
               </button>
             ) : null}
-            <button
-              type="button"
-              onClick={() => {
-                navigateStaff(staffTab, "staff-alerts", "alerts");
-              }}
-              className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
+              <button
+                type="button"
+                onClick={() => {
+                  navigateStaff(staffTab, "staff-alerts", "alerts");
+                }}
+                className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
                 staffQuickNav === "alerts"
-                  ? "border-white bg-white text-black"
-                  : "border-white/8 bg-white/5 text-white/78 hover:bg-white/10"
-              }`}
-            >
+                  ? isFoodTheme
+                    ? "border-[#c41e1e] bg-[#c41e1e] text-white"
+                    : "border-white bg-white text-black"
+                  : isFoodTheme
+                    ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
+                    : "border-white/8 bg-white/5 text-white/78 hover:bg-white/10"
+                }`}
+              >
               <span className="text-base leading-none">⚠️</span>
               <span className="mt-1">Alertes</span>
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                navigateStaff("tables", "staff-tables", "tables");
-              }}
-              className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
+              <button
+                type="button"
+                onClick={() => {
+                  navigateStaff("tables", "staff-tables", "tables");
+                }}
+                className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
                 staffQuickNav === "tables"
-                  ? "border-white bg-white text-black"
-                  : "border-white/8 bg-white/5 text-white/78 hover:bg-white/10"
-              }`}
-            >
+                  ? isFoodTheme
+                    ? "border-[#c41e1e] bg-[#c41e1e] text-white"
+                    : "border-white bg-white text-black"
+                  : isFoodTheme
+                    ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
+                    : "border-white/8 bg-white/5 text-white/78 hover:bg-white/10"
+                }`}
+              >
               <span className="text-base leading-none">🪑</span>
               <span className="mt-1">Tables</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                navigateStaff("tables", "staff-bon", "bon");
-              }}
-              className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
-                staffQuickNav === "bon"
-                  ? "border-white bg-white text-black"
-                  : "border-white/8 bg-white/5 text-white/78 hover:bg-white/10"
-              }`}
-            >
-              <span className="text-base leading-none">🧾</span>
-              <span className="mt-1">Bon</span>
             </button>
             <button
               type="button"
@@ -1226,8 +1296,12 @@ export function StaffClient({
               }}
               className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
                 staffQuickNav === "menu"
-                  ? "border-white bg-white text-black"
-                  : "border-white/8 bg-white/5 text-white/78 hover:bg-white/10"
+                  ? isFoodTheme
+                    ? "border-[#c41e1e] bg-[#c41e1e] text-white"
+                    : "border-white bg-white text-black"
+                  : isFoodTheme
+                    ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
+                    : "border-white/8 bg-white/5 text-white/78 hover:bg-white/10"
               }`}
             >
               <span className="text-base leading-none">📖</span>
@@ -1581,7 +1655,7 @@ export function StaffClient({
                   </div>
                 </div>
 
-                <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-5">
                   {currentTables.map((table) => {
                     const openOrder = orders.find((order) => {
                       if (!isActiveOrder(order)) return false;
@@ -1589,17 +1663,20 @@ export function StaffClient({
                     });
                     const tableAlerts =
                       (pendingClientOrdersByTable[table.id] ?? 0) + (waiterCallsByTable[table.id] ?? 0);
+                    const tableModalHref = `/staff?restaurantSlug=${encodeURIComponent(restaurant.slug)}&table=${encodeURIComponent(table.id)}`;
                     return (
-                      <button
+                      <a
                         key={table.id}
-                        type="button"
+                        href={tableModalHref}
+                        data-testid={`staff-table-card-${table.id}`}
                         onClick={() => {
+                          setSelectedTableModalId(table.id);
                           setSelectedTarget(openOrder?.id ?? table.id);
                           if ((waiterCallsByTable[table.id] ?? 0) > 0) {
                             void markWaiterCallsReadForTable(table.id);
                           }
                         }}
-                        className={`rounded-[1.4rem] border p-4 text-left transition ${
+                        className={`min-h-[7.5rem] rounded-[1.15rem] border p-2.5 text-left transition sm:p-3 ${
                           selectedTarget === table.id || selectedTarget === openOrder?.id
                             ? "border-transparent bg-black text-white shadow-lg"
                             : tableAlerts > 0
@@ -1607,13 +1684,13 @@ export function StaffClient({
                               : "border-black/8 bg-black/2 text-black hover:bg-black/4"
                         }`}
                       >
-                        <span className="block text-[11px] uppercase tracking-[0.28em] opacity-70">
+                        <span className="block text-[9px] uppercase tracking-[0.26em] opacity-70 sm:text-[10px]">
                           {table.zone}
                         </span>
-                        <span className="mt-2 block text-base font-semibold sm:text-lg">{table.name}</span>
-                        <span className="mt-1 block text-xs opacity-80 sm:text-sm">{table.seats} places</span>
+                        <span className="mt-1 block text-sm font-semibold sm:text-base">{table.name}</span>
+                        <span className="mt-1 block text-[11px] opacity-80 sm:text-xs">{table.seats} places</span>
                         <span
-                          className={`mt-3 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${
+                          className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${
                             openOrder
                               ? "border-black/20 bg-black text-white"
                               : "border-black/10 bg-white/80 text-black/80"
@@ -1623,7 +1700,7 @@ export function StaffClient({
                         </span>
                         {openOrder ? (
                           <span
-                            className={`mt-2 inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${
+                            className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${
                               orderStatusMeta(openOrder.status).className
                             }`}
                           >
@@ -1631,20 +1708,223 @@ export function StaffClient({
                           </span>
                         ) : null}
                         {tableAlerts > 0 ? (
-                          <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-500 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white shadow-[0_8px_20px_rgba(244,63,94,0.25)]">
+                          <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-white shadow-[0_8px_20px_rgba(244,63,94,0.25)]">
                             <span className="h-2 w-2 rounded-full bg-rose-500" />
                             {tableAlerts} alerte{tableAlerts > 1 ? "s" : ""}
                           </span>
                         ) : null}
                         {pendingClientOrdersByTable[table.id] ? (
-                          <span className="mt-2 inline-flex rounded-full border border-amber-300 bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-900">
+                          <span className="mt-2 inline-flex rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-900">
                             {pendingClientOrdersByTable[table.id]} commande QR
                           </span>
                         ) : null}
-                      </button>
+                      </a>
                     );
                   })}
                 </div>
+
+                {selectedTableModal ? (
+                  <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-black/45 px-3 py-3 backdrop-blur-sm sm:items-center sm:py-4">
+                    <div
+                      role="dialog"
+                      aria-modal="true"
+                      aria-label={`Table ${selectedTableModal.name}`}
+                      data-testid="staff-table-modal"
+                      className="relative w-full max-w-3xl max-h-[calc(100dvh-1.5rem)] overflow-hidden rounded-[1.8rem] border border-[#eadfce] bg-[#fffdf8] shadow-[0_30px_110px_rgba(15,23,42,0.28)] sm:max-h-[calc(100dvh-2rem)]"
+                    >
+                      <a
+                        href={`/staff?restaurantSlug=${encodeURIComponent(restaurant.slug)}`}
+                        className="absolute right-4 top-4 z-10 rounded-full border border-[#eadfce] bg-white px-3 py-2 text-sm font-semibold text-[#24170f] shadow-sm"
+                        aria-label="Fermer"
+                        onClick={() => setSelectedTableModalId(null)}
+                      >
+                        ×
+                      </a>
+                      <div className="grid max-h-[calc(100dvh-1.5rem)] gap-0 overflow-y-auto lg:grid-cols-[1.08fr_0.92fr]">
+                        <div className="space-y-4 p-4 text-[#24170f] sm:p-6">
+                          <div>
+                            <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">
+                              Table
+                            </p>
+                            <h3 className="mt-2 text-3xl font-semibold text-[#24170f]">{selectedTableModal.name}</h3>
+                            <p className="mt-2 text-sm text-[#7f6c5a]">
+                              {selectedTableModal.zone} · {selectedTableModal.seats} places
+                            </p>
+                          </div>
+
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            <div className="rounded-[1.25rem] border border-[#eadfce] bg-white p-4">
+                              <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Alertes</p>
+                              <p className="mt-2 text-2xl font-semibold text-[#24170f]">
+                                {(pendingClientOrdersByTable[selectedTableModal.id] ?? 0) +
+                                  (waiterCallsByTable[selectedTableModal.id] ?? 0)}
+                              </p>
+                            </div>
+                            <div className="rounded-[1.25rem] border border-[#eadfce] bg-white p-4">
+                              <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">QR</p>
+                              <p className="mt-2 text-2xl font-semibold text-[#24170f]">
+                                {pendingClientOrdersByTable[selectedTableModal.id] ?? 0}
+                              </p>
+                            </div>
+                            <div className="rounded-[1.25rem] border border-[#eadfce] bg-white p-4">
+                              <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Appels</p>
+                              <p className="mt-2 text-2xl font-semibold text-[#24170f]">
+                                {waiterCallsByTable[selectedTableModal.id] ?? 0}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="rounded-[1.5rem] border border-[#eadfce] bg-[#fff8f2] p-4">
+                            <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">Statut</p>
+                            <p className="mt-1 text-sm text-[#6f5b4a]">
+                              {selectedTableModalOpenOrder
+                                ? selectedTableModalOpenOrder.status === "open"
+                                  ? "À valider par le serveur"
+                                  : selectedTableModalOpenOrder.status === "sent_to_kitchen"
+                                    ? "Envoyé à la cuisine"
+                                    : selectedTableModalOpenOrder.status === "preparing"
+                                      ? "En préparation"
+                                      : selectedTableModalOpenOrder.status === "ready"
+                                        ? "À servir"
+                                        : selectedTableModalOpenOrder.status === "served"
+                                          ? "Servi à la table"
+                                          : selectedTableModalOpenOrder.status === "paid"
+                                            ? "Encaissement terminé"
+                                            : "Archivé"
+                                : "Aucun bon ouvert."}
+                            </p>
+                            {selectedTableModalOpenOrder ? (
+                              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                                <div className="rounded-2xl border border-[#eadfce] bg-white px-3 py-3">
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Total</p>
+                                  <p className="mt-1 text-base font-semibold text-[#24170f]">{formatMoney(orderTotal(selectedTableModalOpenOrder), restaurant.currency)}</p>
+                                </div>
+                                <div className="rounded-2xl border border-[#eadfce] bg-white px-3 py-3">
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Déjà payé</p>
+                                  <p className="mt-1 text-base font-semibold text-[#24170f]">
+                                    {formatMoney(paidTotalForOrder(payments, selectedTableModalOpenOrder.id), restaurant.currency)}
+                                  </p>
+                                </div>
+                                <div className="rounded-2xl border border-[#eadfce] bg-white px-3 py-3">
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Reste</p>
+                                  <p className="mt-1 text-base font-semibold text-[#24170f]">
+                                    {formatMoney(
+                                      Math.max(
+                                        0,
+                                        orderTotal(selectedTableModalOpenOrder) -
+                                          paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
+                                      ),
+                                      restaurant.currency,
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                            ) : null}
+                          </div>
+
+                          <div className="flex flex-wrap gap-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedTarget(selectedTableModal.id);
+                                setSelectedTableModalId(null);
+                                navigateStaff("tables", "staff-bon", "bon");
+                              }}
+                              className="rounded-full border border-[#c41e1e] bg-[#c41e1e] px-4 py-3 text-sm font-medium text-white"
+                            >
+                              Ouvrir le bon
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedTableModalId(null)}
+                              className="rounded-full border border-[#eadfce] bg-white px-4 py-3 text-sm font-medium text-[#24170f]"
+                            >
+                              Fermer
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-[#eadfce] bg-[#fffdf8] p-4 sm:p-6 lg:border-l lg:border-t-0">
+                          <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">Alertes détaillées</p>
+                          <div className="mt-3 space-y-3">
+                            {(() => {
+                              const tablePendingOrders = pendingClientOrders.filter(
+                                (order) => order.tableId === selectedTableModal.id,
+                              );
+                              const tableCalls = messages.filter((message) => {
+                                if (message.status !== "new") return false;
+                                if (message.tableId) return message.tableId === selectedTableModal.id;
+                                const haystack = `${message.name} ${message.message}`.toLowerCase();
+                                return haystack.includes(selectedTableModal.name.toLowerCase());
+                              });
+
+                              return (
+                                <>
+                                  {tablePendingOrders.length === 0 && tableCalls.length === 0 ? (
+                                    <p className="rounded-2xl border border-[#eadfce] bg-[#faf7f2] p-4 text-sm text-[#7f6c5a]">
+                                      Aucune alerte pour cette table.
+                                    </p>
+                                  ) : null}
+
+                                  {tablePendingOrders.map((order) => (
+                                    <article key={order.id} className="rounded-[1.25rem] border border-[#eadfce] bg-white p-4">
+                                      <div className="flex items-center justify-between gap-3">
+                                        <div>
+                                          <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Commande QR</p>
+                                          <h4 className="mt-1 text-base font-semibold text-[#24170f]">
+                                            {order.items.length} articles
+                                          </h4>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedTarget(order.id);
+                                            setSelectedTableModalId(null);
+                                            navigateStaff("tables", "staff-bon", "bon");
+                                          }}
+                                          className="rounded-full border border-[#c41e1e] bg-[#c41e1e] px-3 py-2 text-xs font-medium text-white"
+                                        >
+                                          Voir le bon
+                                        </button>
+                                      </div>
+                                      <div className="mt-3 space-y-2">
+                                        {order.items.slice(0, 4).map((item) => (
+                                          <div key={item.id} className="flex items-start justify-between gap-3 text-sm">
+                                            <div className="min-w-0">
+                                              <p className="truncate font-medium text-[#24170f]">
+                                                {item.quantity} × {item.nameSnapshot}
+                                              </p>
+                                              <p className="truncate text-xs text-[#7f6c5a]">
+                                                {item.assignedClientName ? `Client: ${item.assignedClientName}` : "Partagé"}
+                                                {item.note ? ` · ${item.note}` : ""}
+                                              </p>
+                                            </div>
+                                            <p className="shrink-0 font-semibold text-[#24170f]/80">
+                                              {formatMoney(item.priceSnapshot * item.quantity, restaurant.currency)}
+                                            </p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </article>
+                                  ))}
+
+                                  {tableCalls.map((message) => (
+                                    <article key={message.id} className="rounded-[1.25rem] border border-rose-200 bg-rose-50 p-4">
+                                      <p className="text-[11px] uppercase tracking-[0.28em] text-rose-700">Appel de table</p>
+                                      <h4 className="mt-1 text-base font-semibold text-rose-950">{message.name}</h4>
+                                      <p className="mt-2 text-sm leading-6 text-rose-900/80">{message.message}</p>
+                                      <p className="mt-3 text-xs text-rose-800/60">{formatDateTime(message.createdAt)}</p>
+                                    </article>
+                                  ))}
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="mt-4">
                   <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">Bon courant</p>

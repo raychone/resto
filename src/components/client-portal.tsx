@@ -26,6 +26,7 @@ type Props = {
   activeOrder: Order | null;
   focusCart?: boolean;
   orderFlowEnabled: boolean;
+  theme?: "dark" | "food";
 };
 
 type ClientTab = "menu" | "cart" | "tracking" | "split" | "profile";
@@ -73,6 +74,7 @@ export function ClientPortal({
   activeOrder,
   focusCart = false,
   orderFlowEnabled,
+  theme = "dark",
 }: Props) {
   const [callingWaiter, setCallingWaiter] = useState(false);
   const [waiterNotice, setWaiterNotice] = useState<string | null>(null);
@@ -347,7 +349,7 @@ export function ClientPortal({
   }
 
   return (
-    <main className="internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28">
+    <main className={theme === "food" ? "food-theme mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28" : "internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28"}>
       <section className="rounded-[2rem] border border-white/10 bg-[#171717] p-4 text-[#f5f1ea] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
         <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">Client</p>
         <h1 className="mt-1 text-4xl font-semibold">{clientUser.name}</h1>

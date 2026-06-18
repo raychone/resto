@@ -1,15 +1,26 @@
 [
   {
-    "slug": "brasa-uno",
-    "name": "Brasa Uno",
-    "tagline": "Viande maturée, feu, texture, contraste.",
-    "description": "Steakhouse urbain avec des menus denses, des prix clairs et de grandes images pour chaque plat.",
-    "accent": "#B45309",
-    "logoUrl": "https://images.unsplash.com/photo-1529612700005-e35377bf1415?auto=format&fit=crop&w=800&q=80",
-    "heroImage": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1600&q=80",
-    "address": "51 Boulevard des Aéroports, Lyon",
-    "phone": "+33 4 00 00 00 02",
-    "openingHours": "Mardi - Dimanche, 13:00 - 23:30",
+    "id": "622747c1-ced2-4779-9605-83008f6ed066",
+    "slug": "terra-fresh",
+    "name": "Terra Fresh Kitchen",
+    "status": "active",
+    "plan": "pro",
+    "tagline": "Bowls propres, couleurs denses, goût net.",
+    "description": "Concept fresh-casual centré sur les ingrédients de saison, le dressage épuré et les allergènes clairement affichés.",
+    "accent": "#0F766E",
+    "logoUrl": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=800&q=80",
+    "heroImage": "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1600&q=80",
+    "address": "24 Cours de la République, Paris",
+    "phone": "+33 1 42 00 00 01",
+    "whatsappNumber": "+33 1 42 00 00 01",
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": "",
+    "googleRating": 4.8,
+    "googleReviewsCount": 186,
+    "googleReviewsUrl": "",
+    "openingHours": "Lundi - Dimanche, 11:30 - 22:30",
+    "tableCount": 14,
+    "seatsPerTable": 4,
     "weeklyHours": [
       {
         "day": "mon",
@@ -117,105 +128,6 @@
         "closed": false
       }
     ],
-    "currency": "EUR",
-    "categories": [
-      {
-        "id": "category-main",
-        "name": "Plats principaux",
-        "description": "Les plats qui définissent l'expérience.",
-        "items": [
-          {
-            "id": "item-ribeye",
-            "name": "Ribeye 350 g",
-            "description": "Avec beurre aromatisé, pommes de terre wedges et salade verte.",
-            "recipe": "Saisi au grill, fini au beurre et à l'ail.",
-            "ingredients": [
-              "bœuf",
-              "beurre",
-              "pommes de terre",
-              "salade",
-              "ail"
-            ],
-            "allergens": [
-              "lait"
-            ],
-            "price": 124,
-            "imageUrl": "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true,
-            "happyHourEnabled": false,
-            "happyHourPrice": null
-          }
-        ]
-      }
-    ],
-    "translations": {
-      "en": {
-        "name": "Brasa Uno",
-        "tagline": "Aged meat, fire, texture, contrast.",
-        "description": "An urban steakhouse with dense menus, clear prices and large images for every dish.",
-        "address": "51 Airports Boulevard, Lyon",
-        "categories": {
-          "category-main": {
-            "name": "Main courses",
-            "description": "The dishes that define the experience.",
-            "items": {
-              "item-ribeye": {
-                "name": "Ribeye 350 g",
-                "description": "With herb butter, wedges and green salad.",
-                "recipe": "Grilled, finished with butter and garlic."
-              }
-            }
-          }
-        }
-      },
-      "it": {
-        "name": "Brasa Uno",
-        "tagline": "Carne frollata, fuoco, consistenza, contrasto.",
-        "description": "Una steakhouse urbana con menu densi, prezzi chiari e immagini grandi per ogni piatto.",
-        "address": "51 Boulevard des Aéroports, Lione",
-        "categories": {
-          "category-main": {
-            "name": "Piatti principali",
-            "description": "I piatti che definiscono l'esperienza.",
-            "items": {
-              "item-ribeye": {
-                "name": "Ribeye 350 g",
-                "description": "Con burro aromatico, patate wedges e insalata verde.",
-                "recipe": "Alla griglia, rifinito con burro e aglio."
-              }
-            }
-          }
-        }
-      },
-      "es": {
-        "name": "Brasa Uno",
-        "tagline": "Carne madurada, fuego, textura, contraste.",
-        "description": "Un steakhouse urbano con menús densos, precios claros e imágenes grandes para cada plato.",
-        "address": "51 Boulevard des Aéroports, Lyon",
-        "categories": {
-          "category-main": {
-            "name": "Platos principales",
-            "description": "Los platos que definen la experiencia.",
-            "items": {
-              "item-ribeye": {
-                "name": "Ribeye 350 g",
-                "description": "Con mantequilla aromática, wedges y ensalada verde.",
-                "recipe": "A la parrilla, terminado con mantequilla y ajo."
-              }
-            }
-          }
-        }
-      }
-    },
-    "id": "87971927-025d-4c91-932e-e2de5b46263e",
-    "status": "trial",
-    "plan": "starter",
-    "whatsappNumber": "+33 4 00 00 00 02",
-    "googleRating": 4.8,
-    "googleReviewsCount": 0,
-    "googleReviewsUrl": "",
-    "tableCount": 12,
-    "seatsPerTable": 4,
     "features": {
       "orderFlowEnabled": true,
       "clientLoginEnabled": true,
@@ -229,132 +141,10 @@
       "smsAlertsEnabled": false,
       "googleReviewsEnabled": true
     },
-    "createdAt": "2026-06-10T22:15:18.387Z",
-    "updatedAt": "2026-06-10T22:15:18.387Z",
-    "deletedAt": null,
-    "happyHourSchedule": null,
-    "uberEatsUrl": "",
-    "tripAdvisorUrl": ""
-  },
-  {
-    "slug": "terra-fresh",
-    "name": "Terra Fresh Kitchen",
-    "tagline": "Bowls propres, couleurs denses, goût net.",
-    "description": "Concept fresh-casual centré sur les ingrédients de saison, le dressage épuré et les allergènes clairement affichés.",
-    "accent": "#0F766E",
-    "logoUrl": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=800&q=80",
-    "heroImage": "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1600&q=80",
-    "address": "24 Cours de la République, Paris",
-    "phone": "+33 1 42 00 00 01",
-    "openingHours": "Lundi - Dimanche, 11:30 - 22:30",
-    "weeklyHours": [
-      {
-        "day": "mon",
-        "label": "Lundi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "tue",
-        "label": "Mardi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "wed",
-        "label": "Mercredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "thu",
-        "label": "Jeudi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "fri",
-        "label": "Vendredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sat",
-        "label": "Samedi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sun",
-        "label": "Dimanche",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "22:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      }
-    ],
     "currency": "EUR",
+    "createdAt": "2026-06-18T03:04:50.033Z",
+    "updatedAt": "2026-06-18T03:04:50.034Z",
+    "deletedAt": null,
     "categories": [
       {
         "id": "category-signatures",
@@ -542,46 +332,30 @@
         }
       }
     },
-    "id": "30ce9c8a-f261-4490-8ee7-df8e4613f4fe",
-    "status": "trial",
-    "plan": "starter",
-    "whatsappNumber": "+33 1 42 00 00 01",
-    "googleRating": 4.8,
-    "googleReviewsCount": 0,
-    "googleReviewsUrl": "",
-    "tableCount": 12,
-    "seatsPerTable": 4,
-    "features": {
-      "orderFlowEnabled": true,
-      "clientLoginEnabled": true,
-      "waiterValidationEnabled": true,
-      "kitchenWorkflowEnabled": true,
-      "servedConfirmationEnabled": true,
-      "bookingEnabled": false,
-      "qrMode": "pdf",
-      "notificationProvider": "android",
-      "whatsappAlertsEnabled": false,
-      "smsAlertsEnabled": false,
-      "googleReviewsEnabled": true
-    },
-    "createdAt": "2026-06-10T22:15:18.385Z",
-    "updatedAt": "2026-06-12T09:46:07.912Z",
-    "deletedAt": null,
-    "happyHourSchedule": null,
-    "uberEatsUrl": "www.ubereats.fr",
-    "tripAdvisorUrl": "www.tripadvisor.com"
+    "happyHourSchedule": null
   },
   {
-    "slug": "bar-1",
-    "name": "Noir 1",
-    "tagline": "Bar mobile-first avec happy hour, boissons, bières et digestifs.",
-    "description": "Bar de quartier pensé pour un menu QR mobile-first, orienté boissons, happy hour, bières, cocktails et digestifs.",
-    "accent": "#7C3AED",
-    "logoUrl": "/bar-1-logo.svg",
-    "heroImage": "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1600&q=80",
-    "address": "8 Rue des Lilas, Marseille",
-    "phone": "+33 4 00 00 00 03",
-    "openingHours": "Lundi - Samedi, 17:00 - 02:00",
+    "id": "6f805803-3490-42a4-b1ee-a555212badb3",
+    "slug": "brasa-uno",
+    "name": "Brasa Uno",
+    "status": "active",
+    "plan": "pro",
+    "tagline": "Viande maturée, feu, texture, contraste.",
+    "description": "Steakhouse urbain avec des menus denses, des prix clairs et de grandes images pour chaque plat.",
+    "accent": "#B45309",
+    "logoUrl": "https://images.unsplash.com/photo-1529612700005-e35377bf1415?auto=format&fit=crop&w=800&q=80",
+    "heroImage": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1600&q=80",
+    "address": "51 Boulevard des Aéroports, Lyon",
+    "phone": "+33 4 00 00 00 02",
+    "whatsappNumber": "+33 4 00 00 00 02",
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": "",
+    "googleRating": 4.7,
+    "googleReviewsCount": 94,
+    "googleReviewsUrl": "",
+    "openingHours": "Mardi - Dimanche, 13:00 - 23:30",
+    "tableCount": 16,
+    "seatsPerTable": 4,
     "weeklyHours": [
       {
         "day": "mon",
@@ -689,7 +463,275 @@
         "closed": false
       }
     ],
+    "features": {
+      "orderFlowEnabled": true,
+      "clientLoginEnabled": true,
+      "waiterValidationEnabled": true,
+      "kitchenWorkflowEnabled": true,
+      "servedConfirmationEnabled": true,
+      "bookingEnabled": true,
+      "qrMode": "pdf",
+      "notificationProvider": "android",
+      "whatsappAlertsEnabled": true,
+      "smsAlertsEnabled": false,
+      "googleReviewsEnabled": true
+    },
     "currency": "EUR",
+    "createdAt": "2026-06-18T03:04:50.034Z",
+    "updatedAt": "2026-06-18T03:04:50.034Z",
+    "deletedAt": null,
+    "categories": [
+      {
+        "id": "category-main",
+        "name": "Plats principaux",
+        "description": "Les plats qui définissent l'expérience.",
+        "items": [
+          {
+            "id": "item-ribeye",
+            "name": "Ribeye 350 g",
+            "description": "Avec beurre aromatisé, pommes de terre wedges et salade verte.",
+            "recipe": "Saisi au grill, fini au beurre et à l'ail.",
+            "ingredients": [
+              "bœuf",
+              "beurre",
+              "pommes de terre",
+              "salade",
+              "ail"
+            ],
+            "allergens": [
+              "lait"
+            ],
+            "price": 124,
+            "imageUrl": "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
+          }
+        ]
+      }
+    ],
+    "translations": {
+      "en": {
+        "name": "Brasa Uno",
+        "tagline": "Aged meat, fire, texture, contrast.",
+        "description": "An urban steakhouse with dense menus, clear prices and large images for every dish.",
+        "address": "51 Airports Boulevard, Lyon",
+        "categories": {
+          "category-main": {
+            "name": "Main courses",
+            "description": "The dishes that define the experience.",
+            "items": {
+              "item-ribeye": {
+                "name": "Ribeye 350 g",
+                "description": "With herb butter, wedges and green salad.",
+                "recipe": "Grilled, finished with butter and garlic."
+              }
+            }
+          }
+        }
+      },
+      "it": {
+        "name": "Brasa Uno",
+        "tagline": "Carne frollata, fuoco, consistenza, contrasto.",
+        "description": "Una steakhouse urbana con menu densi, prezzi chiari e immagini grandi per ogni piatto.",
+        "address": "51 Boulevard des Aéroports, Lione",
+        "categories": {
+          "category-main": {
+            "name": "Piatti principali",
+            "description": "I piatti che definiscono l'esperienza.",
+            "items": {
+              "item-ribeye": {
+                "name": "Ribeye 350 g",
+                "description": "Con burro aromatico, patate wedges e insalata verde.",
+                "recipe": "Alla griglia, rifinito con burro e aglio."
+              }
+            }
+          }
+        }
+      },
+      "es": {
+        "name": "Brasa Uno",
+        "tagline": "Carne madurada, fuego, textura, contraste.",
+        "description": "Un steakhouse urbano con menús densos, precios claros e imágenes grandes para cada plato.",
+        "address": "51 Boulevard des Aéroports, Lyon",
+        "categories": {
+          "category-main": {
+            "name": "Platos principales",
+            "description": "Los platos que definen la experiencia.",
+            "items": {
+              "item-ribeye": {
+                "name": "Ribeye 350 g",
+                "description": "Con mantequilla aromática, wedges y ensalada verde.",
+                "recipe": "A la parrilla, terminado con mantequilla y ajo."
+              }
+            }
+          }
+        }
+      }
+    },
+    "happyHourSchedule": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "slug": "bar-1",
+    "name": "Noir 1",
+    "status": "trial",
+    "plan": "starter",
+    "tagline": "Bar mobile-first avec happy hour, boissons, bières et digestifs.",
+    "description": "Bar de quartier pensé pour un menu QR mobile-first, orienté boissons, happy hour, bières, cocktails et digestifs.",
+    "accent": "#7C3AED",
+    "logoUrl": "/bar-1-logo.svg",
+    "heroImage": "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1600&q=80",
+    "address": "8 Rue des Lilas, Marseille",
+    "phone": "+33 4 00 00 00 03",
+    "whatsappNumber": "+33 4 00 00 00 03",
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": "",
+    "googleRating": 4.9,
+    "googleReviewsCount": 221,
+    "googleReviewsUrl": "",
+    "openingHours": "Lundi - Samedi, 17:00 - 02:00",
+    "tableCount": 10,
+    "seatsPerTable": 2,
+    "weeklyHours": [
+      {
+        "day": "mon",
+        "label": "Lundi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "tue",
+        "label": "Mardi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "wed",
+        "label": "Mercredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "thu",
+        "label": "Jeudi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "fri",
+        "label": "Vendredi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sat",
+        "label": "Samedi",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "23:30"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sun",
+        "label": "Dimanche",
+        "intervals": [
+          {
+            "start": "12:00",
+            "end": "22:00"
+          },
+          {
+            "start": "",
+            "end": ""
+          }
+        ],
+        "closed": false
+      }
+    ],
+    "happyHourSchedule": {
+      "enabled": true,
+      "label": "Happy Hour",
+      "days": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri",
+        "sat",
+        "sun"
+      ],
+      "start": "18:30",
+      "end": "20:30"
+    },
+    "features": {
+      "orderFlowEnabled": true,
+      "clientLoginEnabled": true,
+      "waiterValidationEnabled": true,
+      "kitchenWorkflowEnabled": true,
+      "servedConfirmationEnabled": true,
+      "bookingEnabled": false,
+      "qrMode": "menu",
+      "notificationProvider": "android",
+      "whatsappAlertsEnabled": true,
+      "smsAlertsEnabled": true,
+      "googleReviewsEnabled": true
+    },
+    "currency": "EUR",
+    "createdAt": "2026-06-18T03:04:50.035Z",
+    "updatedAt": "2026-06-18T03:04:50.035Z",
+    "deletedAt": null,
     "categories": [
       {
         "id": "category-happy-hour",
@@ -2110,193 +2152,12 @@
         ]
       }
     ],
-    "translations": {
-      "en": {
-        "name": "Noir 1",
-        "tagline": "Cocktails, snacks and digestifs served fast, mobile-first.",
-        "description": "Neighborhood bar designed for a mobile-first QR menu, with drinks, snacks, digestifs and custom categories.",
-        "address": "8 Lilacs Street, Marseille",
-        "categories": {
-          "category-boissons": {
-            "name": "Drinks",
-            "description": "Cocktails, beers and soft drinks to start the night.",
-            "items": {
-              "item-negroni": {
-                "name": "House Negroni",
-                "description": "Gin, red vermouth and bitter served over ice.",
-                "recipe": "Short mix, orange finish."
-              },
-              "item-citron-press": {
-                "name": "Fresh lemon",
-                "description": "Fresh lemon, sparkling water and mint.",
-                "recipe": "Pressed to order, very fresh."
-              }
-            }
-          },
-          "category-snacks": {
-            "name": "Snacks",
-            "description": "Bites to share with drinks or during the evening.",
-            "items": {
-              "item-croque-bar": {
-                "name": "Bar croque",
-                "description": "Mini croque with cheese, ham and mild mustard.",
-                "recipe": "Toasted and served hot."
-              }
-            }
-          },
-          "category-digestifs": {
-            "name": "Digestifs",
-            "description": "Finish the night with a cleaner pour.",
-            "items": {
-              "item-amaro": {
-                "name": "Amaro",
-                "description": "Served neat or on the rocks, aromatic and bitter.",
-                "recipe": "Served lightly chilled."
-              }
-            }
-          }
-        }
-      },
-      "it": {
-        "name": "Noir 1",
-        "tagline": "Cocktail, snack e digestivi serviti velocemente, mobile-first.",
-        "description": "Bar di quartiere pensato per un menu QR mobile-first, con bevande, snack, digestivi e categorie custom.",
-        "address": "8 Rue des Lilas, Marsiglia",
-        "categories": {
-          "category-boissons": {
-            "name": "Bevande",
-            "description": "Cocktail, birre e soft drink per iniziare la serata.",
-            "items": {
-              "item-negroni": {
-                "name": "Negroni della casa",
-                "description": "Gin, vermouth rosso e bitter servito con ghiaccio.",
-                "recipe": "Mix rapido, finitura all'arancia."
-              },
-              "item-citron-press": {
-                "name": "Limone fresco",
-                "description": "Limone fresco, acqua frizzante e menta.",
-                "recipe": "Spremuto al momento, molto fresco."
-              }
-            }
-          },
-          "category-snacks": {
-            "name": "Snack",
-            "description": "Da sgranocchiare con i drink o durante la serata.",
-            "items": {
-              "item-croque-bar": {
-                "name": "Croque bar",
-                "description": "Mini croque con formaggio, prosciutto e senape dolce.",
-                "recipe": "Tostato e servito caldo."
-              }
-            }
-          },
-          "category-digestifs": {
-            "name": "Digestivi",
-            "description": "Per chiudere la serata con un bicchiere più secco.",
-            "items": {
-              "item-amaro": {
-                "name": "Amaro",
-                "description": "Servito liscio o con ghiaccio, aromatico e amaro.",
-                "recipe": "Servito leggermente freddo."
-              }
-            }
-          }
-        }
-      },
-      "es": {
-        "name": "Noir 1",
-        "tagline": "Cócteles, snacks y digestivos servidos rápido, mobile-first.",
-        "description": "Bar de barrio pensado para un menú QR mobile-first, con bebidas, snacks, digestivos y categorías custom.",
-        "address": "8 Rue des Lilas, Marsella",
-        "categories": {
-          "category-boissons": {
-            "name": "Bebidas",
-            "description": "Cócteles, cervezas y refrescos para empezar la noche.",
-            "items": {
-              "item-negroni": {
-                "name": "Negroni de la casa",
-                "description": "Ginebra, vermut rojo y bitter servido con hielo.",
-                "recipe": "Mezcla corta, acabado con naranja."
-              },
-              "item-citron-press": {
-                "name": "Limón prensado",
-                "description": "Limón fresco, agua con gas y menta.",
-                "recipe": "Prensado al momento, muy fresco."
-              }
-            }
-          },
-          "category-snacks": {
-            "name": "Snacks",
-            "description": "Para picar con las bebidas o durante la noche.",
-            "items": {
-              "item-croque-bar": {
-                "name": "Croque bar",
-                "description": "Mini croque con queso, jamón y mostaza suave.",
-                "recipe": "Tostado y servido caliente."
-              }
-            }
-          },
-          "category-digestifs": {
-            "name": "Digestivos",
-            "description": "Para cerrar la noche con una copa más seca.",
-            "items": {
-              "item-amaro": {
-                "name": "Amaro",
-                "description": "Servido solo o con hielo, aromático y amargo.",
-                "recipe": "Servido ligeramente frío."
-              }
-            }
-          }
-        }
-      }
-    },
-    "id": "f1b7c7c5-2b53-4a77-9f0b-1d1e6a0a0001",
-    "status": "trial",
-    "plan": "starter",
-    "whatsappNumber": "+33 4 00 00 00 03",
-    "googleRating": 4.9,
-    "googleReviewsCount": 221,
-    "googleReviewsUrl": "",
-    "tableCount": 10,
-    "seatsPerTable": 2,
-    "features": {
-      "orderFlowEnabled": true,
-      "clientLoginEnabled": true,
-      "waiterValidationEnabled": true,
-      "kitchenWorkflowEnabled": true,
-      "servedConfirmationEnabled": true,
-      "bookingEnabled": false,
-      "qrMode": "menu",
-      "notificationProvider": "android",
-      "whatsappAlertsEnabled": false,
-      "smsAlertsEnabled": false,
-      "googleReviewsEnabled": true
-    },
-    "createdAt": "2026-06-10T22:15:18.387Z",
-    "updatedAt": "2026-06-12T09:47:48.647Z",
-    "deletedAt": null,
-    "happyHourSchedule": {
-      "enabled": true,
-      "label": "Happy Hour",
-      "days": [
-        "mon",
-        "tue",
-        "wed",
-        "thu",
-        "fri",
-        "sat",
-        "sun"
-      ],
-      "start": "18:30",
-      "end": "20:30"
-    },
-    "uberEatsUrl": "www.usereats.fr",
-    "tripAdvisorUrl": "www.tripadvisor.com"
+    "translations": {}
   },
   {
-    "id": "eed532f5-b420-4fa2-9452-232daa5acc57",
-    "slug": "pw-e2e-mqigan5e",
-    "name": "Playwright MQIGAN5E",
+    "id": "b3aec025-613c-4536-90f5-b576c2fdf166",
+    "slug": "pw-e2e-mqixt77q",
+    "name": "Playwright MQIXT77Q",
     "status": "trial",
     "plan": "starter",
     "tagline": "Modifiable depuis le tableau de bord",
@@ -2437,17 +2298,17 @@
       "googleReviewsEnabled": true
     },
     "currency": "EUR",
-    "createdAt": "2026-06-17T19:15:12.467Z",
-    "updatedAt": "2026-06-17T19:15:12.467Z",
+    "createdAt": "2026-06-18T03:25:31.743Z",
+    "updatedAt": "2026-06-18T03:25:31.743Z",
     "deletedAt": null,
     "categories": [
       {
-        "id": "category-ho1n22a7",
+        "id": "category-ihvkiy3e",
         "name": "Signature",
         "description": "Les plats principaux de la maison.",
         "items": [
           {
-            "id": "item-thpi091q",
+            "id": "item-w9ff4qdf",
             "name": "Nom du plat",
             "description": "Description du plat.",
             "recipe": "Une courte note de préparation ou l'histoire du plat.",
@@ -2485,9 +2346,9 @@
     "translations": {}
   },
   {
-    "id": "97b274bd-2e32-4ab4-86d7-d2e1ce3bfad3",
-    "slug": "pw-e2e-mqigb6s7",
-    "name": "Playwright MQIGB6S7",
+    "id": "da315eac-bf15-4e84-b911-42508eac6914",
+    "slug": "pw-e2e-mqixv50r",
+    "name": "Playwright MQIXV50R",
     "status": "trial",
     "plan": "starter",
     "tagline": "Modifiable depuis le tableau de bord",
@@ -2628,17 +2489,17 @@
       "googleReviewsEnabled": true
     },
     "currency": "EUR",
-    "createdAt": "2026-06-17T19:15:37.891Z",
-    "updatedAt": "2026-06-17T19:15:37.891Z",
+    "createdAt": "2026-06-18T03:27:02.213Z",
+    "updatedAt": "2026-06-18T03:27:02.213Z",
     "deletedAt": null,
     "categories": [
       {
-        "id": "category-wfidxaoj",
+        "id": "category-mucy8trl",
         "name": "Signature",
         "description": "Les plats principaux de la maison.",
         "items": [
           {
-            "id": "item-kw9irpzn",
+            "id": "item-2dw3cni9",
             "name": "Nom du plat",
             "description": "Description du plat.",
             "recipe": "Une courte note de préparation ou l'histoire du plat.",
@@ -2676,9 +2537,9 @@
     "translations": {}
   },
   {
-    "id": "0e93949c-17ac-4b61-8131-7d27cba6d778",
-    "slug": "pw-e2e-mqigbq4b",
-    "name": "Playwright MQIGBQ4B",
+    "id": "255546ce-0221-4121-a92a-19f8f6d0f4d8",
+    "slug": "pw-e2e-mqixx3kp",
+    "name": "Playwright MQIXX3KP",
     "status": "trial",
     "plan": "starter",
     "tagline": "Modifiable depuis le tableau de bord",
@@ -2819,17 +2680,17 @@
       "googleReviewsEnabled": true
     },
     "currency": "EUR",
-    "createdAt": "2026-06-17T19:16:02.955Z",
-    "updatedAt": "2026-06-17T19:16:02.955Z",
+    "createdAt": "2026-06-18T03:28:33.650Z",
+    "updatedAt": "2026-06-18T03:28:33.650Z",
     "deletedAt": null,
     "categories": [
       {
-        "id": "category-gyw2j32s",
+        "id": "category-6u9xmo5p",
         "name": "Signature",
         "description": "Les plats principaux de la maison.",
         "items": [
           {
-            "id": "item-4wmzxfos",
+            "id": "item-g5ewmdar",
             "name": "Nom du plat",
             "description": "Description du plat.",
             "recipe": "Une courte note de préparation ou l'histoire du plat.",
@@ -2867,9 +2728,9 @@
     "translations": {}
   },
   {
-    "id": "d9bc8f64-19d9-4441-af61-26f7de162f64",
-    "slug": "pw-e2e-mqigckvw",
-    "name": "Playwright MQIGCKVW",
+    "id": "4a4604a7-65ed-44d5-a52e-32eef09f9b0a",
+    "slug": "pw-e2e-mqiya84a",
+    "name": "Playwright MQIYA84A",
     "status": "trial",
     "plan": "starter",
     "tagline": "Modifiable depuis le tableau de bord",
@@ -3010,17 +2871,17 @@
       "googleReviewsEnabled": true
     },
     "currency": "EUR",
-    "createdAt": "2026-06-17T19:16:42.824Z",
-    "updatedAt": "2026-06-17T19:16:42.824Z",
+    "createdAt": "2026-06-18T03:38:46.184Z",
+    "updatedAt": "2026-06-18T03:38:46.184Z",
     "deletedAt": null,
     "categories": [
       {
-        "id": "category-zt4g1zb7",
+        "id": "category-1lv6rgij",
         "name": "Signature",
         "description": "Les plats principaux de la maison.",
         "items": [
           {
-            "id": "item-y5x4u67k",
+            "id": "item-wg7ydfi3",
             "name": "Nom du plat",
             "description": "Description du plat.",
             "recipe": "Une courte note de préparation ou l'histoire du plat.",
@@ -3058,9 +2919,9 @@
     "translations": {}
   },
   {
-    "id": "e16b5401-8240-4a42-a243-9725f7834675",
-    "slug": "pw-e2e-mqigcv55",
-    "name": "Playwright MQIGCV55",
+    "id": "b731eccc-f1e1-4ad2-9dd4-dd15e7ad056a",
+    "slug": "pw-e2e-mqiycgl1",
+    "name": "Playwright MQIYCGL1",
     "status": "trial",
     "plan": "starter",
     "tagline": "Modifiable depuis le tableau de bord",
@@ -3201,17 +3062,17 @@
       "googleReviewsEnabled": true
     },
     "currency": "EUR",
-    "createdAt": "2026-06-17T19:16:56.117Z",
-    "updatedAt": "2026-06-17T19:16:56.117Z",
+    "createdAt": "2026-06-18T03:40:30.350Z",
+    "updatedAt": "2026-06-18T03:40:30.350Z",
     "deletedAt": null,
     "categories": [
       {
-        "id": "category-snt08rvj",
+        "id": "category-4lpkhmtj",
         "name": "Signature",
         "description": "Les plats principaux de la maison.",
         "items": [
           {
-            "id": "item-oqz4xx3q",
+            "id": "item-lunujfch",
             "name": "Nom du plat",
             "description": "Description du plat.",
             "recipe": "Une courte note de préparation ou l'histoire du plat.",
@@ -3249,9 +3110,9 @@
     "translations": {}
   },
   {
-    "id": "32aa4d01-e5b7-4e9f-93be-bd5dcb1818c3",
-    "slug": "pw-e2e-mqigd93v",
-    "name": "Playwright MQIGD93V",
+    "id": "c70e3c74-ce78-4003-ad4a-086cc9908af7",
+    "slug": "pw-e2e-mqiyelpy",
+    "name": "Playwright MQIYELPY",
     "status": "trial",
     "plan": "starter",
     "tagline": "Modifiable depuis le tableau de bord",
@@ -3392,1163 +3253,17 @@
       "googleReviewsEnabled": true
     },
     "currency": "EUR",
-    "createdAt": "2026-06-17T19:17:14.219Z",
-    "updatedAt": "2026-06-17T19:17:14.219Z",
+    "createdAt": "2026-06-18T03:42:10.318Z",
+    "updatedAt": "2026-06-18T03:42:10.318Z",
     "deletedAt": null,
     "categories": [
       {
-        "id": "category-5x5z2jk2",
+        "id": "category-b0u9fn6q",
         "name": "Signature",
         "description": "Les plats principaux de la maison.",
         "items": [
           {
-            "id": "item-19z2zvpf",
-            "name": "Nom du plat",
-            "description": "Description du plat.",
-            "recipe": "Une courte note de préparation ou l'histoire du plat.",
-            "ingredients": [
-              "ingredient 1",
-              "ingredient 2",
-              "ingredient 3"
-            ],
-            "allergens": [
-              "gluten"
-            ],
-            "price": 42,
-            "happyHourEnabled": false,
-            "happyHourPrice": null,
-            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
-          }
-        ]
-      }
-    ],
-    "initialUsers": [
-      {
-        "role": "manager",
-        "name": "Manager E2E",
-        "username": "pw-manager",
-        "temporaryPassword": "Tmp#2026!"
-      },
-      {
-        "role": "staff",
-        "name": "Staff E2E",
-        "username": "pw-staff",
-        "temporaryPassword": "Tmp#2026!"
-      }
-    ],
-    "translations": {}
-  },
-  {
-    "id": "22c05054-f342-4081-957c-dfd0bfcb396a",
-    "slug": "pw-e2e-mqik1v8t",
-    "name": "Playwright MQIK1V8T",
-    "status": "trial",
-    "plan": "starter",
-    "tagline": "Modifiable depuis le tableau de bord",
-    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
-    "accent": "#8B5CF6",
-    "logoUrl": "",
-    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
-    "address": "12 Rue Exemple, Paris",
-    "phone": "+33 1 00 00 00 00",
-    "whatsappNumber": "+33 1 00 00 00 00",
-    "uberEatsUrl": "",
-    "tripAdvisorUrl": "",
-    "googleRating": 4.8,
-    "googleReviewsCount": 128,
-    "googleReviewsUrl": "",
-    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
-    "tableCount": 12,
-    "seatsPerTable": 4,
-    "weeklyHours": [
-      {
-        "day": "mon",
-        "label": "Lundi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "tue",
-        "label": "Mardi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "wed",
-        "label": "Mercredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "thu",
-        "label": "Jeudi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "fri",
-        "label": "Vendredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sat",
-        "label": "Samedi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sun",
-        "label": "Dimanche",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "22:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      }
-    ],
-    "happyHourSchedule": null,
-    "features": {
-      "orderFlowEnabled": true,
-      "clientLoginEnabled": true,
-      "waiterValidationEnabled": true,
-      "kitchenWorkflowEnabled": true,
-      "servedConfirmationEnabled": true,
-      "bookingEnabled": true,
-      "qrMode": "pdf",
-      "notificationProvider": "android",
-      "whatsappAlertsEnabled": true,
-      "smsAlertsEnabled": false,
-      "googleReviewsEnabled": true
-    },
-    "currency": "EUR",
-    "createdAt": "2026-06-17T21:00:21.636Z",
-    "updatedAt": "2026-06-17T21:00:21.636Z",
-    "deletedAt": null,
-    "categories": [
-      {
-        "id": "category-y26qn2co",
-        "name": "Signature",
-        "description": "Les plats principaux de la maison.",
-        "items": [
-          {
-            "id": "item-5lplyuzw",
-            "name": "Nom du plat",
-            "description": "Description du plat.",
-            "recipe": "Une courte note de préparation ou l'histoire du plat.",
-            "ingredients": [
-              "ingredient 1",
-              "ingredient 2",
-              "ingredient 3"
-            ],
-            "allergens": [
-              "gluten"
-            ],
-            "price": 42,
-            "happyHourEnabled": false,
-            "happyHourPrice": null,
-            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
-          }
-        ]
-      }
-    ],
-    "initialUsers": [
-      {
-        "role": "manager",
-        "name": "Manager E2E",
-        "username": "pw-manager",
-        "temporaryPassword": "Tmp#2026!"
-      },
-      {
-        "role": "staff",
-        "name": "Staff E2E",
-        "username": "pw-staff",
-        "temporaryPassword": "Tmp#2026!"
-      }
-    ],
-    "translations": {}
-  },
-  {
-    "id": "70dd75df-f5dc-461c-b30d-eb0005213bd6",
-    "slug": "pw-e2e-mqik48a4",
-    "name": "Playwright MQIK48A4",
-    "status": "trial",
-    "plan": "starter",
-    "tagline": "Modifiable depuis le tableau de bord",
-    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
-    "accent": "#8B5CF6",
-    "logoUrl": "",
-    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
-    "address": "12 Rue Exemple, Paris",
-    "phone": "+33 1 00 00 00 00",
-    "whatsappNumber": "+33 1 00 00 00 00",
-    "uberEatsUrl": "",
-    "tripAdvisorUrl": "",
-    "googleRating": 4.8,
-    "googleReviewsCount": 128,
-    "googleReviewsUrl": "",
-    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
-    "tableCount": 12,
-    "seatsPerTable": 4,
-    "weeklyHours": [
-      {
-        "day": "mon",
-        "label": "Lundi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "tue",
-        "label": "Mardi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "wed",
-        "label": "Mercredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "thu",
-        "label": "Jeudi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "fri",
-        "label": "Vendredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sat",
-        "label": "Samedi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sun",
-        "label": "Dimanche",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "22:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      }
-    ],
-    "happyHourSchedule": null,
-    "features": {
-      "orderFlowEnabled": true,
-      "clientLoginEnabled": true,
-      "waiterValidationEnabled": true,
-      "kitchenWorkflowEnabled": true,
-      "servedConfirmationEnabled": true,
-      "bookingEnabled": true,
-      "qrMode": "pdf",
-      "notificationProvider": "android",
-      "whatsappAlertsEnabled": true,
-      "smsAlertsEnabled": false,
-      "googleReviewsEnabled": true
-    },
-    "currency": "EUR",
-    "createdAt": "2026-06-17T21:02:11.729Z",
-    "updatedAt": "2026-06-17T21:02:11.729Z",
-    "deletedAt": null,
-    "categories": [
-      {
-        "id": "category-b31vs432",
-        "name": "Signature",
-        "description": "Les plats principaux de la maison.",
-        "items": [
-          {
-            "id": "item-jaqysdzh",
-            "name": "Nom du plat",
-            "description": "Description du plat.",
-            "recipe": "Une courte note de préparation ou l'histoire du plat.",
-            "ingredients": [
-              "ingredient 1",
-              "ingredient 2",
-              "ingredient 3"
-            ],
-            "allergens": [
-              "gluten"
-            ],
-            "price": 42,
-            "happyHourEnabled": false,
-            "happyHourPrice": null,
-            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
-          }
-        ]
-      }
-    ],
-    "initialUsers": [
-      {
-        "role": "manager",
-        "name": "Manager E2E",
-        "username": "pw-manager",
-        "temporaryPassword": "Tmp#2026!"
-      },
-      {
-        "role": "staff",
-        "name": "Staff E2E",
-        "username": "pw-staff",
-        "temporaryPassword": "Tmp#2026!"
-      }
-    ],
-    "translations": {}
-  },
-  {
-    "id": "a4dfef0b-8165-429a-84b9-92433a22911e",
-    "slug": "pw-e2e-mqik71cc",
-    "name": "Playwright MQIK71CC",
-    "status": "trial",
-    "plan": "starter",
-    "tagline": "Modifiable depuis le tableau de bord",
-    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
-    "accent": "#8B5CF6",
-    "logoUrl": "",
-    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
-    "address": "12 Rue Exemple, Paris",
-    "phone": "+33 1 00 00 00 00",
-    "whatsappNumber": "+33 1 00 00 00 00",
-    "uberEatsUrl": "",
-    "tripAdvisorUrl": "",
-    "googleRating": 4.8,
-    "googleReviewsCount": 128,
-    "googleReviewsUrl": "",
-    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
-    "tableCount": 12,
-    "seatsPerTable": 4,
-    "weeklyHours": [
-      {
-        "day": "mon",
-        "label": "Lundi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "tue",
-        "label": "Mardi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "wed",
-        "label": "Mercredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "thu",
-        "label": "Jeudi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "fri",
-        "label": "Vendredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sat",
-        "label": "Samedi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sun",
-        "label": "Dimanche",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "22:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      }
-    ],
-    "happyHourSchedule": null,
-    "features": {
-      "orderFlowEnabled": true,
-      "clientLoginEnabled": true,
-      "waiterValidationEnabled": true,
-      "kitchenWorkflowEnabled": true,
-      "servedConfirmationEnabled": true,
-      "bookingEnabled": true,
-      "qrMode": "pdf",
-      "notificationProvider": "android",
-      "whatsappAlertsEnabled": true,
-      "smsAlertsEnabled": false,
-      "googleReviewsEnabled": true
-    },
-    "currency": "EUR",
-    "createdAt": "2026-06-17T21:04:22.721Z",
-    "updatedAt": "2026-06-17T21:04:22.721Z",
-    "deletedAt": null,
-    "categories": [
-      {
-        "id": "category-fucnx7qz",
-        "name": "Signature",
-        "description": "Les plats principaux de la maison.",
-        "items": [
-          {
-            "id": "item-41377xms",
-            "name": "Nom du plat",
-            "description": "Description du plat.",
-            "recipe": "Une courte note de préparation ou l'histoire du plat.",
-            "ingredients": [
-              "ingredient 1",
-              "ingredient 2",
-              "ingredient 3"
-            ],
-            "allergens": [
-              "gluten"
-            ],
-            "price": 42,
-            "happyHourEnabled": false,
-            "happyHourPrice": null,
-            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
-          }
-        ]
-      }
-    ],
-    "initialUsers": [
-      {
-        "role": "manager",
-        "name": "Manager E2E",
-        "username": "pw-manager",
-        "temporaryPassword": "Tmp#2026!"
-      },
-      {
-        "role": "staff",
-        "name": "Staff E2E",
-        "username": "pw-staff",
-        "temporaryPassword": "Tmp#2026!"
-      }
-    ],
-    "translations": {}
-  },
-  {
-    "id": "f44445c8-d435-44ea-8ba1-af9f8d572ecc",
-    "slug": "pw-e2e-mqikcs4d",
-    "name": "Playwright MQIKCS4D",
-    "status": "trial",
-    "plan": "starter",
-    "tagline": "Modifiable depuis le tableau de bord",
-    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
-    "accent": "#8B5CF6",
-    "logoUrl": "",
-    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
-    "address": "12 Rue Exemple, Paris",
-    "phone": "+33 1 00 00 00 00",
-    "whatsappNumber": "+33 1 00 00 00 00",
-    "uberEatsUrl": "",
-    "tripAdvisorUrl": "",
-    "googleRating": 4.8,
-    "googleReviewsCount": 128,
-    "googleReviewsUrl": "",
-    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
-    "tableCount": 12,
-    "seatsPerTable": 4,
-    "weeklyHours": [
-      {
-        "day": "mon",
-        "label": "Lundi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "tue",
-        "label": "Mardi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "wed",
-        "label": "Mercredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "thu",
-        "label": "Jeudi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "fri",
-        "label": "Vendredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sat",
-        "label": "Samedi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sun",
-        "label": "Dimanche",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "22:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      }
-    ],
-    "happyHourSchedule": null,
-    "features": {
-      "orderFlowEnabled": true,
-      "clientLoginEnabled": true,
-      "waiterValidationEnabled": true,
-      "kitchenWorkflowEnabled": true,
-      "servedConfirmationEnabled": true,
-      "bookingEnabled": true,
-      "qrMode": "pdf",
-      "notificationProvider": "android",
-      "whatsappAlertsEnabled": true,
-      "smsAlertsEnabled": false,
-      "googleReviewsEnabled": true
-    },
-    "currency": "EUR",
-    "createdAt": "2026-06-17T21:08:50.693Z",
-    "updatedAt": "2026-06-17T21:08:50.693Z",
-    "deletedAt": null,
-    "categories": [
-      {
-        "id": "category-ils4uw4y",
-        "name": "Signature",
-        "description": "Les plats principaux de la maison.",
-        "items": [
-          {
-            "id": "item-n1isutwf",
-            "name": "Nom du plat",
-            "description": "Description du plat.",
-            "recipe": "Une courte note de préparation ou l'histoire du plat.",
-            "ingredients": [
-              "ingredient 1",
-              "ingredient 2",
-              "ingredient 3"
-            ],
-            "allergens": [
-              "gluten"
-            ],
-            "price": 42,
-            "happyHourEnabled": false,
-            "happyHourPrice": null,
-            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
-          }
-        ]
-      }
-    ],
-    "initialUsers": [
-      {
-        "role": "manager",
-        "name": "Manager E2E",
-        "username": "pw-manager",
-        "temporaryPassword": "Tmp#2026!"
-      },
-      {
-        "role": "staff",
-        "name": "Staff E2E",
-        "username": "pw-staff",
-        "temporaryPassword": "Tmp#2026!"
-      }
-    ],
-    "translations": {}
-  },
-  {
-    "id": "dd738d1d-9417-40fc-b380-8bd722f4cc19",
-    "slug": "pw-e2e-mqikg94l",
-    "name": "Playwright MQIKG94L",
-    "status": "trial",
-    "plan": "starter",
-    "tagline": "Modifiable depuis le tableau de bord",
-    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
-    "accent": "#8B5CF6",
-    "logoUrl": "",
-    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
-    "address": "12 Rue Exemple, Paris",
-    "phone": "+33 1 00 00 00 00",
-    "whatsappNumber": "+33 1 00 00 00 00",
-    "uberEatsUrl": "",
-    "tripAdvisorUrl": "",
-    "googleRating": 4.8,
-    "googleReviewsCount": 128,
-    "googleReviewsUrl": "",
-    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
-    "tableCount": 12,
-    "seatsPerTable": 4,
-    "weeklyHours": [
-      {
-        "day": "mon",
-        "label": "Lundi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "tue",
-        "label": "Mardi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "wed",
-        "label": "Mercredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "thu",
-        "label": "Jeudi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "fri",
-        "label": "Vendredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sat",
-        "label": "Samedi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sun",
-        "label": "Dimanche",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "22:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      }
-    ],
-    "happyHourSchedule": null,
-    "features": {
-      "orderFlowEnabled": true,
-      "clientLoginEnabled": true,
-      "waiterValidationEnabled": true,
-      "kitchenWorkflowEnabled": true,
-      "servedConfirmationEnabled": true,
-      "bookingEnabled": true,
-      "qrMode": "pdf",
-      "notificationProvider": "android",
-      "whatsappAlertsEnabled": true,
-      "smsAlertsEnabled": false,
-      "googleReviewsEnabled": true
-    },
-    "currency": "EUR",
-    "createdAt": "2026-06-17T21:11:32.749Z",
-    "updatedAt": "2026-06-17T21:11:32.749Z",
-    "deletedAt": null,
-    "categories": [
-      {
-        "id": "category-7eobuns7",
-        "name": "Signature",
-        "description": "Les plats principaux de la maison.",
-        "items": [
-          {
-            "id": "item-a07wo2ck",
-            "name": "Nom du plat",
-            "description": "Description du plat.",
-            "recipe": "Une courte note de préparation ou l'histoire du plat.",
-            "ingredients": [
-              "ingredient 1",
-              "ingredient 2",
-              "ingredient 3"
-            ],
-            "allergens": [
-              "gluten"
-            ],
-            "price": 42,
-            "happyHourEnabled": false,
-            "happyHourPrice": null,
-            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
-          }
-        ]
-      }
-    ],
-    "initialUsers": [
-      {
-        "role": "manager",
-        "name": "Manager E2E",
-        "username": "pw-manager",
-        "temporaryPassword": "Tmp#2026!"
-      },
-      {
-        "role": "staff",
-        "name": "Staff E2E",
-        "username": "pw-staff",
-        "temporaryPassword": "Tmp#2026!"
-      }
-    ],
-    "translations": {}
-  },
-  {
-    "id": "94c0b752-0ae5-4ac9-a1d7-1399e1fba727",
-    "slug": "pw-e2e-mqikjj0s",
-    "name": "Playwright MQIKJJ0S",
-    "status": "trial",
-    "plan": "starter",
-    "tagline": "Modifiable depuis le tableau de bord",
-    "description": "Une courte description de la marque du restaurant, adaptée au menu et à l'ambiance.",
-    "accent": "#8B5CF6",
-    "logoUrl": "",
-    "heroImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
-    "address": "12 Rue Exemple, Paris",
-    "phone": "+33 1 00 00 00 00",
-    "whatsappNumber": "+33 1 00 00 00 00",
-    "uberEatsUrl": "",
-    "tripAdvisorUrl": "",
-    "googleRating": 4.8,
-    "googleReviewsCount": 128,
-    "googleReviewsUrl": "",
-    "openingHours": "Lundi - Dimanche, 12:00 - 23:00",
-    "tableCount": 12,
-    "seatsPerTable": 4,
-    "weeklyHours": [
-      {
-        "day": "mon",
-        "label": "Lundi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "tue",
-        "label": "Mardi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "wed",
-        "label": "Mercredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "thu",
-        "label": "Jeudi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "fri",
-        "label": "Vendredi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sat",
-        "label": "Samedi",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "23:30"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      },
-      {
-        "day": "sun",
-        "label": "Dimanche",
-        "intervals": [
-          {
-            "start": "12:00",
-            "end": "22:00"
-          },
-          {
-            "start": "",
-            "end": ""
-          }
-        ],
-        "closed": false
-      }
-    ],
-    "happyHourSchedule": null,
-    "features": {
-      "orderFlowEnabled": true,
-      "clientLoginEnabled": true,
-      "waiterValidationEnabled": true,
-      "kitchenWorkflowEnabled": true,
-      "servedConfirmationEnabled": true,
-      "bookingEnabled": true,
-      "qrMode": "pdf",
-      "notificationProvider": "android",
-      "whatsappAlertsEnabled": true,
-      "smsAlertsEnabled": false,
-      "googleReviewsEnabled": true
-    },
-    "currency": "EUR",
-    "createdAt": "2026-06-17T21:14:05.491Z",
-    "updatedAt": "2026-06-17T21:14:05.491Z",
-    "deletedAt": null,
-    "categories": [
-      {
-        "id": "category-qeeka87x",
-        "name": "Signature",
-        "description": "Les plats principaux de la maison.",
-        "items": [
-          {
-            "id": "item-zlok073u",
+            "id": "item-wrbg8q0p",
             "name": "Nom du plat",
             "description": "Description du plat.",
             "recipe": "Une courte note de préparation ou l'histoire du plat.",
@@ -4615,6 +3330,10 @@
           {
             "start": "11:30",
             "end": "22:30"
+          },
+          {
+            "start": "",
+            "end": ""
           }
         ],
         "closed": false
@@ -4626,6 +3345,10 @@
           {
             "start": "11:30",
             "end": "22:30"
+          },
+          {
+            "start": "",
+            "end": ""
           }
         ],
         "closed": false
@@ -4637,6 +3360,10 @@
           {
             "start": "11:30",
             "end": "22:30"
+          },
+          {
+            "start": "",
+            "end": ""
           }
         ],
         "closed": false
@@ -4648,6 +3375,10 @@
           {
             "start": "11:30",
             "end": "22:30"
+          },
+          {
+            "start": "",
+            "end": ""
           }
         ],
         "closed": false
@@ -4659,6 +3390,10 @@
           {
             "start": "11:30",
             "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
           }
         ],
         "closed": false
@@ -4670,6 +3405,10 @@
           {
             "start": "11:30",
             "end": "23:00"
+          },
+          {
+            "start": "",
+            "end": ""
           }
         ],
         "closed": false
@@ -4681,6 +3420,10 @@
           {
             "start": "11:30",
             "end": "21:30"
+          },
+          {
+            "start": "",
+            "end": ""
           }
         ],
         "closed": false
@@ -4701,8 +3444,8 @@
       "googleReviewsEnabled": true
     },
     "currency": "EUR",
-    "createdAt": "2026-06-17T21:16:13.893Z",
-    "updatedAt": "2026-06-17T21:16:13.893Z",
+    "createdAt": "2026-06-18T03:42:12.260Z",
+    "updatedAt": "2026-06-18T03:42:12.260Z",
     "deletedAt": null,
     "categories": [
       {
@@ -4727,7 +3470,9 @@
             ],
             "price": 14,
             "imageUrl": "https://images.unsplash.com/photo-1498575207490-8c0f2b0f8f8d?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
+            "isSignature": true,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           },
           {
             "id": "food1-antipasti-zucchini",
@@ -4746,7 +3491,9 @@
             ],
             "price": 12,
             "imageUrl": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           }
         ]
       },
@@ -4773,7 +3520,9 @@
             ],
             "price": 18,
             "imageUrl": "https://images.unsplash.com/photo-1521389508051-d7ffb5dc8f93?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
+            "isSignature": true,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           },
           {
             "id": "food1-pasta-pesto",
@@ -4792,7 +3541,9 @@
             ],
             "price": 17,
             "imageUrl": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           }
         ]
       },
@@ -4818,7 +3569,9 @@
             ],
             "price": 13,
             "imageUrl": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
+            "isSignature": true,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           },
           {
             "id": "food1-pizza-diavola",
@@ -4837,7 +3590,9 @@
             ],
             "price": 15,
             "imageUrl": "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           }
         ]
       },
@@ -4862,7 +3617,9 @@
             ],
             "price": 19,
             "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
+            "isSignature": true,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           },
           {
             "id": "food1-risotto-lemon",
@@ -4880,7 +3637,9 @@
             ],
             "price": 18,
             "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           }
         ]
       },
@@ -4906,7 +3665,9 @@
             ],
             "price": 16,
             "imageUrl": "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
+            "isSignature": true,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           },
           {
             "id": "food1-gnocchi-gorgonzola",
@@ -4926,7 +3687,9 @@
             ],
             "price": 18,
             "imageUrl": "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           }
         ]
       },
@@ -4951,7 +3714,9 @@
             ],
             "price": 11,
             "imageUrl": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           },
           {
             "id": "food1-salad-romana",
@@ -4970,7 +3735,9 @@
             ],
             "price": 10,
             "imageUrl": "https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           }
         ]
       },
@@ -4995,7 +3762,9 @@
             ],
             "price": 8,
             "imageUrl": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           },
           {
             "id": "food1-kids-mini-pizza",
@@ -5014,7 +3783,9 @@
             ],
             "price": 9,
             "imageUrl": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           }
         ]
       },
@@ -5041,7 +3812,9 @@
             ],
             "price": 9,
             "imageUrl": "https://images.unsplash.com/photo-1511381939415-c1a1eef5f4d4?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
+            "isSignature": true,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           },
           {
             "id": "food1-dessert-pannacotta",
@@ -5058,7 +3831,9 @@
             ],
             "price": 8,
             "imageUrl": "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           }
         ]
       },
@@ -5082,7 +3857,9 @@
             ],
             "price": 19,
             "imageUrl": "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": true
+            "isSignature": true,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           },
           {
             "id": "food1-offer-family",
@@ -5100,7 +3877,9 @@
             ],
             "price": 48,
             "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
-            "isSignature": false
+            "isSignature": false,
+            "happyHourEnabled": false,
+            "happyHourPrice": null
           }
         ]
       }

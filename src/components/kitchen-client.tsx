@@ -13,6 +13,7 @@ type Props = {
   restaurant: Restaurant;
   kitchenUserId: string;
   orderFlowEnabled: boolean;
+  theme?: "dark" | "food";
 };
 
 function formatMoney(amount: number, currency: string) {
@@ -33,7 +34,7 @@ function orderStatusLabel(status: Order["status"]) {
   return "OUVERT";
 }
 
-export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled }: Props) {
+export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, theme = "dark" }: Props) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -162,7 +163,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled }: P
   }, [visibleOrders]);
 
   return (
-    <main className="internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6">
+    <main className={theme === "food" ? "food-theme mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6" : "internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6"}>
       <section className="rounded-[2rem] border border-white/10 bg-[#171717] p-4 text-[#f5f1ea] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>

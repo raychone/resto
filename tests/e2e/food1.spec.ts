@@ -83,9 +83,11 @@ test("landing exposes Food 1 as a separate demo", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Food 1", exact: true }).first()).toBeVisible();
   await expect(page.getByText("Italian casual food", { exact: false }).first()).toBeVisible();
   await page.goto("/");
-  const foodClientLink = page.getByRole("link", { name: "Food client principal" }).first();
-  await expect(foodClientLink).toBeVisible();
-  await foodClientLink.click();
+  const foodCard = page.locator("article").filter({ has: page.getByRole("heading", { name: "Food 1", exact: true }) }).first();
+  await expect(foodCard).toBeVisible();
+  await foodCard.getByText("Rôles").click();
+  await expect(foodCard.getByRole("link", { name: "Client" })).toBeVisible();
+  await foodCard.getByRole("link", { name: "Client" }).click();
   await expect(page).toHaveURL(/\/client\?restaurantSlug=food-1/);
 });
 
@@ -102,6 +104,31 @@ test("Food 1 staff link asks to switch when Noir 1 session is active", async ({ 
   await expect(page.getByText("Changer de démo")).toBeVisible();
   await expect(page.getByRole("button", { name: "Se déconnecter" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Rouvrir Food 1" })).toBeVisible();
+});
+
+test("Food 1 staff opens a single table modal", async ({ page }) => {
+  await page.context().addCookies([
+    {
+      name: "meniu_staff_session",
+      value: "food1-staff-root",
+      url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000",
+    },
+  ]);
+
+  await page.goto("/staff?restaurantSlug=food-1");
+  await expect(page.getByRole("heading", { name: "Food 1", exact: true }).first()).toBeVisible();
+
+  const tableCard = page.getByTestId("staff-table-card-food-1-restaurant-table-1");
+  await expect(tableCard).toBeVisible({ timeout: 30000 });
+  await tableCard.click();
+  await expect(page).toHaveURL(/\/staff\?restaurantSlug=food-1&table=food-1-restaurant-table-1/);
+  const modal = page.getByTestId("staff-table-modal");
+  await expect(modal).toBeVisible();
+  await expect(modal.getByRole("heading", { name: /Table 1/ })).toBeVisible();
+  await expect(modal.getByRole("link", { name: "Fermer" })).toBeVisible();
+  await modal.getByRole("link", { name: "Fermer" }).click();
+  await expect(page).toHaveURL(/\/staff\?restaurantSlug=food-1$/);
+  await expect(page.getByTestId("staff-table-modal")).toHaveCount(0);
 });
 
 test("Food 1 client order syncs through staff and kitchen", async ({ browser }) => {

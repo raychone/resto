@@ -267,6 +267,42 @@ function FoodMenuShowcase({
   }, [closeModal, modalState]);
 
   useEffect(() => {
+    if (!modalState) return;
+
+    const scrollY = window.scrollY;
+    const bodyStyle = document.body.style;
+    const previous = {
+      position: bodyStyle.position,
+      top: bodyStyle.top,
+      left: bodyStyle.left,
+      right: bodyStyle.right,
+      width: bodyStyle.width,
+      overflow: bodyStyle.overflow,
+    };
+
+    bodyStyle.position = "fixed";
+    bodyStyle.top = `-${scrollY}px`;
+    bodyStyle.left = "0";
+    bodyStyle.right = "0";
+    bodyStyle.width = "100%";
+    bodyStyle.overflow = "hidden";
+
+    return () => {
+      bodyStyle.position = previous.position;
+      bodyStyle.top = previous.top;
+      bodyStyle.left = previous.left;
+      bodyStyle.right = previous.right;
+      bodyStyle.width = previous.width;
+      bodyStyle.overflow = previous.overflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [modalState]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [restaurantSlug, locale]);
+
+  useEffect(() => {
     return () => {
       if (modalCloseTimer.current) {
         window.clearTimeout(modalCloseTimer.current);
@@ -509,6 +545,41 @@ export function FoodPublicMenu({
 }) {
   const text = copy[locale];
   const [burgerOpen, setBurgerOpen] = useState(false);
+  useEffect(() => {
+    if (!burgerOpen) return;
+
+    const scrollY = window.scrollY;
+    const bodyStyle = document.body.style;
+    const previous = {
+      position: bodyStyle.position,
+      top: bodyStyle.top,
+      left: bodyStyle.left,
+      right: bodyStyle.right,
+      width: bodyStyle.width,
+      overflow: bodyStyle.overflow,
+    };
+
+    bodyStyle.position = "fixed";
+    bodyStyle.top = `-${scrollY}px`;
+    bodyStyle.left = "0";
+    bodyStyle.right = "0";
+    bodyStyle.width = "100%";
+    bodyStyle.overflow = "hidden";
+
+    return () => {
+      bodyStyle.position = previous.position;
+      bodyStyle.top = previous.top;
+      bodyStyle.left = previous.left;
+      bodyStyle.right = previous.right;
+      bodyStyle.width = previous.width;
+      bodyStyle.overflow = previous.overflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [burgerOpen]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [restaurant.slug, locale]);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`;
   const wazeUrl = `https://www.waze.com/ul?q=${encodeURIComponent(restaurant.address)}&navigate=yes`;
   const reviewsUrl = buildGoogleReviewsUrl({
@@ -532,7 +603,7 @@ export function FoodPublicMenu({
   return (
     <>
       <header className="sticky top-0 z-50 w-full px-2 pt-2 sm:px-4 lg:px-6">
-        <div className="mx-auto max-w-[1440px] rounded-[1.75rem] border border-[#e9dfd4] bg-white/95 px-3 py-3 text-[#24170f] shadow-[0_20px_60px_rgba(70,35,22,0.12)] backdrop-blur">
+        <div className="mx-auto max-w-[1440px] rounded-[1.75rem] border border-[#e9dfd4] bg-[#fffdf8]/98 px-3 py-3 text-[#24170f] shadow-[0_20px_60px_rgba(70,35,22,0.12)] backdrop-blur">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
             <a href="#top" className="flex items-center justify-start">
               <img
@@ -563,6 +634,7 @@ export function FoodPublicMenu({
                   <a
                     key={nextLocale}
                     href={`/r/${restaurant.slug}?lang=${nextLocale}`}
+                    onClick={() => setBurgerOpen(false)}
                     className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] transition ${
                       locale === nextLocale ? "bg-[#c41e1e] text-white" : "text-[#7f6c5a] hover:bg-white"
                     }`}
@@ -597,6 +669,7 @@ export function FoodPublicMenu({
                   <a
                     key={item.href}
                     href={item.href}
+                    onClick={() => setBurgerOpen(false)}
                     className="rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-sm font-medium text-[#24170f]"
                   >
                     {item.label}
@@ -912,11 +985,32 @@ export function FoodPublicMenu({
         />
       ) : null}
       <footer className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-4 pb-8 pt-6 text-[#6f5b4a] sm:px-6 lg:px-8">
-        <p className="text-[11px] uppercase tracking-[0.35em]">Food 1 · Italian casual food</p>
-        <p className="text-center text-[11px] uppercase tracking-[0.35em]">
-          Powered by <span className="text-[#24170f]">LACStudio</span>
+        <div className="flex items-center gap-2">
+          <a
+            href="https://www.facebook.com"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Facebook"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#eadfce] bg-white transition hover:bg-[#faf7f2]"
+          >
+            <span className="text-sm font-semibold text-[#24170f]">f</span>
+          </a>
+          <a
+            href="https://www.instagram.com"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#eadfce] bg-white transition hover:bg-[#faf7f2]"
+          >
+            <span className="text-sm font-semibold text-[#24170f]">◎</span>
+          </a>
+        </div>
+        <p className="text-center text-[11px] uppercase tracking-[0.35em] text-[#7f6c5a]">
+          Food 1 · Italian casual food
         </p>
-        <div className="w-18" />
+        <div className="w-18 text-right text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]">
+          Service food-first
+        </div>
       </footer>
     </>
   );

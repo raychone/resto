@@ -29,14 +29,16 @@ export default async function ClientPage({
   const requestedRestaurant = await getRestaurantBySlug(requestedRestaurantSlug);
 
   if (!authenticated) {
+    const isFoodDemo = requestedRestaurantSlug === "food-1";
     return (
       <DashboardLogin
         title="Connexion client"
         description={`Utilise client / client123! ou ton e-mail pour ouvrir ton compte client${requestedRestaurant?.name ? ` sur ${requestedRestaurant.name}` : ""}.`}
-        defaultUsername="client"
-        defaultPassword="client123!"
+        defaultUsername={isFoodDemo ? "foodclient" : "client"}
+        defaultPassword={isFoodDemo ? "client123!" : "client123!"}
         endpoint="/api/client-auth/login"
         backAction={{ label: "Accueil", href: "/" }}
+        theme={isFoodDemo ? "food" : "dark"}
         notice={
           resolvedSearchParams?.google === "disabled"
             ? "Google n’est pas encore configuré sur cette instance. Utilise la connexion e-mail ou configure GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET."
@@ -113,11 +115,11 @@ export default async function ClientPage({
     null;
 
   return (
-    <main className="internal-dark min-h-screen w-full">
-      <div className="border-b border-white/10 bg-[#111111]/95 px-3 py-4 sm:px-4 lg:px-8">
+    <main className={restaurant.slug === "food-1" ? "food-theme min-h-screen w-full" : "internal-dark min-h-screen w-full"}>
+      <div className={restaurant.slug === "food-1" ? "border-b border-[#eadfce] bg-[#fffdf8]/96 px-3 py-4 sm:px-4 lg:px-8" : "border-b border-white/10 bg-[#111111]/95 px-3 py-4 sm:px-4 lg:px-8"}>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">Client</p>
+            <p className={restaurant.slug === "food-1" ? "text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.35em] text-white/40"}>Client</p>
             <h1 className="text-3xl font-semibold">{restaurant.name}</h1>
           </div>
           <DashboardLogoutButton endpoint="/api/client-auth/logout" label="Déconnexion" />
@@ -132,6 +134,7 @@ export default async function ClientPage({
         activeOrder={activeOrder}
         focusCart={resolvedSearchParams?.focus === "cart"}
         orderFlowEnabled={restaurant.features.orderFlowEnabled}
+        theme={restaurant.slug === "food-1" ? "food" : "dark"}
       />
     </main>
   );

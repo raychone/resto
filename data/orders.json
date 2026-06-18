@@ -156,7 +156,7 @@
       }
     ],
     "createdAt": "2026-06-10T22:57:24.206Z",
-    "updatedAt": "2026-06-17T21:14:44.211Z",
+    "updatedAt": "2026-06-18T03:42:36.644Z",
     "deletedAt": null
   },
   {
@@ -199,7 +199,7 @@
       }
     ],
     "createdAt": "2026-06-12T09:43:55.357Z",
-    "updatedAt": "2026-06-17T21:14:44.212Z",
+    "updatedAt": "2026-06-18T03:42:36.651Z",
     "deletedAt": null
   },
   {
@@ -243,7 +243,7 @@
       }
     ],
     "createdAt": "2026-06-17T21:16:13.079Z",
-    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-18T03:42:36.655Z",
     "deletedAt": null
   },
   {
@@ -287,7 +287,7 @@
       }
     ],
     "createdAt": "2026-06-17T21:16:13.079Z",
-    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-18T03:42:36.660Z",
     "deletedAt": null
   },
   {
@@ -331,7 +331,7 @@
       }
     ],
     "createdAt": "2026-06-17T21:16:13.079Z",
-    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-18T03:42:36.664Z",
     "deletedAt": null
   },
   {
@@ -375,7 +375,7 @@
       }
     ],
     "createdAt": "2026-06-17T21:16:13.079Z",
-    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-18T03:42:36.670Z",
     "deletedAt": null
   },
   {
@@ -419,7 +419,7 @@
       }
     ],
     "createdAt": "2026-06-17T21:16:13.079Z",
-    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-18T03:42:36.674Z",
     "deletedAt": null
   },
   {
@@ -476,7 +476,7 @@
       }
     ],
     "createdAt": "2026-06-17T21:16:13.079Z",
-    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-18T03:42:36.679Z",
     "deletedAt": null
   },
   {
@@ -520,7 +520,7 @@
       }
     ],
     "createdAt": "2026-06-17T21:16:13.079Z",
-    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-18T03:42:36.683Z",
     "deletedAt": null
   },
   {
@@ -564,7 +564,7 @@
       }
     ],
     "createdAt": "2026-06-17T21:16:13.079Z",
-    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-18T03:42:36.687Z",
     "deletedAt": null
   },
   {
@@ -608,7 +608,7 @@
       }
     ],
     "createdAt": "2026-06-17T21:16:13.079Z",
-    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-18T03:42:36.691Z",
     "deletedAt": null
   },
   {
@@ -652,7 +652,473 @@
       }
     ],
     "createdAt": "2026-06-17T21:16:13.079Z",
-    "updatedAt": "2026-06-17T21:16:13.079Z",
+    "updatedAt": "2026-06-18T03:42:36.695Z",
+    "deletedAt": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-1-order",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "tableId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-1",
+    "tableSessionId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-1-session",
+    "staffUserId": null,
+    "source": "qr",
+    "status": "served",
+    "openedAt": "2026-06-18T03:42:11.681Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "Realtime sync order",
+    "items": [
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-1-order-item-hh-krombacher-pint",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-1-order",
+        "menuItemId": "item-hh-krombacher-pint",
+        "nameSnapshot": "Krombacher Pint",
+        "priceSnapshot": 5,
+        "quantity": 2,
+        "note": "",
+        "assignedClientId": "client-root-customer",
+        "assignedClientName": "Camille Martin",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-1-order-item-hh-ricard-pastis",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-1-order",
+        "menuItemId": "item-hh-ricard-pastis",
+        "nameSnapshot": "Ricard Pastis",
+        "priceSnapshot": 2,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-root-customer",
+        "assignedClientName": "Camille Martin",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "menuItemId": "item-hh-spritz",
+        "nameSnapshot": "Spritz",
+        "priceSnapshot": 10,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-root-customer",
+        "assignedClientName": "Camille Martin",
+        "id": "order-item-09z9t0qb",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-1-order",
+        "createdAt": "2026-06-18T03:42:21.193Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-18T03:42:11.681Z",
+    "updatedAt": "2026-06-18T03:42:37.100Z",
+    "deletedAt": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-2-order",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "tableId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-2",
+    "tableSessionId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-2-session",
+    "staffUserId": null,
+    "source": "qr",
+    "status": "sent_to_kitchen",
+    "openedAt": "2026-06-18T03:42:11.681Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "Commande QR",
+    "items": [
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-2-order-item-hh-spritz",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-2-order",
+        "menuItemId": "item-hh-spritz",
+        "nameSnapshot": "Spritz",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-02-customer",
+        "assignedClientName": "Lucie Bernard",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-2-order-item-hh-gin-hibiscus",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-2-order",
+        "menuItemId": "item-hh-gin-hibiscus",
+        "nameSnapshot": "Gin Hibiscus",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-02-customer",
+        "assignedClientName": "Lucie Bernard",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-18T03:42:11.681Z",
+    "updatedAt": "2026-06-18T03:42:37.100Z",
+    "deletedAt": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-3-order",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "tableId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-3",
+    "tableSessionId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-3-session",
+    "staffUserId": null,
+    "source": "qr",
+    "status": "preparing",
+    "openedAt": "2026-06-18T03:42:11.681Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "Commande QR",
+    "items": [
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-3-order-item-hh-moscow-mule",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-3-order",
+        "menuItemId": "item-hh-moscow-mule",
+        "nameSnapshot": "Moscow Mule",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-03-customer",
+        "assignedClientName": "Yanis Dubois",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-3-order-item-hh-london-mule",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-3-order",
+        "menuItemId": "item-hh-london-mule",
+        "nameSnapshot": "London Mule",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-03-customer",
+        "assignedClientName": "Yanis Dubois",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-18T03:42:11.681Z",
+    "updatedAt": "2026-06-18T03:42:37.101Z",
+    "deletedAt": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-4-order",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "tableId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-4",
+    "tableSessionId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-4-session",
+    "staffUserId": null,
+    "source": "qr",
+    "status": "ready",
+    "openedAt": "2026-06-18T03:42:11.681Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "Commande QR",
+    "items": [
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-4-order-item-hh-caribbean-mule",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-4-order",
+        "menuItemId": "item-hh-caribbean-mule",
+        "nameSnapshot": "Caribbean Mule",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-04-customer",
+        "assignedClientName": "Sarah Petit",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-4-order-item-hh-cuba-libre",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-4-order",
+        "menuItemId": "item-hh-cuba-libre",
+        "nameSnapshot": "Cuba Libre",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-04-customer",
+        "assignedClientName": "Sarah Petit",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-18T03:42:11.681Z",
+    "updatedAt": "2026-06-18T03:42:37.101Z",
+    "deletedAt": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-5-order",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "tableId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-5",
+    "tableSessionId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-5-session",
+    "staffUserId": "staff-root",
+    "source": "table",
+    "status": "open",
+    "openedAt": "2026-06-18T03:42:11.681Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "Bon serveur",
+    "items": [
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-5-order-item-hh-jagger-bomb",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-5-order",
+        "menuItemId": "item-hh-jagger-bomb",
+        "nameSnapshot": "Jagger Bomb",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-05-customer",
+        "assignedClientName": "Nicolas Leroy",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-5-order-item-hh-gin-fizz",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-5-order",
+        "menuItemId": "item-hh-gin-fizz",
+        "nameSnapshot": "Gin Fizz",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-05-customer",
+        "assignedClientName": "Nicolas Leroy",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-18T03:42:11.681Z",
+    "updatedAt": "2026-06-18T03:42:37.102Z",
+    "deletedAt": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-6-order",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "tableId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-6",
+    "tableSessionId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-6-session",
+    "staffUserId": "staff-waiter-2",
+    "source": "table",
+    "status": "sent_to_kitchen",
+    "openedAt": "2026-06-18T03:42:11.681Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "Bon serveur",
+    "items": [
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-6-order-item-hh-tequila-sunrise",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-6-order",
+        "menuItemId": "item-hh-tequila-sunrise",
+        "nameSnapshot": "Tequila Sunrise",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-06-customer",
+        "assignedClientName": "Emma Laurent",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-6-order-item-hh-daiquiri",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-6-order",
+        "menuItemId": "item-hh-daiquiri",
+        "nameSnapshot": "Daiquiri",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-06-customer",
+        "assignedClientName": "Emma Laurent",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-6-order-item-hh-bloody-mary",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-6-order",
+        "menuItemId": "item-hh-bloody-mary",
+        "nameSnapshot": "Bloody Mary",
+        "priceSnapshot": 7.5,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-06-customer",
+        "assignedClientName": "Emma Laurent",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-18T03:42:11.681Z",
+    "updatedAt": "2026-06-18T03:42:37.103Z",
+    "deletedAt": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-7-order",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "tableId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-7",
+    "tableSessionId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-7-session",
+    "staffUserId": "staff-waiter-3",
+    "source": "table",
+    "status": "preparing",
+    "openedAt": "2026-06-18T03:42:11.681Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "Bon serveur",
+    "items": [
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-7-order-item-krombacher-blonde",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-7-order",
+        "menuItemId": "item-krombacher-blonde",
+        "nameSnapshot": "Krombacher Blonde",
+        "priceSnapshot": 6.5,
+        "quantity": 2,
+        "note": "",
+        "assignedClientId": "client-07-customer",
+        "assignedClientName": "Hugo Moreau",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-7-order-item-grimbergen",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-7-order",
+        "menuItemId": "item-grimbergen",
+        "nameSnapshot": "Grimbergen (25cl)",
+        "priceSnapshot": 4,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-07-customer",
+        "assignedClientName": "Hugo Moreau",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-18T03:42:11.681Z",
+    "updatedAt": "2026-06-18T03:42:37.103Z",
+    "deletedAt": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-8-order",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "tableId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-8",
+    "tableSessionId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-8-session",
+    "staffUserId": "staff-root",
+    "source": "table",
+    "status": "ready",
+    "openedAt": "2026-06-18T03:42:11.681Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "Bon serveur",
+    "items": [
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-8-order-item-pastis-ricard-casanis",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-8-order",
+        "menuItemId": "item-pastis-ricard-casanis",
+        "nameSnapshot": "Pastis / Ricard / Casanis (2cl)",
+        "priceSnapshot": 2.8,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-08-customer",
+        "assignedClientName": "Chloé Garnier",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-8-order-item-white-martini",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-8-order",
+        "menuItemId": "item-white-martini",
+        "nameSnapshot": "White Martini (5cl)",
+        "priceSnapshot": 4.5,
+        "quantity": 2,
+        "note": "",
+        "assignedClientId": "client-08-customer",
+        "assignedClientName": "Chloé Garnier",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-18T03:42:11.681Z",
+    "updatedAt": "2026-06-18T03:42:37.103Z",
+    "deletedAt": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-9-order",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "tableId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-9",
+    "tableSessionId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-9-session",
+    "staffUserId": null,
+    "source": "qr",
+    "status": "open",
+    "openedAt": "2026-06-18T03:42:11.681Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "Commande QR",
+    "items": [
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-9-order-item-chamasutra-rouge",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-9-order",
+        "menuItemId": "item-chamasutra-rouge",
+        "nameSnapshot": "Chamasutra Rouge",
+        "priceSnapshot": 22,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-09-customer",
+        "assignedClientName": "Mehdi Roux",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-9-order-item-chat-blanc",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-9-order",
+        "menuItemId": "item-chat-blanc",
+        "nameSnapshot": "Je donne ma langue au chat Blanc",
+        "priceSnapshot": 22,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-09-customer",
+        "assignedClientName": "Mehdi Roux",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-18T03:42:11.681Z",
+    "updatedAt": "2026-06-18T03:42:37.103Z",
+    "deletedAt": null
+  },
+  {
+    "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-10-order",
+    "restaurantId": "634de57b-737e-47e8-acc0-48a0e6aa3a73",
+    "tableId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-10",
+    "tableSessionId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-10-session",
+    "staffUserId": null,
+    "source": "qr",
+    "status": "sent_to_kitchen",
+    "openedAt": "2026-06-18T03:42:11.681Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "Commande QR",
+    "items": [
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-10-order-item-goudale-zero",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-10-order",
+        "menuItemId": "item-goudale-zero",
+        "nameSnapshot": "Goudale 0.0% (25cl)",
+        "priceSnapshot": 4.5,
+        "quantity": 2,
+        "note": "",
+        "assignedClientId": "client-10-customer",
+        "assignedClientName": "Inès Fontaine",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      },
+      {
+        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-10-order-item-elderflower-mule",
+        "orderId": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-10-order",
+        "menuItemId": "item-elderflower-mule",
+        "nameSnapshot": "Virgin Elderflower Mule (Alcohol-Free)",
+        "priceSnapshot": 6,
+        "quantity": 1,
+        "note": "",
+        "assignedClientId": "client-10-customer",
+        "assignedClientName": "Inès Fontaine",
+        "createdAt": "2026-06-18T03:42:11.681Z",
+        "deletedAt": null
+      }
+    ],
+    "createdAt": "2026-06-18T03:42:11.681Z",
+    "updatedAt": "2026-06-18T03:42:37.104Z",
     "deletedAt": null
   },
   {
@@ -663,7 +1129,7 @@
     "staffUserId": null,
     "source": "qr",
     "status": "open",
-    "openedAt": "2026-06-17T21:16:13.893Z",
+    "openedAt": "2026-06-18T03:42:12.260Z",
     "closedAt": null,
     "archivedAt": null,
     "note": "Commande Food 1 QR",
@@ -678,7 +1144,7 @@
         "note": "",
         "assignedClientId": "food1-client-root-customer",
         "assignedClientName": "Marco Rossi",
-        "createdAt": "2026-06-17T21:16:13.893Z",
+        "createdAt": "2026-06-18T03:42:12.260Z",
         "deletedAt": null
       },
       {
@@ -691,12 +1157,12 @@
         "note": "",
         "assignedClientId": "food1-client-root-customer",
         "assignedClientName": "Marco Rossi",
-        "createdAt": "2026-06-17T21:16:13.893Z",
+        "createdAt": "2026-06-18T03:42:12.260Z",
         "deletedAt": null
       }
     ],
-    "createdAt": "2026-06-17T21:16:13.893Z",
-    "updatedAt": "2026-06-17T21:16:13.893Z",
+    "createdAt": "2026-06-18T03:42:12.260Z",
+    "updatedAt": "2026-06-18T03:42:37.104Z",
     "deletedAt": null
   },
   {
@@ -707,7 +1173,7 @@
     "staffUserId": null,
     "source": "qr",
     "status": "sent_to_kitchen",
-    "openedAt": "2026-06-17T21:16:13.893Z",
+    "openedAt": "2026-06-18T03:42:12.260Z",
     "closedAt": null,
     "archivedAt": null,
     "note": "Commande Food 1 QR",
@@ -722,7 +1188,7 @@
         "note": "",
         "assignedClientId": "food1-client-02-customer",
         "assignedClientName": "Giulia Bianchi",
-        "createdAt": "2026-06-17T21:16:13.893Z",
+        "createdAt": "2026-06-18T03:42:12.260Z",
         "deletedAt": null
       },
       {
@@ -735,12 +1201,12 @@
         "note": "",
         "assignedClientId": "food1-client-02-customer",
         "assignedClientName": "Giulia Bianchi",
-        "createdAt": "2026-06-17T21:16:13.893Z",
+        "createdAt": "2026-06-18T03:42:12.260Z",
         "deletedAt": null
       }
     ],
-    "createdAt": "2026-06-17T21:16:13.893Z",
-    "updatedAt": "2026-06-17T21:16:13.893Z",
+    "createdAt": "2026-06-18T03:42:12.260Z",
+    "updatedAt": "2026-06-18T03:42:37.107Z",
     "deletedAt": null
   },
   {
@@ -751,7 +1217,7 @@
     "staffUserId": "food1-staff-root",
     "source": "table",
     "status": "preparing",
-    "openedAt": "2026-06-17T21:16:13.893Z",
+    "openedAt": "2026-06-18T03:42:12.260Z",
     "closedAt": null,
     "archivedAt": null,
     "note": "Bon serveur Food 1",
@@ -766,7 +1232,7 @@
         "note": "",
         "assignedClientId": "food1-client-03-customer",
         "assignedClientName": "Luca Ferrari",
-        "createdAt": "2026-06-17T21:16:13.893Z",
+        "createdAt": "2026-06-18T03:42:12.260Z",
         "deletedAt": null
       },
       {
@@ -779,12 +1245,12 @@
         "note": "",
         "assignedClientId": "food1-client-03-customer",
         "assignedClientName": "Luca Ferrari",
-        "createdAt": "2026-06-17T21:16:13.893Z",
+        "createdAt": "2026-06-18T03:42:12.260Z",
         "deletedAt": null
       }
     ],
-    "createdAt": "2026-06-17T21:16:13.893Z",
-    "updatedAt": "2026-06-17T21:16:13.893Z",
+    "createdAt": "2026-06-18T03:42:12.260Z",
+    "updatedAt": "2026-06-18T03:42:37.107Z",
     "deletedAt": null
   },
   {
@@ -795,7 +1261,7 @@
     "staffUserId": "food1-staff-root",
     "source": "table",
     "status": "ready",
-    "openedAt": "2026-06-17T21:16:13.893Z",
+    "openedAt": "2026-06-18T03:42:12.260Z",
     "closedAt": null,
     "archivedAt": null,
     "note": "Bon serveur Food 1",
@@ -810,7 +1276,7 @@
         "note": "",
         "assignedClientId": "food1-client-04-customer",
         "assignedClientName": "Sofia Gallo",
-        "createdAt": "2026-06-17T21:16:13.893Z",
+        "createdAt": "2026-06-18T03:42:12.260Z",
         "deletedAt": null
       },
       {
@@ -823,12 +1289,12 @@
         "note": "",
         "assignedClientId": "food1-client-04-customer",
         "assignedClientName": "Sofia Gallo",
-        "createdAt": "2026-06-17T21:16:13.893Z",
+        "createdAt": "2026-06-18T03:42:12.260Z",
         "deletedAt": null
       }
     ],
-    "createdAt": "2026-06-17T21:16:13.893Z",
-    "updatedAt": "2026-06-17T21:16:13.893Z",
+    "createdAt": "2026-06-18T03:42:12.260Z",
+    "updatedAt": "2026-06-18T03:42:37.108Z",
     "deletedAt": null
   }
 ]

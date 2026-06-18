@@ -23,14 +23,16 @@ export default async function KitchenPage({ searchParams }: Props) {
   const authenticated = await isKitchenAuthenticated();
 
   if (!authenticated) {
+    const isFoodDemo = requestedRestaurantSlug === "food-1";
     return (
       <DashboardLogin
         title="Connexion cuisine"
         description="Utilise kitchen / kitchen123! pour voir les commandes à préparer."
-        defaultUsername="kitchen"
+        defaultUsername={isFoodDemo ? "foodkitchen" : "kitchen"}
         defaultPassword="kitchen123!"
         endpoint="/api/kitchen-auth/login"
         backAction={{ label: "Accueil", href: "/" }}
+        theme={isFoodDemo ? "food" : "dark"}
       />
     );
   }
@@ -48,8 +50,8 @@ export default async function KitchenPage({ searchParams }: Props) {
 
   if (requestedRestaurantSlug && requestedRestaurantSlug !== restaurant.slug) {
     return (
-      <main className="internal-dark flex min-h-screen w-full items-center justify-center px-4">
-        <section className="w-full max-w-md rounded-[2rem] border border-white/10 bg-[#171717]/95 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.45)] backdrop-blur">
+      <main className={requestedRestaurantSlug === "food-1" ? "food-theme flex min-h-screen w-full items-center justify-center px-4" : "internal-dark flex min-h-screen w-full items-center justify-center px-4"}>
+        <section className={requestedRestaurantSlug === "food-1" ? "w-full max-w-md rounded-[2rem] border border-[#eadfce] bg-[#fffdf8]/96 p-6 text-[#24170f] shadow-[0_24px_90px_rgba(196,30,30,0.12)] backdrop-blur" : "w-full max-w-md rounded-[2rem] border border-white/10 bg-[#171717]/95 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.45)] backdrop-blur"}>
           <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">Changer de démo</p>
           <h1 className="mt-2 text-3xl font-semibold">Tu es connecté à {restaurant.name}</h1>
           <p className="mt-2 text-sm leading-6 text-white/65">
@@ -74,11 +76,11 @@ export default async function KitchenPage({ searchParams }: Props) {
   }
 
   return (
-    <main className="internal-dark min-h-screen w-full">
-      <div className="border-b border-white/10 bg-[#111111]/95 px-3 py-4 sm:px-4 lg:px-8">
+    <main className={restaurant.slug === "food-1" ? "food-theme min-h-screen w-full" : "internal-dark min-h-screen w-full"}>
+      <div className={restaurant.slug === "food-1" ? "border-b border-[#eadfce] bg-[#fffdf8]/96 px-3 py-4 sm:px-4 lg:px-8" : "border-b border-white/10 bg-[#111111]/95 px-3 py-4 sm:px-4 lg:px-8"}>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">Kitchen</p>
+            <p className={restaurant.slug === "food-1" ? "text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.35em] text-white/40"}>Kitchen</p>
             <h1 className="text-3xl font-semibold">{restaurant.name}</h1>
           </div>
           <DashboardLogoutButton endpoint="/api/kitchen-auth/logout" label="Déconnexion" redirectTo="/" />
@@ -88,6 +90,7 @@ export default async function KitchenPage({ searchParams }: Props) {
         restaurant={restaurant}
         kitchenUserId={kitchenUser.id}
         orderFlowEnabled={restaurant.features.orderFlowEnabled}
+        theme={restaurant.slug === "food-1" ? "food" : "dark"}
       />
     </main>
   );

@@ -30,6 +30,14 @@ type DemoUserSpec = {
   password: string;
 };
 
+type DemoRestaurantUserSet = {
+  restaurantSlug: string;
+  manager: DemoUserSpec;
+  staff: DemoUserSpec[];
+  kitchen: DemoUserSpec;
+  clients: DemoUserSpec[];
+};
+
 const demoManagerUser: DemoUserSpec = {
   id: "manager-root",
   role: "manager",
@@ -143,6 +151,49 @@ const demoClientUsers: DemoUserSpec[] = [
   },
 ];
 
+const foodDemoUsers: DemoRestaurantUserSet = {
+  restaurantSlug: "food-1",
+  manager: {
+    id: "food1-manager-root",
+    role: "manager",
+    name: "Food Manager",
+    username: "foodmanager",
+    password: "manager123!",
+  },
+  staff: [
+    {
+      id: "food1-staff-root",
+      role: "staff",
+      name: "Food Staff",
+      username: "foodstaff",
+      password: "pass123!",
+    },
+  ],
+  kitchen: {
+    id: "food1-kitchen-root",
+    role: "kitchen",
+    name: "Food Kitchen",
+    username: "foodkitchen",
+    password: "kitchen123!",
+  },
+  clients: [
+    {
+      id: "food1-client-root",
+      role: "client",
+      name: "Food Client",
+      username: "foodclient",
+      password: "client123!",
+    },
+    {
+      id: "food1-client-02",
+      role: "client",
+      name: "Food Client Two",
+      username: "foodclient2",
+      password: "foodclient2!",
+    },
+  ],
+};
+
 function createDemoUser(spec: DemoUserSpec, restaurantId: string | null, now: string): User {
   return {
     id: spec.id,
@@ -163,8 +214,17 @@ function createDemoUser(spec: DemoUserSpec, restaurantId: string | null, now: st
   };
 }
 
-function createSeedUsers(restaurantId: string | null): User[] {
+function createSeedUsers(restaurantId: string | null, foodRestaurantId: string | null): User[] {
   const now = new Date().toISOString();
+  const foodRestaurantUsers = foodRestaurantId
+    ? [
+        createDemoUser(foodDemoUsers.manager, foodRestaurantId, now),
+        ...foodDemoUsers.staff.map((spec) => createDemoUser(spec, foodRestaurantId, now)),
+        createDemoUser(foodDemoUsers.kitchen, foodRestaurantId, now),
+        ...foodDemoUsers.clients.map((spec) => createDemoUser(spec, foodRestaurantId, now)),
+      ]
+    : [];
+
   return [
     {
       id: "owner-root",
@@ -185,10 +245,15 @@ function createSeedUsers(restaurantId: string | null): User[] {
     ...demoStaffUsers.map((spec) => createDemoUser(spec, restaurantId, now)),
     createDemoUser(demoKitchenUser, restaurantId, now),
     ...demoClientUsers.map((spec) => createDemoUser(spec, restaurantId, now)),
+    ...foodRestaurantUsers,
   ];
 }
 
-function createMissingDemoUsers(existingUsers: User[], restaurantId: string | null): User[] {
+function createMissingDemoUsers(
+  existingUsers: User[],
+  restaurantId: string | null,
+  foodRestaurantId: string | null,
+): User[] {
   const now = new Date().toISOString();
   const existingByUsername = new Set(existingUsers.map((user) => user.username));
   const demoUsers: User[] = [];
@@ -199,6 +264,21 @@ function createMissingDemoUsers(existingUsers: User[], restaurantId: string | nu
     }
 
     demoUsers.push(createDemoUser(spec, restaurantId, now));
+  }
+
+  if (foodRestaurantId) {
+    for (const spec of [
+      foodDemoUsers.manager,
+      ...foodDemoUsers.staff,
+      foodDemoUsers.kitchen,
+      ...foodDemoUsers.clients,
+    ]) {
+      if (existingByUsername.has(spec.username)) {
+        continue;
+      }
+
+      demoUsers.push(createDemoUser(spec, foodRestaurantId, now));
+    }
   }
 
   return demoUsers;
@@ -218,10 +298,11 @@ async function ensureStore() {
   } catch {
     const restaurants = await listRestaurants();
     const demoRestaurantId = getDemoRestaurantId(restaurants);
+    const foodRestaurantId = restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null;
     await fs.mkdir(dataDir, { recursive: true });
     await fs.writeFile(
       dataFile,
-      JSON.stringify(createSeedUsers(demoRestaurantId), null, 2),
+      JSON.stringify(createSeedUsers(demoRestaurantId, foodRestaurantId), null, 2),
       "utf8",
     );
   }
@@ -265,7 +346,10 @@ async function readUsersFile() {
     parsed = JSON.parse(raw) as User[];
   } catch {
     const restaurants = await listRestaurants();
-    const seedUsers = createSeedUsers(getDemoRestaurantId(restaurants));
+    const seedUsers = createSeedUsers(
+      getDemoRestaurantId(restaurants),
+      restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null,
+    );
     if (canPersistDataFiles) {
       await fs.writeFile(dataFile, JSON.stringify(seedUsers, null, 2), "utf8");
     }
@@ -275,6 +359,7 @@ async function readUsersFile() {
   const restaurants = await listRestaurants();
   const validRestaurantIds = new Set(restaurants.map((restaurant) => restaurant.id));
   const fallbackRestaurantId = getDemoRestaurantId(restaurants);
+  const foodRestaurantId = restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null;
   const demoUserNames = new Set([
     "owner",
     demoManagerUser.username,
@@ -289,17 +374,54 @@ async function readUsersFile() {
     demoKitchenUser.id,
     ...demoClientUsers.map((user) => user.id),
   ]);
+  const foodDemoUserNames = new Set([
+    foodDemoUsers.manager.username,
+    ...foodDemoUsers.staff.map((user) => user.username),
+    foodDemoUsers.kitchen.username,
+    ...foodDemoUsers.clients.map((user) => user.username),
+  ]);
+  const foodDemoUserIds = new Set([
+    foodDemoUsers.manager.id,
+    ...foodDemoUsers.staff.map((user) => user.id),
+    foodDemoUsers.kitchen.id,
+    ...foodDemoUsers.clients.map((user) => user.id),
+  ]);
 
   if (!Array.isArray(parsed) || parsed.length === 0) {
-    const seedUsers = createSeedUsers(restaurants[0]?.id ?? null);
+    const seedUsers = createSeedUsers(
+      restaurants[0]?.id ?? null,
+      restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null,
+    );
     if (canPersistDataFiles) {
       await fs.writeFile(dataFile, JSON.stringify(seedUsers, null, 2), "utf8");
     }
     return seedUsers;
   }
 
-  const normalized = parsed.map((user) => {
+  const normalized: User[] = parsed.map((user): User => {
     const normalizedUser = normalizeUser(user);
+
+    if (foodRestaurantId && (foodDemoUserIds.has(normalizedUser.id) || foodDemoUserNames.has(normalizedUser.username))) {
+      const foodSpec =
+        [foodDemoUsers.manager, ...foodDemoUsers.staff, foodDemoUsers.kitchen, ...foodDemoUsers.clients].find(
+          (spec) => spec.username === normalizedUser.username || spec.id === normalizedUser.id,
+        ) ?? null;
+
+      if (foodSpec) {
+        return {
+          ...normalizedUser,
+          id: foodSpec.id,
+          role: foodSpec.role,
+          name: foodSpec.name,
+          username: foodSpec.username,
+          restaurantId: foodRestaurantId,
+          passwordHash: hashPassword(foodSpec.password),
+          temporaryPassword: foodSpec.password,
+          mustChangePassword: false,
+          status: "active" as const,
+        } as User;
+      }
+    }
 
     if (
       normalizedUser.role === "manager" ||
@@ -311,7 +433,7 @@ async function readUsersFile() {
         return {
           ...normalizedUser,
           restaurantId: fallbackRestaurantId,
-        };
+        } as User;
       }
 
       return {
@@ -321,7 +443,7 @@ async function readUsersFile() {
           validRestaurantIds,
           fallbackRestaurantId,
         ),
-      };
+      } as User;
     }
 
     return normalizedUser;
@@ -330,7 +452,7 @@ async function readUsersFile() {
     JSON.stringify(parsed) !== JSON.stringify(normalized) ||
     normalized.some((user) => !user.id || !user.username);
 
-  const demoUsers = createMissingDemoUsers(normalized, fallbackRestaurantId);
+  const demoUsers = createMissingDemoUsers(normalized, fallbackRestaurantId, foodRestaurantId);
   const withDemoUsers = demoUsers.length > 0 ? [...normalized, ...demoUsers] : normalized;
   const finalDirty = dirty || demoUsers.length > 0;
 

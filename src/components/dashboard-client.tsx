@@ -28,6 +28,7 @@ type Props = {
   initialRestaurants: Restaurant[];
   initialSelectedSlug?: string;
   allowRestaurantCreate?: boolean;
+  theme?: "dark" | "food";
 };
 
 function cloneRestaurant(restaurant: Restaurant) {
@@ -173,6 +174,7 @@ export function DashboardClient({
   initialRestaurants,
   initialSelectedSlug,
   allowRestaurantCreate = false,
+  theme = "dark",
 }: Props) {
   const [restaurants, setRestaurants] = useState(initialRestaurants);
   const initialSlug = initialSelectedSlug ?? initialRestaurants[0]?.slug ?? "";
@@ -720,7 +722,7 @@ export function DashboardClient({
   }
 
   return (
-    <div className="internal-dark grid gap-6 lg:grid-cols-[320px_1fr]">
+    <div className={theme === "food" ? "food-theme grid gap-6 lg:grid-cols-[320px_1fr]" : "internal-dark grid gap-6 lg:grid-cols-[320px_1fr]"}>
       <aside className="space-y-4 rounded-[2rem] border border-white/10 bg-[#171717]/95 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur">
         <div className="space-y-2">
           <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
@@ -1326,249 +1328,274 @@ export function DashboardClient({
 
             <div className="space-y-5">
               {draft.categories.map((category, categoryIndex) => (
-                <section
+                <details
                   key={category.id}
-                  className="rounded-[2rem] border border-black/8 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur"
+                  open={categoryIndex === 0}
+                  className="rounded-[2rem] border border-black/8 bg-white/85 shadow-[0_20px_60px_rgba(15,23,42,0.06)] backdrop-blur"
                 >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="grid flex-1 gap-4">
-                      <Field label="Nom de la catégorie">
-                        <input
-                          value={category.name}
-                          onChange={(event) =>
-                            updateCategoryField(categoryIndex, "name", event.target.value)
-                          }
-                          className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
-                        />
-                      </Field>
-                      <Field label="Description de catégorie">
-                        <input
-                          value={category.description}
-                          onChange={(event) =>
-                            updateCategoryField(
-                              categoryIndex,
-                              "description",
-                              event.target.value,
-                            )
-                          }
-                          className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
-                        />
-                      </Field>
+                  <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-5 py-5">
+                    <div className="min-w-0">
+                      <p className="text-[11px] uppercase tracking-[0.35em] text-black/35">Catégorie</p>
+                      <h3 className="mt-2 text-2xl font-semibold text-black">{category.name || "Catégorie"}</h3>
+                      <p className="mt-1 text-sm text-black/55">
+                        {category.items.length} plat{category.items.length > 1 ? "s" : ""} · {category.description || "Description à compléter"}
+                      </p>
+                    </div>
+                    <span className="rounded-full border border-black/10 bg-black/4 px-3 py-2 text-xs font-medium text-black/70">
+                      Ouvrir
+                    </span>
+                  </summary>
+                  <div className="border-t border-black/8 px-5 pb-5 pt-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="grid flex-1 gap-4">
+                        <Field label="Nom de la catégorie">
+                          <input
+                            value={category.name}
+                            onChange={(event) =>
+                              updateCategoryField(categoryIndex, "name", event.target.value)
+                            }
+                            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                          />
+                        </Field>
+                        <Field label="Description de catégorie">
+                          <input
+                            value={category.description}
+                            onChange={(event) =>
+                              updateCategoryField(categoryIndex, "description", event.target.value)
+                            }
+                            className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none ring-0 transition focus:border-black/25"
+                          />
+                        </Field>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => addItem(categoryIndex)}
+                          className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"
+                        >
+                          Ajouter un plat
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeCategory(categoryIndex)}
+                          className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => addItem(categoryIndex)}
-                        className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"
-                      >
-                        Ajouter un plat
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeCategory(categoryIndex)}
-                        className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black"
-                      >
-                        Supprimer
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 space-y-4">
-                    {category.items.map((item, itemIndex) => (
-                      <article
-                        key={item.id}
-                        className="rounded-[1.5rem] border border-black/8 bg-black/2 p-4"
-                      >
-                        <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <Field label="Nom du plat">
-                              <input
-                                value={item.name}
-                                onChange={(event) =>
-                                  updateItemField(
-                                    categoryIndex,
-                                    itemIndex,
-                                    "name",
-                                    event.target.value,
-                                  )
-                                }
-                                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
-                              />
-                            </Field>
-                            <Field label="Prix">
-                              <input
-                                type="number"
-                                value={item.price}
-                                onChange={(event) =>
-                                  updateItemField(
-                                    categoryIndex,
-                                    itemIndex,
-                                    "price",
-                                    event.target.value,
-                                  )
-                                }
-                                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
-                              />
-                            </Field>
-                            <Field label="Happy hour">
-                              <label className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3">
-                                <input
-                                  type="checkbox"
-                                  checked={Boolean(item.happyHourEnabled)}
-                                  onChange={(event) =>
-                                    updateItemField(
-                                      categoryIndex,
-                                      itemIndex,
-                                      "happyHourEnabled",
-                                      event.target.checked,
-                                    )
-                                  }
-                                />
-                                <span className="text-sm text-black/70">
-                                  Activer le prix happy hour
-                                </span>
-                              </label>
-                            </Field>
-                            <Field label="Prix happy hour">
-                              <input
-                                type="number"
-                                value={item.happyHourPrice ?? ""}
-                                onChange={(event) =>
-                                  updateItemField(
-                                    categoryIndex,
-                                    itemIndex,
-                                    "happyHourPrice",
-                                    event.target.value,
-                                  )
-                                }
-                                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
-                              />
-                            </Field>
-                            <Field label="Image URL">
-                              <input
-                                value={item.imageUrl}
-                                onChange={(event) =>
-                                  updateItemField(
-                                    categoryIndex,
-                                    itemIndex,
-                                    "imageUrl",
-                                    event.target.value,
-                                  )
-                                }
-                                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
-                              />
-                            </Field>
-                            <Field label="Atribut signature">
-                              <label className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3">
-                                <input
-                                  type="checkbox"
-                                  checked={item.isSignature}
-                                  onChange={(event) =>
-                                    updateItemField(
-                                      categoryIndex,
-                                      itemIndex,
-                                      "isSignature",
-                                      event.target.checked,
-                                    )
-                                  }
-                                />
-                              <span className="text-sm text-black/70">
-                                  Marquer comme plat signature
-                                </span>
-                              </label>
-                            </Field>
-                            <Field label="Ingrédients">
-                              <textarea
-                                value={joinTags(item.ingredients)}
-                                onChange={(event) =>
-                                  updateItemField(
-                                    categoryIndex,
-                                    itemIndex,
-                                    "ingredients",
-                                    event.target.value,
-                                  )
-                                }
-                                rows={3}
-                                className="w-full rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
-                              />
-                            </Field>
-                            <Field label="Allergènes">
-                              <textarea
-                                value={joinTags(item.allergens)}
-                                onChange={(event) =>
-                                  updateItemField(
-                                    categoryIndex,
-                                    itemIndex,
-                                    "allergens",
-                                    event.target.value,
-                                  )
-                                }
-                                rows={3}
-                                className="w-full rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
-                              />
-                            </Field>
-                            <Field label="Description">
-                              <textarea
-                                value={item.description}
-                                onChange={(event) =>
-                                  updateItemField(
-                                    categoryIndex,
-                                    itemIndex,
-                                    "description",
-                                    event.target.value,
-                                  )
-                                }
-                                rows={3}
-                                className="w-full rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
-                              />
-                            </Field>
-                <Field label="Interne / note cuisine">
-                  <textarea
-                    value={item.recipe}
-                    onChange={(event) =>
-                      updateItemField(
-                                    categoryIndex,
-                                    itemIndex,
-                                    "recipe",
-                                    event.target.value,
-                                  )
-                                }
-                                rows={3}
-                                className="w-full rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
-                              />
-                            </Field>
-                          </div>
-
-                          <div className="space-y-3">
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
-                              className="h-44 w-full rounded-[1.5rem] object-cover"
-                            />
-                            <p className="text-sm text-black/60">
-                              Preview: {money(getMenuItemEffectivePrice(item), draft.currency)}
+                    <div className="mt-5 space-y-3">
+                      {category.items.map((item, itemIndex) => (
+                        <details
+                          key={item.id}
+                          className="rounded-[1.5rem] border border-black/8 bg-black/2"
+                        >
+                          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4">
+                            <div className="min-w-0">
+                              <p className="text-[11px] uppercase tracking-[0.28em] text-black/35">
+                                {item.isSignature ? "Signature" : "Plat"}
+                              </p>
+                              <h4 className="mt-1 truncate text-lg font-semibold text-black">{item.name}</h4>
+                              <p className="mt-1 truncate text-sm text-black/55">{item.description || "Plat à éditer"}</p>
+                            </div>
+                            <div className="flex shrink-0 flex-col items-end gap-1">
+                              <span className="text-base font-semibold text-black">
+                                {money(getMenuItemEffectivePrice(item), draft.currency)}
+                              </span>
                               {item.happyHourEnabled &&
                               Number.isFinite(item.happyHourPrice) &&
                               Number(item.happyHourPrice) > 0 ? (
-                                <span className="ml-2 text-xs text-black/40 line-through">
+                                <span className="text-xs text-black/40 line-through">
                                   {money(item.price, draft.currency)}
                                 </span>
                               ) : null}
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => removeItem(categoryIndex, itemIndex)}
-                              className="w-full rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black"
-                            >
-                              Supprimer le plat
-                            </button>
+                            </div>
+                          </summary>
+
+                          <div className="border-t border-black/8 bg-white/95 px-4 py-4">
+                            <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
+                              <div className="grid gap-4 md:grid-cols-2">
+                                <Field label="Nom du plat">
+                                  <input
+                                    value={item.name}
+                                    onChange={(event) =>
+                                      updateItemField(categoryIndex, itemIndex, "name", event.target.value)
+                                    }
+                                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                                  />
+                                </Field>
+                                <Field label="Prix">
+                                  <input
+                                    type="number"
+                                    value={item.price}
+                                    onChange={(event) =>
+                                      updateItemField(categoryIndex, itemIndex, "price", event.target.value)
+                                    }
+                                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                                  />
+                                </Field>
+                                <Field label="Happy hour">
+                                  <label className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={Boolean(item.happyHourEnabled)}
+                                      onChange={(event) =>
+                                        updateItemField(
+                                          categoryIndex,
+                                          itemIndex,
+                                          "happyHourEnabled",
+                                          event.target.checked,
+                                        )
+                                      }
+                                    />
+                                    <span className="text-sm text-black/70">
+                                      Activer le prix happy hour
+                                    </span>
+                                  </label>
+                                </Field>
+                                <Field label="Prix happy hour">
+                                  <input
+                                    type="number"
+                                    value={item.happyHourPrice ?? ""}
+                                    onChange={(event) =>
+                                      updateItemField(
+                                        categoryIndex,
+                                        itemIndex,
+                                        "happyHourPrice",
+                                        event.target.value,
+                                      )
+                                    }
+                                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                                  />
+                                </Field>
+                                <Field label="Image URL">
+                                  <input
+                                    value={item.imageUrl}
+                                    onChange={(event) =>
+                                      updateItemField(
+                                        categoryIndex,
+                                        itemIndex,
+                                        "imageUrl",
+                                        event.target.value,
+                                      )
+                                    }
+                                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                                  />
+                                </Field>
+                                <Field label="Atribut signature">
+                                  <label className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3">
+                                    <input
+                                      type="checkbox"
+                                      checked={item.isSignature}
+                                      onChange={(event) =>
+                                        updateItemField(
+                                          categoryIndex,
+                                          itemIndex,
+                                          "isSignature",
+                                          event.target.checked,
+                                        )
+                                      }
+                                    />
+                                    <span className="text-sm text-black/70">
+                                      Marquer comme plat signature
+                                    </span>
+                                  </label>
+                                </Field>
+                                <Field label="Ingrédients">
+                                  <textarea
+                                    value={joinTags(item.ingredients)}
+                                    onChange={(event) =>
+                                      updateItemField(
+                                        categoryIndex,
+                                        itemIndex,
+                                        "ingredients",
+                                        event.target.value,
+                                      )
+                                    }
+                                    rows={3}
+                                    className="w-full rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                                  />
+                                </Field>
+                                <Field label="Allergènes">
+                                  <textarea
+                                    value={joinTags(item.allergens)}
+                                    onChange={(event) =>
+                                      updateItemField(
+                                        categoryIndex,
+                                        itemIndex,
+                                        "allergens",
+                                        event.target.value,
+                                      )
+                                    }
+                                    rows={3}
+                                    className="w-full rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                                  />
+                                </Field>
+                                <Field label="Description">
+                                  <textarea
+                                    value={item.description}
+                                    onChange={(event) =>
+                                      updateItemField(
+                                        categoryIndex,
+                                        itemIndex,
+                                        "description",
+                                        event.target.value,
+                                      )
+                                    }
+                                    rows={3}
+                                    className="w-full rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                                  />
+                                </Field>
+                                <Field label="Interne / note cuisine">
+                                  <textarea
+                                    value={item.recipe}
+                                    onChange={(event) =>
+                                      updateItemField(
+                                        categoryIndex,
+                                        itemIndex,
+                                        "recipe",
+                                        event.target.value,
+                                      )
+                                    }
+                                    rows={3}
+                                    className="w-full rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none transition focus:border-black/25"
+                                  />
+                                </Field>
+                              </div>
+
+                              <div className="space-y-3">
+                                <img
+                                  src={item.imageUrl}
+                                  alt={item.name}
+                                  className="h-44 w-full rounded-[1.5rem] object-cover"
+                                />
+                                <p className="text-sm text-black/60">
+                                  Preview: {money(getMenuItemEffectivePrice(item), draft.currency)}
+                                  {item.happyHourEnabled &&
+                                  Number.isFinite(item.happyHourPrice) &&
+                                  Number(item.happyHourPrice) > 0 ? (
+                                    <span className="ml-2 text-xs text-black/40 line-through">
+                                      {money(item.price, draft.currency)}
+                                    </span>
+                                  ) : null}
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() => removeItem(categoryIndex, itemIndex)}
+                                  className="w-full rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black"
+                                >
+                                  Supprimer le plat
+                                </button>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </article>
-                    ))}
+                        </details>
+                      ))}
+                    </div>
                   </div>
-                </section>
+                </details>
               ))}
             </div>
 

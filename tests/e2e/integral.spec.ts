@@ -66,19 +66,16 @@ async function getOrders(page: Page) {
   return payload.orders;
 }
 
-test("landing shows role demo accounts", async ({ page }) => {
+test("landing shows the two restaurant demos", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText("Comptes de démo")).toBeVisible();
-  const managerAccordion = page
-    .locator("details")
-    .filter({ has: page.getByRole("heading", { name: "manager", exact: true }) })
-    .first();
-  await expect(managerAccordion.getByRole("heading", { name: "manager", exact: true })).toBeVisible();
-  await managerAccordion.locator("summary").click();
-  await expect(managerAccordion.getByText("manager123!", { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "user", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "kitchen", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "client", exact: true })).toBeVisible();
+  await expect(page.getByText("App pour restaurants et bars")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Noir 1", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Food 1", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Menu" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "QR" }).first()).toBeVisible();
+  const noirRoles = page.locator("details").filter({ has: page.getByText("Accès rapide", { exact: true }).first() }).first();
+  await noirRoles.locator("summary").click();
+  await expect(page.getByRole("link", { name: "Client" }).first()).toBeVisible();
 });
 
 test("manager can log in and create a staff user", async ({ page }) => {
