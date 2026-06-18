@@ -188,6 +188,7 @@ export function StaffClient({
     orderFlowEnabled ? "tables" : "reservations",
   );
   const [selectedTableModalId, setSelectedTableModalId] = useState<string | null>(initialSelectedTableId);
+  const [selectedTableModalView, setSelectedTableModalView] = useState<"bon" | "payment">("bon");
   const [pendingScrollTarget, setPendingScrollTarget] = useState<string | null>(null);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const isFoodTheme = theme === "food";
@@ -511,6 +512,10 @@ export function StaffClient({
     if (!selectedTableModalId) return null;
     return currentTables.find((table) => table.id === selectedTableModalId) ?? null;
   }, [currentTables, selectedTableModalId]);
+
+  useEffect(() => {
+    setSelectedTableModalView("bon");
+  }, [selectedTableModalId]);
 
   const selectedTableModalOpenOrder = useMemo(() => {
     if (!selectedTableModal) return null;
@@ -1842,44 +1847,69 @@ export function StaffClient({
                             ) : null}
                           </div>
 
-                          <div className="flex flex-wrap gap-3">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedTarget(selectedTableModal.id);
-                                setSelectedTableModalId(null);
-                                navigateStaff("menu", "staff-menu", "menu");
-                              }}
-                              className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
-                            >
-                              Ouvrir le menu
-                            </button>
-                            {selectedTableModalOpenOrder ? (
-                              <>
+                          {selectedTableModalView === "bon" ? (
+                            <>
+                              <div className="flex flex-wrap gap-3">
                                 <button
                                   type="button"
-                                  onClick={() => void updateOrderStatus(selectedTableModalOpenOrder.id, "sent_to_kitchen")}
+                                  onClick={() => {
+                                    setSelectedTarget(selectedTableModal.id);
+                                    setSelectedTableModalId(null);
+                                    navigateStaff("menu", "staff-menu", "menu");
+                                  }}
                                   className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
                                 >
-                                  En cuisine
+                                  Ouvrir le menu
                                 </button>
-                              </>
-                            ) : null}
-                          </div>
+                                {selectedTableModalOpenOrder?.status === "open" ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => void updateOrderStatus(selectedTableModalOpenOrder.id, "sent_to_kitchen")}
+                                    className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
+                                  >
+                                    En cuisine
+                                  </button>
+                                ) : null}
+                              </div>
 
-                          {selectedTableModalOpenOrder ? (
+                              {selectedTableModalOpenOrder ? (
+                                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[1.35rem] border border-[#eadfce] bg-white/75 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
+                                  <div>
+                                    <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Actions rapides</p>
+                                    <p className="mt-1 text-xs text-[#6f5b4a]">Passe en paiement après le service.</p>
+                                  </div>
+                                {selectedTableModalOpenOrder.status === "ready" ? (
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      const ok = await updateOrderStatus(selectedTableModalOpenOrder.id, "served");
+                                      if (ok) {
+                                        setSelectedTableModalView("payment");
+                                      }
+                                    }}
+                                    className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
+                                  >
+                                    Servi
+                                  </button>
+                                ) : null}
+                                </div>
+                              ) : null}
+                            </>
+                          ) : null}
+
+                          {selectedTableModalView === "payment" && selectedTableModalOpenOrder ? (
                             <div className="rounded-[1.35rem] border border-[#eadfce] bg-white/80 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
                               <div className="flex items-center justify-between gap-3">
                                 <div>
-                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Encaissement</p>
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Paiement</p>
                                   <p className="mt-1 text-xs text-[#6f5b4a]">Enregistre un paiement cash, carte ou partiel.</p>
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() => void closeCurrentOrder(paymentMethod)}
-                                  className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-3 py-2 text-xs font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
+                                  onClick={() => setSelectedTableModalView("bon")}
+                                  className="rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2]"
                                 >
-                                  Cash
+                                  Revenir au bon
                                 </button>
                               </div>
                               <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -1906,6 +1936,13 @@ export function StaffClient({
                                   ).toString()}
                                   className="w-28 rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs text-[#24170f]"
                                 />
+                                <button
+                                  type="button"
+                                  onClick={() => void closeCurrentOrder(paymentMethod)}
+                                  className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-3 py-2 text-xs font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
+                                >
+                                  Encaisser
+                                </button>
                                 <span className="text-[11px] text-[#7f6c5a]">
                                   Total {formatMoney(orderTotal(selectedTableModalOpenOrder), restaurant.currency)} · Reste{" "}
                                   {formatMoney(
@@ -1917,33 +1954,6 @@ export function StaffClient({
                                     restaurant.currency,
                                   )}
                                 </span>
-                              </div>
-                            </div>
-                          ) : null}
-
-                          {selectedTableModalOpenOrder ? (
-                            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[1.35rem] border border-[#eadfce] bg-white/75 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
-                              <div>
-                                <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Actions rapides</p>
-                                <p className="mt-1 text-xs text-[#6f5b4a]">Retour possible si `Servi` a été cliqué par erreur.</p>
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {selectedTableModalOpenOrder.status !== "open" ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => void updateOrderStatus(selectedTableModalOpenOrder.id, "open")}
-                                    className="rounded-full border border-[#eadfce] bg-white px-4 py-3 text-sm font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2]"
-                                  >
-                                    Revenir au bon
-                                  </button>
-                                ) : null}
-                                <button
-                                  type="button"
-                                  onClick={() => void updateOrderStatus(selectedTableModalOpenOrder.id, "served")}
-                                  className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
-                                >
-                                  Servi
-                                </button>
                               </div>
                             </div>
                           ) : null}
@@ -2513,7 +2523,7 @@ export function StaffClient({
                   locale={locale}
                   accent={restaurant.accent}
                     restaurantSlug={restaurant.slug}
-                    orderFlowEnabled={orderFlowEnabled}
+                    orderFlowEnabled={selectedTarget !== "takeaway"}
                     actionLabel="Ajouter au bon"
                     showItemModal={true}
                     compact
