@@ -1162,7 +1162,7 @@ export function StaffClient({
       ) : null}
 
       {orderFlowEnabled ? (
-        <section id="staff-alerts" className="mt-4 grid gap-3 sm:grid-cols-3 scroll-mt-28">
+        <section id="staff-alerts" className="mt-4 grid grid-cols-3 gap-2 scroll-mt-28 sm:gap-3">
           <button
             type="button"
             onClick={() => {
@@ -1171,13 +1171,13 @@ export function StaffClient({
                 navigateStaff("tables", "staff-bon", "alerts");
               }
             }}
-            className="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-4 text-left text-amber-950 transition hover:bg-amber-100"
+            className="min-h-[8.5rem] rounded-[1.2rem] border border-amber-200 bg-amber-50 p-2 text-left text-amber-950 transition hover:bg-amber-100 sm:p-4"
           >
-            <p className="text-[11px] uppercase tracking-[0.32em] text-amber-700">Alertes QR</p>
-            <p className="mt-1 text-2xl font-semibold">{alertSummary.qrOrders}</p>
-            <p className="text-sm text-amber-800/80">Commandes clientes à valider.</p>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-amber-700 sm:text-[11px] sm:tracking-[0.32em]">Alertes QR</p>
+            <p className="mt-1 text-xl font-semibold sm:text-2xl">{alertSummary.qrOrders}</p>
+            <p className="hidden text-sm text-amber-800/80 sm:block">Commandes clientes à valider.</p>
             {firstTableWithQrOrder ? (
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.22em] text-amber-900">
+              <p className="mt-2 truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-900 sm:text-xs sm:tracking-[0.22em]">
                 {firstTableWithQrOrder.name}
               </p>
             ) : null}
@@ -1191,13 +1191,13 @@ export function StaffClient({
                 navigateStaff("tables", "staff-bon", "alerts");
               }
             }}
-            className="rounded-[1.5rem] border border-rose-200 bg-rose-50 p-4 text-left text-rose-950 transition hover:bg-rose-100"
+            className="min-h-[8.5rem] rounded-[1.2rem] border border-rose-200 bg-rose-50 p-2 text-left text-rose-950 transition hover:bg-rose-100 sm:p-4"
           >
-            <p className="text-[11px] uppercase tracking-[0.32em] text-rose-700">Appels serveur</p>
-            <p className="mt-1 text-2xl font-semibold">{alertSummary.waiterCalls}</p>
-            <p className="text-sm text-rose-800/80">Messages en attente sur les tables.</p>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-rose-700 sm:text-[11px] sm:tracking-[0.32em]">Appels serveur</p>
+            <p className="mt-1 text-xl font-semibold sm:text-2xl">{alertSummary.waiterCalls}</p>
+            <p className="hidden text-sm text-rose-800/80 sm:block">Messages en attente sur les tables.</p>
             {firstTableWithWaiterCall ? (
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-900">
+              <p className="mt-2 truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-900 sm:text-xs sm:tracking-[0.22em]">
                 {firstTableWithWaiterCall.name}
               </p>
             ) : null}
@@ -1210,13 +1210,13 @@ export function StaffClient({
                 navigateStaff("tables", "staff-bon", "tables");
               }
             }}
-            className="rounded-[1.5rem] border border-emerald-200 bg-emerald-50 p-4 text-left text-emerald-950 transition hover:bg-emerald-100"
+            className="min-h-[8.5rem] rounded-[1.2rem] border border-emerald-200 bg-emerald-50 p-2 text-left text-emerald-950 transition hover:bg-emerald-100 sm:p-4"
           >
-            <p className="text-[11px] uppercase tracking-[0.32em] text-emerald-700">Prêtes</p>
-            <p className="mt-1 text-2xl font-semibold">{alertSummary.readyOrders}</p>
-            <p className="text-sm text-emerald-800/80">À servir rapidement.</p>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-emerald-700 sm:text-[11px] sm:tracking-[0.32em]">Prêtes</p>
+            <p className="mt-1 text-xl font-semibold sm:text-2xl">{alertSummary.readyOrders}</p>
+            <p className="hidden text-sm text-emerald-800/80 sm:block">À servir rapidement.</p>
             {firstReadyOrder ? (
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-900">
+              <p className="mt-2 truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-900 sm:text-xs sm:tracking-[0.22em]">
                 {currentTables.find((table) => table.id === firstReadyOrder.tableId)?.name ?? "Table"}
               </p>
             ) : null}
@@ -2020,87 +2020,6 @@ export function StaffClient({
                   </div>
                 ) : null}
 
-                {!selectedTableModal ? (
-                  <div className="mt-4">
-                  <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">Bon courant</p>
-                  <div className="mt-2 rounded-[1.6rem] border border-black/8 bg-black/3 p-4 shadow-[0_12px_35px_rgba(15,23,42,0.06)]">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <h3 className="text-xl font-semibold sm:text-2xl">{currentTargetLabel}</h3>
-                        <p className="mt-1 text-sm text-black/60">
-                          {currentOrder ? `${currentOrder.items.length} articles` : "Aucun bon ouvert."}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span
-                          title={currentOrder ? "Ouvert" : "Libre"}
-                          aria-label={currentOrder ? "Ouvert" : "Libre"}
-                          className={`h-2.5 w-2.5 rounded-full border ${
-                            currentOrder ? "border-black bg-black" : "border-black/15 bg-white"
-                          }`}
-                        />
-                        {currentOrder ? (
-                          <span
-                            title={orderStatusMeta(currentOrder.status).label}
-                            aria-label={orderStatusMeta(currentOrder.status).label}
-                            className="inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[#eadfce] bg-white px-1.5 text-[9px] font-semibold leading-none text-[#24170f]"
-                          >
-                            •
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                    {currentOrder && !selectedTableModal ? (
-                      <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                        <div className="rounded-2xl border border-black/8 bg-white px-3 py-3">
-                          <p className="text-[11px] uppercase tracking-[0.28em] text-black/40">Total</p>
-                          <p className="mt-1 text-base font-semibold sm:text-lg">
-                            {formatMoney(currentOrderTotal, restaurant.currency)}
-                          </p>
-                        </div>
-                        <div className="rounded-2xl border border-black/8 bg-white px-3 py-3">
-                          <p className="text-[11px] uppercase tracking-[0.28em] text-black/40">Déjà payé</p>
-                          <p className="mt-1 text-base font-semibold sm:text-lg">
-                            {formatMoney(currentPaidTotal, restaurant.currency)}
-                          </p>
-                        </div>
-                        <div className="rounded-2xl border border-black/8 bg-white px-3 py-3">
-                          <p className="text-[11px] uppercase tracking-[0.28em] text-black/40">Reste</p>
-                          <p className="mt-1 text-base font-semibold sm:text-lg">
-                            {formatMoney(currentRemaining, restaurant.currency)}
-                          </p>
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                  </div>
-                ) : null}
-                {currentOrder ? (
-                  <div className="mt-4 rounded-[1.25rem] border border-black/8 bg-black/3 px-4 py-3">
-                      <p className="text-[11px] uppercase tracking-[0.3em] text-black/35">Statut actuel</p>
-                    <p className="mt-1 text-sm text-black/55">
-                      {currentOrder.status === "open"
-                        ? "À valider par le serveur"
-                        : currentOrder.status === "sent_to_kitchen"
-                          ? "Envoyé à la cuisine"
-                          : currentOrder.status === "preparing"
-                            ? "En préparation"
-                            : currentOrder.status === "ready"
-                              ? "À servir"
-                              : currentOrder.status === "served"
-                                ? "Servi à la table"
-                                : currentOrder.status === "paid"
-                                  ? "Encaissement terminé"
-                                  : currentOrder.status === "cancelled"
-                                    ? "Annulé"
-                                    : "Archivé"}
-                    </p>
-                    <p className="mt-2 text-[11px] uppercase tracking-[0.28em] text-black/40">
-                      Origine: {currentOrder.source === "qr" ? "Commande QR" : currentOrder.source === "table" ? "Service" : "À emporter"}
-                    </p>
-                  </div>
-                ) : null}
-
                 {selectedTarget !== "takeaway" ? (
                   <div className="mt-4 rounded-[1.5rem] border border-black/8 bg-white/95 p-4 shadow-[0_12px_35px_rgba(15,23,42,0.04)]">
                     <details open className="group">
@@ -2569,9 +2488,23 @@ export function StaffClient({
                     <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">Menu</p>
                     <h3 className="text-lg font-semibold sm:text-xl">Ajouter au bon</h3>
                     <p className="mt-1 text-sm text-black/55">
-                      Les produits ajoutés ici vont sur{" "}
+                      Ouvre un plat pour voir le détail, puis ajoute-le à{" "}
                       <span className="font-semibold text-black">{currentTargetLabel}</span>.
                     </p>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigateStaff("tables", "staff-bon", "tables");
+                      }}
+                      className="rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-medium text-black"
+                    >
+                      Choisir une table
+                    </button>
+                    <span className="rounded-full border border-black/8 bg-black/3 px-3 py-2 text-xs text-black/60">
+                      Mode client par défaut
+                    </span>
                   </div>
                 </div>
               <div className="mt-4">
@@ -2579,13 +2512,13 @@ export function StaffClient({
                   categories={restaurant.categories}
                   locale={locale}
                   accent={restaurant.accent}
-                  restaurantSlug={restaurant.slug}
-                  orderFlowEnabled={orderFlowEnabled}
-                  actionLabel="Ajouter au bon"
-                  showItemModal={false}
-                  compact
-                  onItemAction={(item) =>
-                    void addItemToOrder({
+                    restaurantSlug={restaurant.slug}
+                    orderFlowEnabled={orderFlowEnabled}
+                    actionLabel="Ajouter au bon"
+                    showItemModal={true}
+                    compact
+                    onItemAction={(item) =>
+                      void addItemToOrder({
                       id: item.id,
                       name: item.name,
                       price: item.price,
