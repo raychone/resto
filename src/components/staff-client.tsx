@@ -1274,7 +1274,7 @@ export function StaffClient({
               <button
                 type="button"
                 onClick={() => {
-                  navigateStaff("tables", "staff-tables", "tables");
+                  navigateStaff("tables", "staff-bon", "tables");
                 }}
                 className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
                 staffQuickNav === "tables"
@@ -1771,26 +1771,46 @@ export function StaffClient({
                             </p>
                           </div>
 
-                          <div className="grid gap-3 sm:grid-cols-3">
-                            <div className="rounded-[1.25rem] border border-[#eadfce] bg-white p-4">
-                              <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Alertes</p>
-                              <p className="mt-2 text-2xl font-semibold text-[#24170f]">
-                                {(pendingClientOrdersByTable[selectedTableModal.id] ?? 0) +
-                                  (waiterCallsByTable[selectedTableModal.id] ?? 0)}
-                              </p>
-                            </div>
-                            <div className="rounded-[1.25rem] border border-[#eadfce] bg-white p-4">
-                              <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">QR</p>
-                              <p className="mt-2 text-2xl font-semibold text-[#24170f]">
-                                {pendingClientOrdersByTable[selectedTableModal.id] ?? 0}
-                              </p>
-                            </div>
-                            <div className="rounded-[1.25rem] border border-[#eadfce] bg-white p-4">
-                              <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Appels</p>
-                              <p className="mt-2 text-2xl font-semibold text-[#24170f]">
-                                {waiterCallsByTable[selectedTableModal.id] ?? 0}
-                              </p>
-                            </div>
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {[
+                              {
+                                label: "Alertes",
+                                value:
+                                  (pendingClientOrdersByTable[selectedTableModal.id] ?? 0) +
+                                  (waiterCallsByTable[selectedTableModal.id] ?? 0),
+                              },
+                              {
+                                label: "QR",
+                                value: pendingClientOrdersByTable[selectedTableModal.id] ?? 0,
+                              },
+                              {
+                                label: "Appels",
+                                value: waiterCallsByTable[selectedTableModal.id] ?? 0,
+                              },
+                              {
+                                label: "Statut",
+                                value: selectedTableModalOpenOrder
+                                  ? selectedTableModalOpenOrder.status === "open"
+                                    ? "Ouvert"
+                                    : selectedTableModalOpenOrder.status === "sent_to_kitchen"
+                                      ? "Cuisine"
+                                      : selectedTableModalOpenOrder.status === "preparing"
+                                        ? "Prep"
+                                        : selectedTableModalOpenOrder.status === "ready"
+                                          ? "Prêt"
+                                          : selectedTableModalOpenOrder.status === "served"
+                                            ? "Servi"
+                                            : selectedTableModalOpenOrder.status === "paid"
+                                              ? "Payé"
+                                              : "Archivé"
+                                  : "Libre",
+                              },
+                            ].map((item) => (
+                              <div key={item.label} className="min-w-[6rem] flex-1 rounded-[1.25rem] border border-[#eadfce] bg-white px-3 py-3 text-center">
+                                <p className="text-[10px] uppercase tracking-[0.28em] text-[#a38d7c]">{item.label}</p>
+                                <p className="mt-2 text-lg font-semibold text-[#24170f]">{item.value}</p>
+                              </div>
+                            ))}
                           </div>
 
                           <div className="rounded-[1.5rem] border border-[#eadfce] bg-[#fff8f2] p-4">
@@ -1842,6 +1862,17 @@ export function StaffClient({
                           </div>
 
                           <div className="flex flex-wrap gap-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedTarget(selectedTableModal.id);
+                                setSelectedTableModalId(null);
+                                navigateStaff("menu", "staff-menu", "menu");
+                              }}
+                              className="rounded-full border border-[#c41e1e] bg-[#c41e1e] px-4 py-3 text-sm font-medium text-white"
+                            >
+                              Ouvrir le menu
+                            </button>
                             <button
                               type="button"
                               onClick={() => {
@@ -2487,26 +2518,16 @@ export function StaffClient({
               id="staff-menu"
               className="rounded-[2rem] border border-black/8 bg-white/85 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.06)] scroll-mt-28"
             >
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">Menu</p>
-                  <h3 className="text-lg font-semibold sm:text-xl">Ajouter au bon</h3>
-                  <p className="mt-1 text-sm text-black/55">
-                    Les produits ajoutés ici vont sur{" "}
-                    <span className="font-semibold text-black">{currentTargetLabel}</span>.
-                  </p>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">Menu</p>
+                    <h3 className="text-lg font-semibold sm:text-xl">Ajouter au bon</h3>
+                    <p className="mt-1 text-sm text-black/55">
+                      Les produits ajoutés ici vont sur{" "}
+                      <span className="font-semibold text-black">{currentTargetLabel}</span>.
+                    </p>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStaffTab("tables");
-                    navigateStaff("tables", "staff-bon", "tables");
-                  }}
-                  className="rounded-full border border-black/10 bg-black px-3 py-2 text-xs font-medium text-white"
-                >
-                  Retour au bon
-                </button>
-              </div>
               <div className="mt-4">
                 <PublicMenuCategories
                   categories={restaurant.categories}
