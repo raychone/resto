@@ -1833,18 +1833,18 @@ export function StaffClient({
                                 : "Aucun bon ouvert."}
                             </p>
                             {selectedTableModalOpenOrder ? (
-                              <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                                <div className="rounded-2xl border border-[#eadfce] bg-white px-3 py-3">
+                              <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+                                <div className="min-w-[7rem] flex-1 rounded-2xl border border-[#eadfce] bg-white px-3 py-3 text-center">
                                   <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Total</p>
                                   <p className="mt-1 text-base font-semibold text-[#24170f]">{formatMoney(orderTotal(selectedTableModalOpenOrder), restaurant.currency)}</p>
                                 </div>
-                                <div className="rounded-2xl border border-[#eadfce] bg-white px-3 py-3">
+                                <div className="min-w-[7rem] flex-1 rounded-2xl border border-[#eadfce] bg-white px-3 py-3 text-center">
                                   <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Déjà payé</p>
                                   <p className="mt-1 text-base font-semibold text-[#24170f]">
                                     {formatMoney(paidTotalForOrder(payments, selectedTableModalOpenOrder.id), restaurant.currency)}
                                   </p>
                                 </div>
-                                <div className="rounded-2xl border border-[#eadfce] bg-white px-3 py-3">
+                                <div className="min-w-[7rem] flex-1 rounded-2xl border border-[#eadfce] bg-white px-3 py-3 text-center">
                                   <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Reste</p>
                                   <p className="mt-1 text-base font-semibold text-[#24170f]">
                                     {formatMoney(
@@ -1883,13 +1883,6 @@ export function StaffClient({
                               className="rounded-full border border-[#c41e1e] bg-[#c41e1e] px-4 py-3 text-sm font-medium text-white"
                             >
                               Ouvrir le bon
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setSelectedTableModalId(null)}
-                              className="rounded-full border border-[#eadfce] bg-white px-4 py-3 text-sm font-medium text-[#24170f]"
-                            >
-                              Fermer
                             </button>
                           </div>
                         </div>
