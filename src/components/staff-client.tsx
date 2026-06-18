@@ -14,6 +14,7 @@ import {
 import { PublicMenuCategories } from "@/components/public-menu-categories";
 import { useRestaurantRealtime } from "@/components/use-restaurant-realtime";
 import { createId } from "@/lib/types";
+import { countTablesNeeded } from "@/lib/booking";
 import type {
   TableSession,
   Locale,
@@ -27,6 +28,7 @@ import type {
   Table,
   TableSessionParticipant,
 } from "@/lib/types";
+import type { AvailableDay } from "@/lib/booking";
 import { getMenuItemEffectivePrice } from "@/lib/types";
 
 type Props = {
@@ -74,6 +76,67 @@ function formatMoney(amount: number, currency: string) {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
       }).format(rounded);
+}
+
+
+
+type PhoneCountryCode = "FR" | "BE" | "IT" | "ES" | "CH";
+
+const phoneCountries: Record<PhoneCountryCode, { label: string; dialCode: string }> = {
+  FR: { label: "FR", dialCode: "+33" },
+  BE: { label: "BE", dialCode: "+32" },
+  IT: { label: "IT", dialCode: "+39" },
+  ES: { label: "ES", dialCode: "+34" },
+  CH: { label: "CH", dialCode: "+41" },
+};
+
+function pad(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+function formatDateKey(date: Date) {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1, 12, 0, 0, 0);
+}
+
+function addMonths(date: Date, offset: number) {
+  return new Date(date.getFullYear(), date.getMonth() + offset, 1, 12, 0, 0, 0);
+}
+
+function buildCalendarGrid(month: Date) {
+  const firstDay = startOfMonth(month);
+  const startOffset = firstDay.getDay();
+  const firstVisibleDay = new Date(firstDay);
+  firstVisibleDay.setDate(firstDay.getDate() - startOffset);
+  return Array.from({ length: 42 }, (_, index) => {
+    const day = new Date(firstVisibleDay);
+    day.setDate(firstVisibleDay.getDate() + index);
+    day.setHours(12, 0, 0, 0);
+    return day;
+  });
+}
+
+function isSameMonth(date: Date, month: Date) {
+  return date.getFullYear() === month.getFullYear() && date.getMonth() === month.getMonth();
+}
+
+function formatMonthLabel(date: Date) {
+  return new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" }).format(date);
+}
+
+function formatShortWeekday(date: Date) {
+  return new Intl.DateTimeFormat("fr-FR", { weekday: "short" }).format(date);
+}
+
+function formatDayNumber(date: Date) {
+  return new Intl.DateTimeFormat("fr-FR", { day: "2-digit" }).format(date);
+}
+
+function normalizePhoneNumber(phoneNumber: string) {
+  return phoneNumber.replace(/[^\d]/g, "").trim();
 }
 
 function reservationStatusMeta(status: Reservation["status"]) {
@@ -209,6 +272,10 @@ export function StaffClient({
     guestCount: 2,
     note: "",
   });
+  const [bookingAvailability, setBookingAvailability] = useState<AvailableDay[]>([]);
+  const [bookingDisplayMonth, setBookingDisplayMonth] = useState(() => startOfMonth(new Date()));
+  const [bookingPhoneCountry, setBookingPhoneCountry] = useState<PhoneCountryCode>("FR");
+  const [bookingPickerMode, setBookingPickerMode] = useState<"date" | "time" | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -357,6 +424,53 @@ export function StaffClient({
     const today = reservations.filter((reservation) => reservation.date === todayKey).length;
     return { pending, confirmed, cancelled, noShow, today };
   }, [reservations, todayKey]);
+
+  const bookingAvailabilityMap = useMemo(
+    () => new Map(bookingAvailability.map((day) => [day.date, day] as const)),
+    [bookingAvailability],
+  );
+
+  const bookingCalendarDays = useMemo(() => buildCalendarGrid(bookingDisplayMonth), [bookingDisplayMonth]);
+  const bookingSelectedDay = useMemo(
+    () => (form.date ? bookingAvailabilityMap.get(form.date) ?? null : null),
+    [bookingAvailabilityMap, form.date],
+  );
+  const bookingTablesNeeded = useMemo(
+    () => countTablesNeeded(Math.max(1, Number(form.guestCount) || 1), restaurant.seatsPerTable),
+    [form.guestCount, restaurant.seatsPerTable],
+  );
+  const bookingAvailableSlots = useMemo(
+    () => bookingSelectedDay?.slots.filter((slot) => slot.availableTables >= bookingTablesNeeded) ?? [],
+    [bookingSelectedDay, bookingTablesNeeded],
+  );
+  const bookingSelectedDateLabel = bookingSelectedDay?.label ?? (form.date ? formatDate(form.date) : "Choisir une date");
+
+  const refreshBookingAvailability = useCallback(async (monthDate: Date) => {
+    const response = await fetch(
+      `/api/restaurants/${restaurant.slug}/availability?from=${encodeURIComponent(formatDateKey(monthDate))}&days=42&lang=${locale}`,
+      { cache: "no-store" },
+    );
+    if (!response.ok) return;
+    const payload = (await response.json()) as { availability: AvailableDay[] };
+    setBookingAvailability(payload.availability);
+  }, [locale, restaurant.slug]);
+
+  function selectBookingDate(dateKey: string) {
+    setForm((current) => ({ ...current, date: dateKey, time: "" }));
+    setBookingPickerMode(null);
+  }
+
+  function selectBookingTime(time: string) {
+    setForm((current) => ({ ...current, time }));
+    setBookingPickerMode(null);
+  }
+
+  function buildBookingPhoneValue() {
+    const national = normalizePhoneNumber(form.phone);
+    if (!national) return "";
+    const normalizedNational = national.startsWith("0") ? national.slice(1) : national;
+    return `${phoneCountries[bookingPhoneCountry].dialCode}${normalizedNational}`;
+  }
 
   const visibleReservations = useMemo(() => {
     const sorted = [...reservations].sort((left, right) => {
@@ -699,6 +813,21 @@ export function StaffClient({
     }
   }, [currentTables, selectedTarget, waiterCallsByTable]);
 
+  useEffect(() => {
+    if (bookingEnabled && staffTab === "reservations") {
+      void refreshBookingAvailability(bookingDisplayMonth);
+    }
+  }, [bookingDisplayMonth, bookingEnabled, refreshBookingAvailability, staffTab]);
+
+  useEffect(() => {
+    if (!bookingPickerMode) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [bookingPickerMode]);
+
   async function submitReservation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const response = await fetch(`/api/restaurants/${restaurant.slug}/reservations`, {
@@ -710,7 +839,7 @@ export function StaffClient({
         locale,
         firstName: form.firstName,
         lastName: form.lastName,
-        phone: form.phone,
+        phone: buildBookingPhoneValue(),
         email: form.email,
         note: form.note,
         date: form.date,
@@ -735,6 +864,8 @@ export function StaffClient({
       guestCount: 2,
       note: "",
     });
+    setBookingPhoneCountry("FR");
+    setBookingPickerMode(null);
     setNotice("Réservation créée.");
     pushToast("Réservation créée.");
     await loadData();
@@ -1500,73 +1631,270 @@ export function StaffClient({
         <div id="staff-reservations" className="space-y-4 xl:col-span-2 scroll-mt-28">
           <form
             onSubmit={submitReservation}
-            className="rounded-[2rem] border border-black/8 bg-white/85 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.06)]"
+            className="rounded-[2rem] border border-[#eadfce] bg-[#fffdf8] p-4 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-5"
           >
-            <h2 className="text-2xl font-semibold">Créer une réservation</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <input
-                placeholder="Prénom"
-                value={form.firstName}
-                onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))}
-                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-              />
-              <input
-                placeholder="Nom"
-                value={form.lastName}
-                onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))}
-                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-              />
-              <input
-                placeholder="Téléphone"
-                value={form.phone}
-                onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
-                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-              />
-              <input
-                placeholder="E-mail"
-                type="email"
-                value={form.email}
-                onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-              />
-              <input
-                placeholder="Date"
-                type="date"
-                value={form.date}
-                onChange={(event) => setForm((current) => ({ ...current, date: event.target.value }))}
-                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-              />
-              <input
-                placeholder="Heure"
-                type="time"
-                value={form.time}
-                onChange={(event) => setForm((current) => ({ ...current, time: event.target.value }))}
-                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-              />
-              <input
-                placeholder="Personnes"
-                type="number"
-                min={1}
-                value={form.guestCount}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, guestCount: Number(event.target.value) }))
-                }
-                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-              />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]">Réservation</p>
+                <h2 className="mt-1 text-2xl font-semibold text-[#24170f]">Créer une réservation</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6f5b4a]">
+                  Même logique que côté client: date, personnes, heure, puis coordonnées. La disponibilité est partagée avec le flux public.
+                </p>
+              </div>
+              <div className="rounded-full border border-[#eadfce] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#7f6c5a]">
+                {formatMonthLabel(bookingDisplayMonth)}
+              </div>
             </div>
-            <textarea
-              placeholder="Message"
-              value={form.note}
-              onChange={(event) => setForm((current) => ({ ...current, note: event.target.value }))}
-              rows={4}
-              className="mt-3 w-full rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none"
-            />
-            <button className="mt-3 rounded-full bg-black px-5 py-3 text-sm font-medium text-white">
-              Ajouter
-            </button>
+
+            <div className="mt-4 grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+              <div className="space-y-4">
+                <section className="rounded-[1.6rem] border border-[#eadfce] bg-white p-4 shadow-[0_12px_35px_rgba(124,77,44,0.05)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">Date</p>
+                      <h3 className="mt-1 text-xl font-semibold text-[#24170f]">{bookingSelectedDateLabel}</h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setBookingPickerMode("date")}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#eadfce] bg-[#faf7f2] px-4 py-2 text-sm font-medium text-[#24170f] transition hover:bg-white"
+                    >
+                      <span aria-hidden>🗓️</span>
+                      Choisir
+                    </button>
+                  </div>
+                  <p className="mt-3 text-sm text-[#6f5b4a]">Sélection via calendrier, sans champ date natif.</p>
+                </section>
+
+                <section className="rounded-[1.6rem] border border-[#eadfce] bg-white p-4 shadow-[0_12px_35px_rgba(124,77,44,0.05)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">Personnes</p>
+                      <h3 className="mt-1 text-xl font-semibold text-[#24170f]">Persons {form.guestCount}</h3>
+                    </div>
+                    <p className="text-sm text-[#6f5b4a]">{bookingTablesNeeded} table(s) nécessaires</p>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between gap-3 rounded-[1.3rem] border border-[#eadfce] bg-[#fffdf8] px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => setForm((current) => ({ ...current, guestCount: Math.max(1, current.guestCount - 1), time: "" }))}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-[#eadfce] bg-white text-xl text-[#24170f] transition hover:bg-[#faf7f2]"
+                    >
+                      ‹
+                    </button>
+                    <div className="text-center">
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-[#a38d7c]">Guests</p>
+                      <p className="text-3xl font-semibold leading-none text-[#24170f]">{form.guestCount}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setForm((current) => ({ ...current, guestCount: current.guestCount + 1, time: "" }))}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-[#eadfce] bg-white text-xl text-[#24170f] transition hover:bg-[#faf7f2]"
+                    >
+                      ›
+                    </button>
+                  </div>
+                </section>
+
+                <section className="rounded-[1.6rem] border border-[#eadfce] bg-white p-4 shadow-[0_12px_35px_rgba(124,77,44,0.05)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">Heure</p>
+                      <h3 className="mt-1 text-xl font-semibold text-[#24170f]">{form.time || 'Choisir une heure'}</h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setBookingPickerMode("time")}
+                      disabled={!form.date}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#eadfce] bg-[#faf7f2] px-4 py-2 text-sm font-medium text-[#24170f] transition hover:bg-white disabled:opacity-40"
+                    >
+                      <span aria-hidden>🕒</span>
+                      Slots
+                    </button>
+                  </div>
+                  <p className="mt-3 text-sm text-[#6f5b4a]">
+                    {bookingAvailableSlots.length > 0
+                      ? `${bookingAvailableSlots.length} créneau(x) disponible(s) pour ${bookingTablesNeeded} table(s).`
+                      : form.date
+                        ? 'Aucun créneau disponible pour cette configuration.'
+                        : 'Choisir d’abord une date.'}
+                  </p>
+                </section>
+              </div>
+
+              <div className="space-y-4">
+                <section className="rounded-[1.6rem] border border-[#eadfce] bg-white p-4 shadow-[0_12px_35px_rgba(124,77,44,0.05)]">
+                  <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">Coordonnées</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <input
+                      placeholder="Prénom"
+                      value={form.firstName}
+                      onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))}
+                      className="rounded-2xl border border-[#eadfce] bg-[#fffdf8] px-4 py-3 text-[#24170f] outline-none"
+                    />
+                    <input
+                      placeholder="Nom"
+                      value={form.lastName}
+                      onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))}
+                      className="rounded-2xl border border-[#eadfce] bg-[#fffdf8] px-4 py-3 text-[#24170f] outline-none"
+                    />
+                    <div className="flex overflow-hidden rounded-2xl border border-[#eadfce] bg-[#fffdf8] sm:col-span-2">
+                      <select
+                        value={bookingPhoneCountry}
+                        onChange={(event) => setBookingPhoneCountry(event.target.value as PhoneCountryCode)}
+                        className="border-r border-[#eadfce] bg-white px-3 py-3 text-sm text-[#24170f] outline-none"
+                      >
+                        {Object.entries(phoneCountries).map(([code, meta]) => (
+                          <option key={code} value={code}>{meta.label} {meta.dialCode}</option>
+                        ))}
+                      </select>
+                      <input
+                        placeholder="Téléphone"
+                        value={form.phone}
+                        onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
+                        className="min-w-0 flex-1 bg-[#fffdf8] px-4 py-3 text-[#24170f] outline-none"
+                      />
+                    </div>
+                    <input
+                      placeholder="E-mail"
+                      type="email"
+                      value={form.email}
+                      onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+                      className="rounded-2xl border border-[#eadfce] bg-[#fffdf8] px-4 py-3 text-[#24170f] outline-none sm:col-span-2"
+                    />
+                  </div>
+                  <textarea
+                    placeholder="Allergies, terrasse, anniversaire, service rapide..."
+                    value={form.note}
+                    onChange={(event) => setForm((current) => ({ ...current, note: event.target.value }))}
+                    rows={4}
+                    className="mt-3 w-full rounded-[1.5rem] border border-[#eadfce] bg-[#fffdf8] px-4 py-3 text-[#24170f] outline-none"
+                  />
+                </section>
+
+                <section className="rounded-[1.6rem] border border-[#eadfce] bg-white p-4 shadow-[0_12px_35px_rgba(124,77,44,0.05)]">
+                  <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">Résumé</p>
+                  <div className="mt-3 space-y-3 rounded-[1.25rem] border border-[#eadfce] bg-[#faf7f2] p-4 text-sm text-[#6f5b4a]">
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Date</span>
+                      <span className="font-medium text-[#24170f]">{bookingSelectedDateLabel}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Heure</span>
+                      <span className="font-medium text-[#24170f]">{form.time || '—'}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Persons</span>
+                      <span className="font-medium text-[#24170f]">{form.guestCount}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Tables libres</span>
+                      <span className="font-medium text-[#24170f]">
+                        {bookingSelectedDay?.slots.find((slot) => slot.time === form.time)?.availableTables ?? '—'}
+                      </span>
+                    </div>
+                  </div>
+                  <button className="mt-4 rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-5 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)]">
+                    Ajouter
+                  </button>
+                </section>
+              </div>
+            </div>
           </form>
 
-          <div className="flex flex-wrap gap-2">
+          {bookingPickerMode ? (
+            <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/45 p-3 backdrop-blur-sm">
+              <div className="w-full max-w-3xl rounded-[2rem] border border-[#eadfce] bg-[#fffdf8] p-4 shadow-[0_30px_110px_rgba(15,23,42,0.28)] sm:p-5">
+                <div className="flex items-start justify-between gap-3 border-b border-[#eadfce] pb-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]">{bookingPickerMode === 'date' ? 'Calendrier' : 'Créneaux'}</p>
+                    <h3 className="mt-1 text-2xl font-semibold text-[#24170f]">
+                      {bookingPickerMode === 'date' ? formatMonthLabel(bookingDisplayMonth) : bookingSelectedDateLabel}
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setBookingPickerMode(null)}
+                    className="rounded-full border border-[#eadfce] bg-white px-4 py-2 text-sm font-medium text-[#24170f]"
+                  >
+                    Fermer
+                  </button>
+                </div>
+
+                {bookingPickerMode === 'date' ? (
+                  <div className="mt-4">
+                    <div className="mb-3 flex items-center justify-end gap-2">
+                      <button type="button" onClick={() => setBookingDisplayMonth((current) => addMonths(current, -1))} className="flex h-10 w-10 items-center justify-center rounded-full border border-[#eadfce] bg-white text-xl text-[#24170f]">‹</button>
+                      <button type="button" onClick={() => setBookingDisplayMonth((current) => addMonths(current, 1))} className="flex h-10 w-10 items-center justify-center rounded-full border border-[#eadfce] bg-white text-xl text-[#24170f]">›</button>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 sm:gap-2">
+                      {['DIM.','LUN.','MAR.','MER.','JEU.','VEN.','SAM.'].map((label) => (
+                        <div key={label} className="pb-1 text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a38d7c] sm:text-[11px]">{label}</div>
+                      ))}
+                      {bookingCalendarDays.map((day) => {
+                        const dayKey = formatDateKey(day);
+                        const dayInfo = bookingAvailabilityMap.get(dayKey) ?? null;
+                        const isSelected = form.date === dayKey;
+                        const isCurrent = isSameMonth(day, bookingDisplayMonth);
+                        const hasSlots = !!dayInfo && dayInfo.slots.some((slot) => slot.availableTables >= bookingTablesNeeded);
+                        return (
+                          <button
+                            key={dayKey}
+                            type="button"
+                            onClick={() => isCurrent && dayInfo ? selectBookingDate(dayKey) : undefined}
+                            disabled={!isCurrent || !dayInfo}
+                            className={`relative flex min-h-[4rem] flex-col overflow-hidden rounded-2xl border p-1.5 text-left transition sm:min-h-[5rem] sm:p-2 ${
+                              isSelected
+                                ? 'border-[#24170f] bg-[#24170f] text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)]'
+                                : !isCurrent || !dayInfo
+                                  ? 'border-[#eadfce] bg-[#f7f2ea] text-[#c8b7a6]'
+                                  : hasSlots
+                                    ? 'border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]'
+                                    : 'border-[#eadfce] bg-[#f7f2ea] text-[#b8a492]'
+                            }`}
+                          >
+                            <span className="text-[10px] uppercase tracking-[0.16em] opacity-70 sm:text-[11px]">{formatShortWeekday(day)}</span>
+                            <span className="mt-1 text-base font-semibold leading-none sm:text-xl">{formatDayNumber(day)}</span>
+                            <span className="mt-auto flex items-center gap-1 text-[10px] leading-none sm:text-[11px]">
+                              <span className={`h-2 w-2 rounded-full ${isSelected ? 'bg-white' : hasSlots ? 'bg-emerald-500' : 'bg-[#d8cabc]'}`} />
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                    {bookingAvailableSlots.length === 0 ? (
+                      <p className="rounded-[1.25rem] border border-[#eadfce] bg-[#faf7f2] p-4 text-sm text-[#6f5b4a] sm:col-span-3">
+                        Aucun créneau disponible pour cette configuration.
+                      </p>
+                    ) : (
+                      bookingAvailableSlots.map((slot) => (
+                        <button
+                          key={slot.time}
+                          type="button"
+                          onClick={() => selectBookingTime(slot.time)}
+                          className={`rounded-[1.25rem] border px-4 py-4 text-left transition ${
+                            form.time === slot.time
+                              ? 'border-[#24170f] bg-[#24170f] text-white'
+                              : 'border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]'
+                          }`}
+                        >
+                          <p className="text-lg font-semibold">{slot.time}</p>
+                          <p className={`mt-1 text-xs ${form.time === slot.time ? 'text-white/80' : 'text-[#6f5b4a]'}`}>
+                            {slot.availableTables} table(s) libres
+                          </p>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2"> 
               {[
                 { key: "all", label: "Tous" },
                 { key: "pending", label: "Pending" },
