@@ -48,6 +48,7 @@
 .food-theme {
   color: #24170f;
   background: #fffdf8;
+  color-scheme: light;
 }
 
 .food-theme [class*="text-white"] {
@@ -71,10 +72,24 @@
 }
 
 .food-theme [class*="bg-[#171717]"],
+.food-theme [class*="bg-[#181818]"],
 .food-theme [class*="bg-[#1a1a1a]"],
+.food-theme [class*="bg-[#1b1b1b]"],
+.food-theme [class*="bg-[#1c1c1c]"],
 .food-theme [class*="bg-[#1d1d1d]"],
+.food-theme [class*="bg-[#1e1e1e]"],
+.food-theme [class*="bg-[#1f1f1f]"],
 .food-theme [class*="bg-[#202020]"],
+.food-theme [class*="bg-[#212121]"],
+.food-theme [class*="bg-[#222222]"],
+.food-theme [class*="bg-[#232323]"],
+.food-theme [class*="bg-[#242424]"],
 .food-theme [class*="bg-[#111111]"],
+.food-theme [class*="bg-[#121212]"],
+.food-theme [class*="bg-[#131313]"],
+.food-theme [class*="bg-[#141414]"],
+.food-theme [class*="bg-[#151515]"],
+.food-theme [class*="bg-[#161616]"],
 .food-theme [class*="bg-black"],
 .food-theme [class*="bg-black/20"],
 .food-theme [class*="bg-black/25"],
@@ -84,13 +99,24 @@
 .food-theme [class*="bg-black/4"],
 .food-theme [class*="bg-black/5"],
 .food-theme [class*="bg-black/8"],
-.food-theme [class*="bg-black/10"] {
+.food-theme [class*="bg-black/10"],
+.food-theme [class*="bg-[#090909]"],
+.food-theme [class*="bg-[#0b0b0b]"],
+.food-theme [class*="bg-[#0d0d0d]"],
+.food-theme [class*="bg-[#0f0f0f]"],
+.food-theme [class*="bg-[#101010]"],
+.food-theme [class*="bg-[#171717]/95"],
+.food-theme [class*="bg-[#111111]/95"],
+.food-theme [class*="bg-[#090909]/96"] {
   background-color: #fff !important;
 }
 
 .food-theme [class*="bg-white/5"],
 .food-theme [class*="bg-white/10"],
-.food-theme [class*="bg-white/20"] {
+.food-theme [class*="bg-white/20"],
+.food-theme [class*="bg-white/25"],
+.food-theme [class*="bg-white/30"],
+.food-theme [class*="bg-white/40"] {
   background-color: #faf7f2 !important;
 }
 
