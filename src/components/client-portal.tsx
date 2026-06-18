@@ -77,6 +77,7 @@ export function ClientPortal({
   orderFlowEnabled,
   theme = "dark",
 }: Props) {
+  const [isMounted, setIsMounted] = useState(false);
   const [callingWaiter, setCallingWaiter] = useState(false);
   const [waiterNotice, setWaiterNotice] = useState<string | null>(null);
   const [cartItems, setCartItems] = useState<ClientCartItem[]>([]);
@@ -145,6 +146,9 @@ export function ClientPortal({
     () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cartItems],
   );
+  const cartSummary = isMounted
+    ? `${cartItems.length} article${cartItems.length > 1 ? "s" : ""} · ${formatMoney(cartTotal, restaurant.currency)}`
+    : "Panier";
 
   const refreshCart = useCallback(() => {
     setCartItems(listClientCartItems(restaurant.slug));
@@ -176,6 +180,10 @@ export function ClientPortal({
   useEffect(() => {
     if (!browserNotificationsSupported()) return;
     setNotificationPermission(window.Notification.permission);
+  }, []);
+
+  useEffect(() => {
+    setIsMounted(true);
   }, []);
 
   useEffect(() => {
@@ -464,7 +472,7 @@ export function ClientPortal({
                 </p>
               </div>
               <div className="rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold text-white sm:text-sm">
-                {cartItems.length} article{cartItems.length > 1 ? "s" : ""} · {formatMoney(cartTotal, restaurant.currency)}
+                {cartSummary}
               </div>
             </div>
             <div className="mt-4">
@@ -620,7 +628,7 @@ export function ClientPortal({
                   </p>
                 </div>
                 <div className="rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold text-white sm:text-sm">
-                  {cartItems.length} article{cartItems.length > 1 ? "s" : ""} · {formatMoney(cartTotal, restaurant.currency)}
+                  {cartSummary}
                 </div>
               </div>
               <div className="mt-4 grid gap-2">

@@ -272,6 +272,9 @@ test("client sees the live order status update", async ({ page }) => {
   const clientAuthHeaders = {
     cookie: "meniu_client_session=client-root",
   };
+  const staffAuthHeaders = {
+    cookie: "meniu_staff_session=staff-root",
+  };
   await authenticate(
     page,
     "/client",
@@ -281,6 +284,25 @@ test("client sees the live order status update", async ({ page }) => {
     "client",
     "client123!",
   );
+
+  const clientSessionResponse = await page.request.get("/api/restaurants/bar-1/client-orders", {
+    headers: clientAuthHeaders,
+  });
+  expect(clientSessionResponse.ok()).toBeTruthy();
+  const clientSessionPayload = (await clientSessionResponse.json()) as {
+    tableSession?: { id?: string | null } | null;
+  };
+  if (clientSessionPayload.tableSession?.id && createdOrder?.tableId) {
+    const alignSessionResponse = await page.request.patch(
+      `/api/restaurants/bar-1/table-sessions/${clientSessionPayload.tableSession.id}`,
+      {
+        headers: staffAuthHeaders,
+        data: { tableId: createdOrder.tableId },
+      },
+    );
+    expect(alignSessionResponse.ok()).toBeTruthy();
+  }
+
   const clientOrdersResponse = await page.request.get("/api/restaurants/bar-1/client-orders", {
     headers: clientAuthHeaders,
   });

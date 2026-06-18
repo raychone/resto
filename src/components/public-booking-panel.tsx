@@ -194,6 +194,16 @@ type Props = {
   initialAvailability: AvailableDay[];
 };
 
+type PhoneCountryCode = "FR" | "BE" | "IT" | "ES" | "CH";
+
+const phoneCountries: Record<PhoneCountryCode, { label: string; dialCode: string }> = {
+  FR: { label: "FR", dialCode: "+33" },
+  BE: { label: "BE", dialCode: "+32" },
+  IT: { label: "IT", dialCode: "+39" },
+  ES: { label: "ES", dialCode: "+34" },
+  CH: { label: "CH", dialCode: "+41" },
+};
+
 function pad(value: number) {
   return String(value).padStart(2, "0");
 }
@@ -260,6 +270,8 @@ export function PublicBookingPanel({
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [guestCount, setGuestCount] = useState(2);
+  const [phoneCountry, setPhoneCountry] = useState<PhoneCountryCode>("FR");
+  const [pickerMode, setPickerMode] = useState<"date" | "time" | null>(null);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -283,6 +295,16 @@ export function PublicBookingPanel({
       (slot) => slot.time === selectedTime && slot.availableTables >= tablesNeeded,
     ) ?? null;
   const currentStep = !selectedDate ? 1 : !selectedTime ? 2 : !isFormComplete(form) ? 3 : 4;
+  const selectedPhonePrefix = phoneCountries[phoneCountry];
+  const selectedDateLabel =
+    selectedDay?.label ??
+    (selectedDate
+      ? new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : locale === "en" ? "en-GB" : locale === "it" ? "it-IT" : "es-ES", {
+          weekday: "short",
+          day: "2-digit",
+          month: "short",
+        }).format(new Date(`${selectedDate}T12:00:00`))
+      : "—");
 
   const refreshAvailability = useCallback(async (monthDate: Date) => {
     const response = await fetch(
@@ -305,6 +327,24 @@ export function PublicBookingPanel({
     setSelectedDate(dateKey);
     setSelectedTime("");
     setBookingState("idle");
+    setPickerMode(null);
+  }
+
+  function selectTime(time: string) {
+    setSelectedTime(time);
+    setBookingState("idle");
+    setPickerMode(null);
+  }
+
+  function formatPhoneNumber(phoneNumber: string) {
+    return phoneNumber.replace(/[^\d]/g, "").trim();
+  }
+
+  function buildPhoneValue() {
+    const national = formatPhoneNumber(form.phone);
+    if (!national) return "";
+    const normalizedNational = national.startsWith("0") ? national.slice(1) : national;
+    return `${selectedPhonePrefix.dialCode}${normalizedNational}`;
   }
 
   async function submitReservation(event: FormEvent<HTMLFormElement>) {
@@ -321,7 +361,7 @@ export function PublicBookingPanel({
         locale,
         firstName: form.firstName,
         lastName: form.lastName,
-        phone: form.phone,
+        phone: buildPhoneValue(),
         email: form.email,
         note: form.note,
         date: selectedDate,
@@ -358,6 +398,17 @@ export function PublicBookingPanel({
 
     return () => window.clearTimeout(timeoutId);
   }, [open, displayMonth, refreshAvailability]);
+
+  useEffect(() => {
+    if (!open && !pickerMode) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open, pickerMode]);
 
   const monthHeader = formatMonthLabel(displayMonth, locale);
   const dayHeaders =
@@ -529,10 +580,34 @@ export function PublicBookingPanel({
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                       <div>
                         <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
+                          {text.stepDate}
+                        </p>
+                        <h3 className="mt-1 text-xl font-semibold">{selectedDateLabel}</h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setPickerMode("date")}
+                        className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-black/3"
+                      >
+                        <span aria-hidden>🗓️</span>
+                        Choisir une date
+                      </button>
+                    </div>
+                    <p className="mt-3 text-sm text-black/55">{text.selectDateHint}</p>
+                  </section>
+
+                  <section
+                    className={`rounded-[1.75rem] border p-4 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-5 ${
+                      selectedDate ? "border-black/8 bg-white" : "border-black/5 bg-black/2"
+                    }`}
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">
                           {text.stepGuests}
                         </p>
                         <h3 className="mt-1 text-xl font-semibold">
-                          {guestCount} {text.guests.toLowerCase()}
+                          Persons {guestCount}
                         </h3>
                       </div>
                       <p className="text-sm text-black/55">{text.selectGuestsHint}</p>
@@ -578,39 +653,20 @@ export function PublicBookingPanel({
                           {text.stepTime}
                         </p>
                         <h3 className="mt-1 text-xl font-semibold">
-                          {selectedDay?.label ?? text.noSlots}
+                          {selectedTime || selectedDay?.label || text.noSlots}
                         </h3>
                       </div>
-                      <p className="text-sm text-black/55">{text.selectTimeHint}</p>
+                      <button
+                        type="button"
+                        onClick={() => setPickerMode("time")}
+                        className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-black/3"
+                        disabled={!selectedDate}
+                      >
+                        <span aria-hidden>🕒</span>
+                        Choisir une heure
+                      </button>
                     </div>
-
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {selectedDate ? (
-                        availableTimeSlots?.length ? (
-                          availableTimeSlots.map((slot) => {
-                            const isSelected = selectedTime === slot.time;
-                            return (
-                              <button
-                                key={`${selectedDate}-${slot.time}`}
-                                type="button"
-                                onClick={() => setSelectedTime(slot.time)}
-                                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                                  isSelected
-                                    ? "border-black bg-black text-white"
-                                    : "border-black/10 bg-white text-black hover:bg-black/3"
-                                }`}
-                              >
-                                {slot.time}
-                              </button>
-                            );
-                          })
-                        ) : (
-                          <p className="text-sm text-black/45">{text.noSlots}</p>
-                        )
-                      ) : (
-                        <p className="text-sm text-black/45">{text.selectDateHint}</p>
-                      )}
-                    </div>
+                    <p className="mt-3 text-sm text-black/55">{text.selectTimeHint}</p>
                   </section>
                 </div>
 
@@ -680,13 +736,36 @@ export function PublicBookingPanel({
                         disabled={!selectedSlot}
                         required
                       />
-                      <Field
-                        label={text.phone}
-                        value={form.phone}
-                        onChange={(value) => setForm((current) => ({ ...current, phone: value }))}
-                        disabled={!selectedSlot}
-                        required
-                      />
+                      <label className="grid gap-2">
+                        <span className="text-xs font-semibold uppercase tracking-[0.28em] text-black/45">
+                          {text.phone}
+                        </span>
+                        <div className="grid grid-cols-[5.5rem_1fr] gap-2">
+                          <select
+                            value={phoneCountry}
+                            onChange={(event) => setPhoneCountry(event.target.value as PhoneCountryCode)}
+                            disabled={!selectedSlot}
+                            className="rounded-[1.3rem] border border-black/10 bg-white px-3 py-3 text-sm text-black outline-none disabled:cursor-not-allowed disabled:bg-black/2"
+                          >
+                            {Object.entries(phoneCountries).map(([code, entry]) => (
+                              <option key={code} value={code}>
+                                {entry.dialCode}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            value={form.phone}
+                            onChange={(event) =>
+                              setForm((current) => ({ ...current, phone: event.target.value }))
+                            }
+                            disabled={!selectedSlot}
+                            required
+                            inputMode="tel"
+                            placeholder={phoneCountry === "FR" ? "6 12 34 56 78" : ""}
+                            className="rounded-[1.3rem] border border-black/10 bg-white px-4 py-3 text-sm text-black outline-none disabled:cursor-not-allowed disabled:bg-black/2"
+                          />
+                        </div>
+                      </label>
                       <Field
                         label={text.email}
                         value={form.email}
@@ -735,6 +814,149 @@ export function PublicBookingPanel({
                     ) : null}
                   </form>
                 </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {open && pickerMode ? (
+        <div className="fixed inset-0 z-[60] bg-black/35 p-2 sm:p-4">
+          <div className="mx-auto flex h-full w-full max-w-3xl items-center justify-center">
+            <div className="w-full overflow-hidden rounded-[2rem] border border-black/8 bg-white shadow-[0_30px_120px_rgba(15,23,42,0.28)]">
+              <div className="flex items-start justify-between gap-4 border-b border-black/8 px-4 py-4 sm:px-6">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.35em] text-black/35">
+                    {pickerMode === "date" ? text.stepDate : text.stepTime}
+                  </p>
+                  <h3 className="mt-1 text-2xl font-semibold">
+                    {pickerMode === "date" ? text.monthLabel : selectedDay?.label ?? text.noSlots}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPickerMode(null)}
+                  className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"
+                >
+                  {text.closeButton}
+                </button>
+              </div>
+
+              <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto p-4 sm:p-6">
+                {pickerMode === "date" ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={() => goToMonth(-1)}
+                        className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black"
+                      >
+                        ‹
+                      </button>
+                      <p className="text-sm font-semibold uppercase tracking-[0.22em] text-black/45">
+                        {monthHeader}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => goToMonth(1)}
+                        className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black"
+                      >
+                        ›
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 sm:gap-2">
+                      {dayHeaders.map((label) => (
+                        <div
+                          key={label}
+                          className="pb-1 text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-black/35 sm:text-[11px]"
+                        >
+                          {label}
+                        </div>
+                      ))}
+                      {calendarDays.map((day) => {
+                        const dayKey = formatDateKey(day);
+                        const dayInfo = availabilityMap.get(dayKey) ?? null;
+                        const isCurrent = isSameMonth(day, displayMonth);
+                        const hasSlots =
+                          !!dayInfo && dayInfo.slots.some((slot) => slot.availableTables >= tablesNeeded);
+                        const isSelected = selectedDate === dayKey;
+
+                        return (
+                          <button
+                            key={dayKey}
+                            type="button"
+                            onClick={() => isCurrent && dayInfo ? selectDate(dayKey) : undefined}
+                            disabled={!isCurrent || !dayInfo}
+                            className={`min-h-[4.3rem] rounded-2xl border p-2 text-left transition ${
+                              isSelected
+                                ? "border-black bg-black text-white"
+                                : !isCurrent || !dayInfo
+                                  ? "border-black/5 bg-black/2 text-black/20"
+                                  : hasSlots
+                                    ? "border-black/10 bg-white text-black hover:bg-black/3"
+                                    : "border-black/5 bg-black/2 text-black/30"
+                            }`}
+                          >
+                            <p className="text-[10px] uppercase tracking-[0.16em] opacity-70">
+                              {formatShortWeekday(day, locale)}
+                            </p>
+                            <p className="mt-1 text-lg font-semibold leading-none">
+                              {formatDayNumber(day)}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="rounded-[1.5rem] border border-black/8 bg-black/2 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.28em] text-black/35">
+                            {text.date}
+                          </p>
+                          <p className="mt-1 text-base font-semibold text-black">{selectedDateLabel}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setPickerMode("date")}
+                          className="rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-medium text-black"
+                        >
+                          {text.stepDate}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedDate ? (
+                        availableTimeSlots?.length ? (
+                          availableTimeSlots.map((slot) => {
+                            const isSelected = selectedTime === slot.time;
+                            return (
+                              <button
+                                key={`${selectedDate}-${slot.time}`}
+                                type="button"
+                                onClick={() => selectTime(slot.time)}
+                                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                                  isSelected
+                                    ? "border-black bg-black text-white"
+                                    : "border-black/10 bg-white text-black hover:bg-black/3"
+                                }`}
+                              >
+                                {slot.time}
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <p className="text-sm text-black/45">{text.noSlots}</p>
+                        )
+                      ) : (
+                        <p className="text-sm text-black/45">{text.selectDateHint}</p>
+                      )}
+                    </div>
+                    <p className="text-sm text-black/55">{text.selectTimeHint}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

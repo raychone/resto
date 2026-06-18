@@ -4,7 +4,13 @@ import { recordAuditEntry } from "@/lib/audit-store";
 import { getOrCreateCustomerForUser } from "@/lib/customer-store";
 import { dispatchOrderRequestNotification } from "@/lib/notification-service";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
-import { addOrderItem, createOrder, getOrderById, updateOrder } from "@/lib/order-store";
+import {
+  addOrderItem,
+  createOrder,
+  getOrderById,
+  listOrdersForRestaurant,
+  updateOrder,
+} from "@/lib/order-store";
 import { getTableById } from "@/lib/table-store";
 import { getOrCreateTableSessionForCustomer, updateTableSession } from "@/lib/table-session-store";
 
@@ -36,8 +42,21 @@ export async function GET(
   const customer = await getOrCreateCustomerForUser(clientUser, restaurant.id);
   const tableSession = await getOrCreateTableSessionForCustomer(restaurant.id, customer);
   const currentOrder = tableSession.orderId ? await getOrderById(tableSession.orderId) : null;
+  if (currentOrder) {
+    return NextResponse.json({ order: currentOrder, tableSession });
+  }
 
-  return NextResponse.json({ order: currentOrder, tableSession });
+  const restaurantOrders = await listOrdersForRestaurant(restaurant.id);
+  const fallbackOrder =
+    restaurantOrders
+      .filter((order) => order.tableSessionId === tableSession.id || order.tableId === tableSession.tableId)
+      .sort(
+        (left, right) =>
+          new Date(right.updatedAt ?? right.createdAt).getTime() -
+          new Date(left.updatedAt ?? left.createdAt).getTime(),
+      )[0] ?? null;
+
+  return NextResponse.json({ order: fallbackOrder, tableSession });
 }
 
 export async function POST(
@@ -70,7 +89,7 @@ export async function POST(
   const currentOrder = tableSession.orderId ? await getOrderById(tableSession.orderId) : null;
 
   let order = currentOrder;
-  if (!order || order.deletedAt || !["open", "sent_to_kitchen", "preparing", "ready"].includes(order.status)) {
+  if (!order || order.deletedAt || order.status !== "open") {
     order = await createOrder({
       restaurantId: restaurant.id,
       tableId: tableSession.tableId,

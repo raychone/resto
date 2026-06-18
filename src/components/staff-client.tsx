@@ -520,12 +520,25 @@ export function StaffClient({
   const selectedTableModalOpenOrder = useMemo(() => {
     if (!selectedTableModal) return null;
 
-    return (
-      orders.find((order) => {
+    const tableOrders = orders
+      .filter((order) => {
         if (!isActiveOrder(order)) return false;
         return (order.source === "table" || order.source === "qr") && order.tableId === selectedTableModal.id;
-      }) ?? null
-    );
+      })
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+
+    return tableOrders.find((order) => order.status === "open") ?? tableOrders[0] ?? null;
+  }, [orders, selectedTableModal]);
+
+  const selectedTableModalOrders = useMemo(() => {
+    if (!selectedTableModal) return [];
+
+    return orders
+      .filter((order) => {
+        if (!isActiveOrder(order)) return false;
+        return (order.source === "table" || order.source === "qr") && order.tableId === selectedTableModal.id;
+      })
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
   }, [orders, selectedTableModal]);
 
   useEffect(() => {
@@ -722,22 +735,9 @@ export function StaffClient({
 
   async function ensureOrder(target: string) {
     const existingOrder = orders.find((order) => order.id === target);
-    if (existingOrder && isActiveOrder(existingOrder)) {
+    if (existingOrder && existingOrder.status === "open") {
       setSelectedTarget(existingOrder.tableId ?? "takeaway");
       return existingOrder;
-    }
-
-    const existingActiveTableOrder = orders.find(
-      (order) =>
-        isActiveOrder(order) &&
-        (target === "takeaway"
-          ? order.source === "takeaway"
-          : (order.source === "table" || order.source === "qr") && order.tableId === target),
-    );
-
-    if (existingActiveTableOrder) {
-      setSelectedTarget(existingActiveTableOrder.tableId ?? "takeaway");
-      return existingActiveTableOrder;
     }
 
     const existing = orders.find(
@@ -779,13 +779,16 @@ export function StaffClient({
     return payloadResponse.order;
   }
 
-  async function addItemToOrder(item: {
-    id: string;
-    name: string;
-    price: number;
-    displayPrice?: number;
-  }) {
-    const order = await ensureOrder(selectedTarget);
+  async function addItemToOrder(
+    item: {
+      id: string;
+      name: string;
+      price: number;
+      displayPrice?: number;
+    },
+    orderOverrideId?: string,
+  ) {
+    const order = orderOverrideId ? orders.find((existingOrder) => existingOrder.id === orderOverrideId) ?? null : await ensureOrder(selectedTarget);
     if (!order) return;
 
     const assignedParticipant =
@@ -814,6 +817,105 @@ export function StaffClient({
       return;
     }
 
+    setNotice(`${item.name} ajouté au bon.`);
+    await loadData();
+  }
+
+  async function addItemToTableRound(item: {
+    id: string;
+    name: string;
+    price: number;
+    displayPrice?: number;
+  }) {
+    if (!selectedTableModal) {
+      await addItemToOrder(item);
+      return;
+    }
+
+    const response = await fetch(`/api/restaurants/${restaurant.slug}/orders`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      setNotice("Impossible de charger les bons.");
+      return;
+    }
+
+    const payload = (await response.json()) as { orders: Order[] };
+    const latestTableOrders = payload.orders
+      .filter((order) => isActiveOrder(order) && (order.source === "table" || order.source === "qr") && order.tableId === selectedTableModal.id)
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+    const latestOpenOrder = latestTableOrders.find((order) => order.status === "open") ?? null;
+
+    if (latestOpenOrder) {
+      setSelectedTarget(latestOpenOrder.id);
+      const itemResponse = await fetch(`/api/restaurants/${restaurant.slug}/orders/${latestOpenOrder.id}/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          menuItemId: item.id,
+          nameSnapshot: item.name,
+          priceSnapshot: item.displayPrice ?? item.price,
+          quantity: 1,
+          note: "",
+          assignedClientId: null,
+          assignedClientName: null,
+        }),
+      });
+
+      if (!itemResponse.ok) {
+        setNotice("Impossible d'ajouter le plat.");
+        return;
+      }
+
+      setNotice(`${item.name} ajouté au bon.`);
+      await loadData();
+      return;
+    }
+
+    const createResponse = await fetch(`/api/restaurants/${restaurant.slug}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tableId: selectedTableModal.id,
+        source: "table",
+        staffUserId,
+        note: orderNote,
+      }),
+    });
+
+    if (!createResponse.ok) {
+      setNotice("Impossible d'ouvrir un nouveau bon.");
+      return;
+    }
+
+    const createdPayload = (await createResponse.json()) as { order: Order };
+    const itemResponse = await fetch(`/api/restaurants/${restaurant.slug}/orders/${createdPayload.order.id}/items`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        menuItemId: item.id,
+        nameSnapshot: item.name,
+        priceSnapshot: item.displayPrice ?? item.price,
+        quantity: 1,
+        note: "",
+        assignedClientId: null,
+        assignedClientName: null,
+      }),
+    });
+
+    if (!itemResponse.ok) {
+      setNotice("Impossible d'ajouter le plat.");
+      return;
+    }
+
+    setSelectedTarget(createdPayload.order.id);
     setNotice(`${item.name} ajouté au bon.`);
     await loadData();
   }
@@ -1829,8 +1931,8 @@ export function StaffClient({
                                             : "Archivé"
                                 : "Aucun bon ouvert."}
                             </p>
-                            {selectedTableModalOpenOrder ? (
-                              <dl className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                          {selectedTableModalOpenOrder ? (
+                            <dl className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
                                 {[
                                   {
                                     label: "Total",
@@ -1865,6 +1967,33 @@ export function StaffClient({
                                 ))}
                               </dl>
                             ) : null}
+
+                            {selectedTableModalOrders.length > 1 ? (
+                              <div className="mt-3 rounded-[1.35rem] border border-[#eadfce] bg-white/75 p-3">
+                                <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">
+                                  Bons de la table
+                                </p>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  {selectedTableModalOrders.map((order, index) => (
+                                    <button
+                                      key={order.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedTarget(order.id);
+                                        setSelectedTableModalView("bon");
+                                      }}
+                                      className={`rounded-full border px-3 py-2 text-xs font-medium transition ${
+                                        order.id === selectedTableModalOpenOrder?.id
+                                          ? "border-[#1f2b1f] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f]"
+                                          : "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
+                                      }`}
+                                    >
+                                      Bon {index + 1} · {orderStatusMeta(order.status).label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : null}
                           </div>
 
                           {selectedTableModalView === "bon" ? (
@@ -1873,6 +2002,7 @@ export function StaffClient({
                                 <button
                                   type="button"
                                   onClick={() => {
+                                    setSelectedTarget(selectedTableModal.id);
                                     setSelectedTableModalView("menu");
                                     navigateStaff("menu", "staff-menu", "menu");
                                   }}
@@ -1975,6 +2105,38 @@ export function StaffClient({
                               </div>
                             </div>
                           ) : null}
+
+                          <div className="mt-4 rounded-[1.35rem] border border-[#eadfce] bg-white/85 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Menu</p>
+                                <p className="mt-1 text-xs text-[#6f5b4a]">
+                                  Ajoute des plats directement à la table sélectionnée.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="mt-3">
+                              <PublicMenuCategories
+                                categories={restaurant.categories}
+                                locale={locale}
+                                accent={restaurant.accent}
+                                restaurantSlug={restaurant.slug}
+                                orderFlowEnabled={selectedTableModal !== null}
+                                actionLabel="Ajouter à la table"
+                                showItemModal={false}
+                                compact
+                                testIdPrefix="staff-table-menu"
+                                onItemAction={(item) =>
+                                  void addItemToTableRound({
+                                    id: item.id,
+                                    name: item.name,
+                                    price: item.price,
+                                    displayPrice: getMenuItemEffectivePrice(item),
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
                         </div>
 
                         <div className="border-t border-[#eadfce] bg-[#fffdf8] p-4 sm:p-6 lg:border-l lg:border-t-0">
@@ -2393,50 +2555,6 @@ export function StaffClient({
                               Enregistrer la répartition
                             </button>
                           </div>
-                              </div>
-                            </div>
-                          ) : null}
-
-                          {selectedTableModalView === "menu" ? (
-                            <div className="rounded-[1.35rem] border border-[#eadfce] bg-white/85 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
-                              <div className="flex items-center justify-between gap-3">
-                                <div>
-                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Menu</p>
-                                  <p className="mt-1 text-xs text-[#6f5b4a]">
-                                    Ajoute des plats directement à la table sélectionnée.
-                                  </p>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedTableModalView("bon");
-                                    navigateStaff("tables", "staff-bon", "tables");
-                                  }}
-                                  className="rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2]"
-                                >
-                                  Revenir au bon
-                                </button>
-                              </div>
-                              <div className="mt-3">
-                                <PublicMenuCategories
-                                  categories={restaurant.categories}
-                                  locale={locale}
-                                  accent={restaurant.accent}
-                                  restaurantSlug={restaurant.slug}
-                                  orderFlowEnabled={selectedTableModal !== null}
-                                  actionLabel="Ajouter à la table"
-                                  showItemModal={false}
-                                  compact
-                                  testIdPrefix="staff-table-menu"
-                                  onItemAction={(item) =>
-                                    void addItemToOrder({
-                                      id: item.id,
-                                      name: item.name,
-                                      price: item.price,
-                                      displayPrice: getMenuItemEffectivePrice(item),
-                                    })
-                                  }
-                                />
                               </div>
                             </div>
                           ) : null}

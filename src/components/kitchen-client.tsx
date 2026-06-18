@@ -155,11 +155,51 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
   }
 
   const groupedOrders = useMemo(() => {
-    const waiting = visibleOrders.filter((order) => order.status === "sent_to_kitchen");
-    const preparing = visibleOrders.filter((order) => order.status === "preparing");
-    const ready = visibleOrders.filter((order) => order.status === "ready");
+    function groupByTable(orders: Order[]) {
+      const groups = new Map<
+        string,
+        {
+          key: string;
+          label: string;
+          orders: Order[];
+        }
+      >();
 
-    return { waiting, preparing, ready };
+      for (const order of orders) {
+        const key = order.tableId ?? order.id;
+        const label =
+          order.source === "takeaway"
+            ? "À emporter"
+            : order.tableId
+              ? `Table ${order.tableId.slice(-4)}`
+              : `Bon ${order.id.slice(-4)}`;
+
+        const current = groups.get(key);
+        if (current) {
+          current.orders.push(order);
+          continue;
+        }
+
+        groups.set(key, {
+          key,
+          label,
+          orders: [order],
+        });
+      }
+
+      return [...groups.values()]
+        .map((group) => ({
+          ...group,
+          orders: [...group.orders].sort((left, right) => left.createdAt.localeCompare(right.createdAt)),
+        }))
+        .sort((left, right) => left.orders[0]?.createdAt.localeCompare(right.orders[0]?.createdAt));
+    }
+
+    return {
+      waiting: groupByTable(visibleOrders.filter((order) => order.status === "sent_to_kitchen")),
+      preparing: groupByTable(visibleOrders.filter((order) => order.status === "preparing")),
+      ready: groupByTable(visibleOrders.filter((order) => order.status === "ready")),
+    };
   }, [visibleOrders]);
 
   return (
@@ -277,78 +317,100 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
                   Aucune commande.
                 </p>
               ) : (
-                column.orders.map((order) => {
-                  const total = order.items.reduce((sum, item) => sum + item.priceSnapshot * item.quantity, 0);
-                  const tableLabel =
-                    order.source === "takeaway"
-                      ? "À emporter"
-                      : order.tableId
-                        ? `Table ${order.tableId.slice(-4)}`
-                        : "Table";
-
+                column.orders.map((group) => {
                   return (
-                    <article
-                      key={order.id}
-                      className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)]"
-                    >
+                    <article key={group.key} className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)]">
                       <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-[11px] uppercase tracking-[0.25em] text-white/35">
-                              {tableLabel}
+                              {group.label}
                             </p>
-                            <h3 className="mt-1 text-lg font-semibold">{orderStatusLabel(order.status)}</h3>
-                            <p className="text-sm text-white/60">{order.items.length} articles</p>
+                            <h3 className="mt-1 text-lg font-semibold">
+                              {group.orders.length > 1 ? `${group.orders.length} tickets` : orderStatusLabel(group.orders[0].status)}
+                            </h3>
+                            <p className="text-sm text-white/60">{group.orders.length} bon{group.orders.length > 1 ? "s" : ""}</p>
                           </div>
                           <p className="text-sm font-semibold text-[#f5f1ea]">
-                            {formatMoney(total, restaurant.currency)}
+                            {formatMoney(
+                              group.orders.reduce(
+                                (sum, order) =>
+                                  sum + order.items.reduce((orderSum, item) => orderSum + item.priceSnapshot * item.quantity, 0),
+                                0,
+                              ),
+                              restaurant.currency,
+                            )}
                           </p>
                       </div>
 
-                      <div className="mt-3 space-y-2">
-                        {order.items.map((item: OrderItem) => (
-                          <div
-                            key={item.id}
-                            className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-sm"
-                          >
-                            <div>
-                              <p className="font-medium text-[#f5f1ea]">
-                                {item.quantity} × {item.nameSnapshot}
-                              </p>
-                              <p className="text-xs text-white/55">{item.note || "—"}</p>
-                              <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-white/35">
-                                {item.assignedClientName ? `Client: ${item.assignedClientName}` : "Partagé"}
-                              </p>
+                      <div className="mt-3 space-y-3">
+                        {group.orders.map((order, orderIndex) => {
+                          const total = order.items.reduce((sum, item) => sum + item.priceSnapshot * item.quantity, 0);
+
+                          return (
+                            <div key={order.id} className="rounded-[1.25rem] border border-white/10 bg-black/20 p-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                                    Bon {orderIndex + 1}
+                                  </p>
+                                  <h4 className="mt-1 text-sm font-semibold text-[#f5f1ea]">
+                                    {orderStatusLabel(order.status)}
+                                  </h4>
+                                  <p className="text-xs text-white/60">{order.items.length} articles</p>
+                                </div>
+                                <p className="text-sm font-semibold text-[#f5f1ea]">
+                                  {formatMoney(total, restaurant.currency)}
+                                </p>
+                              </div>
+                              <div className="mt-3 space-y-2">
+                                {order.items.map((item: OrderItem) => (
+                                  <div
+                                    key={item.id}
+                                    className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-sm"
+                                  >
+                                    <div>
+                                      <p className="font-medium text-[#f5f1ea]">
+                                        {item.quantity} × {item.nameSnapshot}
+                                      </p>
+                                      <p className="text-xs text-white/55">{item.note || "—"}</p>
+                                      <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-white/35">
+                                        {item.assignedClientName ? `Client: ${item.assignedClientName}` : "Partagé"}
+                                      </p>
+                                    </div>
+                                    <span className="text-white/80">
+                                      {formatMoney(item.priceSnapshot * item.quantity, restaurant.currency)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                            <span className="text-white/80">
-                              {formatMoney(item.priceSnapshot * item.quantity, restaurant.currency)}
-                            </span>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
-                        {order.status === "sent_to_kitchen" || order.status === "open" ? (
+                        {group.orders.some((order) => order.status === "sent_to_kitchen" || order.status === "open") ? (
                           <button
                             type="button"
-                            onClick={() => void changeStatus(order.id, "preparing")}
+                            onClick={() => void changeStatus(group.orders[0].id, "preparing")}
                             className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-[#f5f1ea]"
                           >
                             Commencer
                           </button>
                         ) : null}
-                        {order.status === "preparing" ? (
+                        {group.orders.some((order) => order.status === "preparing") ? (
                           <button
                             type="button"
-                            onClick={() => void changeStatus(order.id, "ready")}
+                            onClick={() => void changeStatus(group.orders.find((order) => order.status === "preparing")?.id ?? group.orders[0].id, "ready")}
                             className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-[#f5f1ea]"
                           >
                             Marquer prêt
                           </button>
                         ) : null}
-                        {order.status === "ready" ? (
+                        {group.orders.some((order) => order.status === "ready") ? (
                           <button
                             type="button"
-                            onClick={() => void changeStatus(order.id, "served")}
+                            onClick={() => void changeStatus(group.orders.find((order) => order.status === "ready")?.id ?? group.orders[0].id, "served")}
                             className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-[#f5f1ea]"
                           >
                             Servi au serveur

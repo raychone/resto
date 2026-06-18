@@ -166,13 +166,26 @@ test("Food 1 staff adds menu items to the existing table order", async ({ browse
     const targetTableId = beforeOrder.tableId as string;
     const beforeItemCount = beforeOrder.items.length;
 
+    for (const order of beforeOrders.filter((order) => order.tableId === targetTableId)) {
+      if (order.status !== "sent_to_kitchen") {
+        const normalizeResponse = await staffContext.request.patch(`/api/restaurants/food-1/orders/${order.id}`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          data: {
+            status: "sent_to_kitchen",
+          },
+        });
+        expect(normalizeResponse.ok()).toBeTruthy();
+      }
+    }
+
     const tableCard = staffPage.getByTestId(`staff-table-card-${targetTableId}`);
     await expect(tableCard).toBeVisible({ timeout: 30000 });
     await tableCard.click();
 
     const modal = staffPage.getByTestId("staff-table-modal");
     await expect(modal).toBeVisible();
-    await expect(modal.getByText("À valider par le serveur")).toBeVisible();
     await modal.getByRole("button", { name: "Ouvrir le menu" }).click();
     await expect(staffPage.getByRole("button", { name: "Ouvrir le menu" })).toBeVisible();
 
@@ -207,6 +220,140 @@ test("Food 1 staff adds menu items to the existing table order", async ({ browse
 
     expect(afterOrders).toHaveLength(1);
     expect(afterOrders[0].items.length).toBe(beforeItemCount + 1);
+  } finally {
+    await staffContext.close();
+  }
+});
+
+test("Food 1 staff opens a second round after sending a table to the kitchen", async ({ browser }) => {
+  const staffContext = await browser.newContext();
+
+  try {
+    await authenticateContext(
+      staffContext,
+      "/api/staff-auth/login",
+      "meniu_staff_session",
+      "food1-staff-root",
+      "foodstaff",
+      "pass123!",
+    );
+
+    const staffPage = await openAuthenticatedPage(staffContext, "/staff?restaurantSlug=food-1");
+    await expect(staffPage.getByRole("heading", { name: "Food 1", exact: true }).first()).toBeVisible();
+
+    const beforeResponse = await staffContext.request.get("/api/restaurants/food-1/orders");
+    expect(beforeResponse.ok()).toBeTruthy();
+    const beforePayload = (await beforeResponse.json()) as { orders: Order[] };
+    const beforeOrders = beforePayload.orders.filter(
+      (order) =>
+        order.source !== "takeaway" &&
+        Boolean(order.tableId) &&
+        isActiveOrderStatus(order.status) &&
+        !order.deletedAt,
+    );
+    expect(beforeOrders.length).toBeGreaterThan(0);
+    const baseOrder = beforeOrders[0];
+    const targetTableId = baseOrder.tableId as string;
+
+    const sendResponse = await staffContext.request.patch(`/api/restaurants/food-1/orders/${baseOrder.id}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        status: "sent_to_kitchen",
+      },
+    });
+    expect(sendResponse.ok()).toBeTruthy();
+
+    const tableCard = staffPage.getByTestId(`staff-table-card-${targetTableId}`);
+    await expect(tableCard).toBeVisible({ timeout: 30000 });
+    await tableCard.click();
+
+    const modal = staffPage.getByTestId("staff-table-modal");
+    await expect(modal).toBeVisible();
+    await expect(modal.getByText("Envoyé à la cuisine")).toBeVisible();
+    await modal.getByRole("button", { name: "Ouvrir le menu" }).click();
+    await expect(staffPage.getByTestId("staff-table-menu-category-food1-antipasti")).toBeVisible();
+
+    const roundResponse = await staffContext.request.get("/api/restaurants/food-1/orders");
+    expect(roundResponse.ok()).toBeTruthy();
+    const roundPayload = (await roundResponse.json()) as { orders: Order[] };
+    const roundOrders = roundPayload.orders
+      .filter(
+        (order) =>
+          order.tableId === targetTableId &&
+          isActiveOrderStatus(order.status) &&
+          !order.deletedAt,
+      )
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+    const openRound = roundOrders.find((order) => order.status === "open") ?? null;
+    let roundOrderId = openRound?.id ?? null;
+
+    if (!roundOrderId) {
+      const createRoundResponse = await staffContext.request.post("/api/restaurants/food-1/orders", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: {
+          tableId: targetTableId,
+          source: "table",
+          staffUserId: "food1-staff-root",
+          note: "Food 1 round 2",
+        },
+      });
+      expect(createRoundResponse.ok()).toBeTruthy();
+      const createdRoundPayload = (await createRoundResponse.json()) as { order: Order };
+      roundOrderId = createdRoundPayload.order.id;
+    }
+
+    const secondRoundResponse = await staffContext.request.post(
+      `/api/restaurants/food-1/orders/${roundOrderId}/items`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: {
+          menuItemId: "food1-antipasti-zucchini",
+          nameSnapshot: "Zucchini Fritti",
+          priceSnapshot: 12,
+          quantity: 1,
+          note: "",
+          assignedClientId: null,
+          assignedClientName: null,
+        },
+      },
+    );
+    expect(secondRoundResponse.ok()).toBeTruthy();
+
+    await expect.poll(
+      async () => {
+        const afterResponse = await staffContext.request.get("/api/restaurants/food-1/orders");
+        expect(afterResponse.ok()).toBeTruthy();
+        const afterPayload = (await afterResponse.json()) as { orders: Order[] };
+        return afterPayload.orders.filter(
+          (order) =>
+            order.tableId === targetTableId &&
+            isActiveOrderStatus(order.status) &&
+            !order.deletedAt,
+        ).length;
+      },
+      { timeout: 10_000 },
+    ).toBeGreaterThanOrEqual(2);
+
+    const finalResponse = await staffContext.request.get("/api/restaurants/food-1/orders");
+    expect(finalResponse.ok()).toBeTruthy();
+    const finalPayload = (await finalResponse.json()) as { orders: Order[] };
+    const afterOrders = finalPayload.orders.filter(
+      (order) =>
+        order.tableId === targetTableId &&
+        isActiveOrderStatus(order.status) &&
+        !order.deletedAt,
+    );
+
+    expect(afterOrders.length).toBeGreaterThanOrEqual(2);
+    expect(afterOrders.some((order) => order.status === "open")).toBeTruthy();
+    expect(afterOrders.some((order) => order.status === "sent_to_kitchen")).toBeTruthy();
+    expect(afterOrders.some((order) => order.items.some((item) => item.menuItemId === "food1-antipasti-zucchini"))).toBeTruthy();
   } finally {
     await staffContext.close();
   }

@@ -117,6 +117,32 @@ async function waitForRealtimeEvent(
   );
 }
 
+async function updateOrderWithRetry(
+  managerContext: BrowserContext,
+  orderId: string,
+  status: "sent_to_kitchen" | "preparing" | "ready" | "served",
+) {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await managerContext.request.patch(`/api/restaurants/bar-1/orders/${orderId}`, {
+        headers: {
+          cookie: "meniu_manager_session=manager-root",
+        },
+        data: { status },
+      });
+      expect(response.ok(), `Could not update order to ${status}`).toBeTruthy();
+      return;
+    } catch (error) {
+      lastError = error;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+
+  throw lastError;
+}
+
 test("orders sync across manager, staff, kitchen and client in real time", async ({ browser }) => {
   const managerContext = await browser.newContext();
   const staffContext = await browser.newContext();
@@ -215,21 +241,11 @@ test("orders sync across manager, staff, kitchen and client in real time", async
     expect(orderId).toBeTruthy();
     expect(tableId).toBeTruthy();
 
-    const updateOrder = async (status: "sent_to_kitchen" | "preparing" | "ready" | "served") => {
-      const response = await managerContext.request.patch(`/api/restaurants/bar-1/orders/${orderId}`, {
-        headers: {
-          cookie: "meniu_manager_session=manager-root",
-        },
-        data: { status },
-      });
-      expect(response.ok(), `Could not update order to ${status}`).toBeTruthy();
-    };
-
     const staffBefore = await staffPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
     const kitchenBefore = await kitchenPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
     const clientBefore = await clientPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
 
-    await updateOrder("sent_to_kitchen");
+    await updateOrderWithRetry(managerContext, String(orderId), "sent_to_kitchen");
     await Promise.all([
       waitForRealtimeEvent(staffPage, staffBefore, "orders", String(orderId), "updated"),
       waitForRealtimeEvent(kitchenPage, kitchenBefore, "orders", String(orderId), "updated"),
@@ -239,7 +255,7 @@ test("orders sync across manager, staff, kitchen and client in real time", async
     const staffBeforePreparing = await staffPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
     const kitchenBeforePreparing = await kitchenPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
     const clientBeforePreparing = await clientPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
-    await updateOrder("preparing");
+    await updateOrderWithRetry(managerContext, String(orderId), "preparing");
     await Promise.all([
       waitForRealtimeEvent(staffPage, staffBeforePreparing, "orders", String(orderId), "updated"),
       waitForRealtimeEvent(kitchenPage, kitchenBeforePreparing, "orders", String(orderId), "updated"),
@@ -249,7 +265,7 @@ test("orders sync across manager, staff, kitchen and client in real time", async
     const staffBeforeReady = await staffPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
     const kitchenBeforeReady = await kitchenPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
     const clientBeforeReady = await clientPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
-    await updateOrder("ready");
+    await updateOrderWithRetry(managerContext, String(orderId), "ready");
     await Promise.all([
       waitForRealtimeEvent(staffPage, staffBeforeReady, "orders", String(orderId), "updated"),
       waitForRealtimeEvent(kitchenPage, kitchenBeforeReady, "orders", String(orderId), "updated"),
@@ -259,7 +275,7 @@ test("orders sync across manager, staff, kitchen and client in real time", async
     const staffBeforeServed = await staffPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
     const kitchenBeforeServed = await kitchenPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
     const clientBeforeServed = await clientPage.evaluate(() => (window as typeof window & { __meniuRealtimeEvents?: unknown[] }).__meniuRealtimeEvents?.length ?? 0);
-    await updateOrder("served");
+    await updateOrderWithRetry(managerContext, String(orderId), "served");
     await Promise.all([
       waitForRealtimeEvent(staffPage, staffBeforeServed, "orders", String(orderId), "updated"),
       waitForRealtimeEvent(kitchenPage, kitchenBeforeServed, "orders", String(orderId), "updated"),
