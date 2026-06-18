@@ -329,15 +329,19 @@ test("Food 1 staff opens a second round after sending a table to the kitchen", a
         const afterResponse = await staffContext.request.get("/api/restaurants/food-1/orders");
         expect(afterResponse.ok()).toBeTruthy();
         const afterPayload = (await afterResponse.json()) as { orders: Order[] };
-        return afterPayload.orders.filter(
+        const activeTableOrders = afterPayload.orders.filter(
           (order) =>
             order.tableId === targetTableId &&
             isActiveOrderStatus(order.status) &&
             !order.deletedAt,
-        ).length;
+        );
+        const hasSecondRoundItem = activeTableOrders.some((order) =>
+          order.items.some((item) => item.nameSnapshot === "Zucchini Fritti"),
+        );
+        return Number(hasSecondRoundItem);
       },
       { timeout: 10_000 },
-    ).toBeGreaterThanOrEqual(2);
+    ).toBe(1);
 
     const finalResponse = await staffContext.request.get("/api/restaurants/food-1/orders");
     expect(finalResponse.ok()).toBeTruthy();

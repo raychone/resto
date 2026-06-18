@@ -185,7 +185,7 @@ test("staff validates the order and creates a reservation", async ({ page }) => 
     "user",
     "pass123!",
   );
-  await expect(page.getByText("Réservations, bon actif, commandes et encaissement.")).toBeVisible();
+  await expect(page.getByText("Réservations, commandes, cuisine et service.")).toBeVisible();
 
   const ordersResponse = await page.request.get("/api/restaurants/bar-1/orders", {
     headers: staffAuthHeaders,
