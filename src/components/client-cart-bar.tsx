@@ -83,7 +83,7 @@ export function ClientCartBar({
           </div>
           <div className="flex flex-wrap gap-2">
             <a
-              href="/client?focus=cart"
+              href={`/client?restaurantSlug=${encodeURIComponent(restaurantSlug)}&focus=cart#client-cart`}
               className={`rounded-full border px-4 py-2 text-sm font-medium ${
                 variant === "light"
                   ? "border-[#c41e1e] bg-[#c41e1e] text-white"

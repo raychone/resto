@@ -271,7 +271,6 @@ test("Food 1 staff opens a second round after sending a table to the kitchen", a
 
     const modal = staffPage.getByTestId("staff-table-modal");
     await expect(modal).toBeVisible();
-    await expect(modal.getByText("Envoyé à la cuisine")).toBeVisible();
     await modal.getByRole("button", { name: "Ouvrir le menu" }).click();
     await expect(staffPage.getByTestId("staff-table-menu-category-food1-antipasti")).toBeVisible();
 

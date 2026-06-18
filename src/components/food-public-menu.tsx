@@ -607,7 +607,7 @@ export function FoodPublicMenu({
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
             <a href="#top" className="flex items-center justify-start">
               <img
-                src={restaurant.logoUrl || "/food-1-logo.svg"}
+                src={restaurant.logoUrl || "/logoFood.png"}
                 alt={restaurant.name}
                 className="h-11 w-auto max-w-[150px] object-contain sm:h-12 sm:max-w-[180px]"
               />

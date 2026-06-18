@@ -181,6 +181,9 @@ export function StaffClient({
   const [notificationPermission, setNotificationPermission] = useState<string>("unsupported");
   const previousOrdersRef = useRef<Map<string, Order["status"]>>(new Map());
   const initializedOrdersRef = useRef(false);
+  const tableBonsRef = useRef<HTMLDivElement | null>(null);
+  const tableQrRef = useRef<HTMLDivElement | null>(null);
+  const tableCallsRef = useRef<HTMLDivElement | null>(null);
   const [manualSelectedClientId, setManualSelectedClientId] = useState<string>("shared");
   const [splitDraft, setSplitDraft] = useState<TableSession | null>(() => tableSession);
   const [staffTab, setStaffTab] = useState<"reservations" | "tables" | "menu">(
@@ -394,14 +397,17 @@ export function StaffClient({
     if (byId) return byId;
 
     if (selectedTarget === "takeaway") {
-      return (
-        orders.find(
-          (order) => isActiveOrder(order) && order.source === "takeaway" && !order.deletedAt,
-        ) ?? null
-      );
+      const takeawayOrders = orders
+        .filter((order) => isActiveOrder(order) && order.source === "takeaway" && !order.deletedAt)
+        .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+      return takeawayOrders.find((order) => order.status === "open") ?? takeawayOrders[0] ?? null;
     }
 
-    return orders.find((order) => isActiveOrder(order) && matchesSelectedTarget(order) && !order.deletedAt) ?? null;
+    const matchingOrders = orders
+      .filter((order) => isActiveOrder(order) && matchesSelectedTarget(order) && !order.deletedAt)
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+
+    return matchingOrders.find((order) => order.status === "open") ?? matchingOrders[0] ?? null;
   }, [orders, selectedTarget]);
 
   const currentOrderTotal = useMemo(() => {
@@ -527,8 +533,18 @@ export function StaffClient({
       })
       .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 
-    return tableOrders.find((order) => order.status === "open") ?? tableOrders[0] ?? null;
-  }, [orders, selectedTableModal]);
+    const selectedOrderById = tableOrders.find((order) => order.id === selectedTarget) ?? null;
+    if (selectedOrderById) return selectedOrderById;
+
+    return (
+      tableOrders.find((order) => order.status === "open") ??
+      tableOrders.find((order) => order.status === "ready") ??
+      tableOrders.find((order) => order.status === "preparing") ??
+      tableOrders.find((order) => order.status === "sent_to_kitchen") ??
+      tableOrders[0] ??
+      null
+    );
+  }, [orders, selectedTableModal, selectedTarget]);
 
   const selectedTableModalOrders = useMemo(() => {
     if (!selectedTableModal) return [];
@@ -540,6 +556,17 @@ export function StaffClient({
       })
       .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
   }, [orders, selectedTableModal]);
+
+  useEffect(() => {
+    if (selectedTableModalOpenOrder) {
+      setOrderNote(selectedTableModalOpenOrder.note ?? "");
+      return;
+    }
+
+    if (!selectedTableModalId && currentOrder) {
+      setOrderNote(currentOrder.note ?? "");
+    }
+  }, [currentOrder?.id, selectedTableModalId, selectedTableModalOpenOrder?.id]);
 
   useEffect(() => {
     if (!selectedTableModalId) return;
@@ -576,6 +603,12 @@ export function StaffClient({
     window.requestAnimationFrame(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  }
+
+  function jumpToTableModalSection(section: "bons" | "qr" | "calls") {
+    const targetRef =
+      section === "bons" ? tableBonsRef : section === "qr" ? tableQrRef : tableCallsRef;
+    targetRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function navigateStaff(tab: "reservations" | "tables" | "menu", target: string, quickNav: typeof staffQuickNav) {
@@ -1051,13 +1084,38 @@ export function StaffClient({
     return true;
   }
 
-  async function closeCurrentOrder(method: PaymentMethod) {
-    if (!currentOrder) return;
+  async function saveOrderNote(orderId: string, note: string) {
+    const response = await fetch(`/api/restaurants/${restaurant.slug}/orders/${orderId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ note }),
+    });
 
+    if (!response.ok) {
+      setNotice("Impossible de modifier la note.");
+      pushToast("Impossible de modifier la note.", "error");
+      return false;
+    }
+
+    setNotice("Note du bon mise à jour.");
+    pushToast("Note du bon mise à jour.");
+    await loadData();
+    return true;
+  }
+
+  async function closeOrderById(orderId: string, method: PaymentMethod) {
+    const targetOrder = orders.find((order) => order.id === orderId) ?? null;
+    if (!targetOrder) return;
+
+    const targetOrderTotal = orderTotal(targetOrder);
+    const targetPaidTotal = paidTotalForOrder(payments, targetOrder.id);
+    const targetRemaining = Math.max(0, targetOrderTotal - targetPaidTotal);
     const paymentValue =
-      Number(paymentAmount) > 0 ? Number(paymentAmount) : currentRemaining > 0 ? currentRemaining : currentOrderTotal;
+      Number(paymentAmount) > 0 ? Number(paymentAmount) : targetRemaining > 0 ? targetRemaining : targetOrderTotal;
     const response = await fetch(
-      `/api/restaurants/${restaurant.slug}/orders/${currentOrder.id}/payments`,
+      `/api/restaurants/${restaurant.slug}/orders/${targetOrder.id}/payments`,
       {
         method: "POST",
         headers: {
@@ -1905,34 +1963,27 @@ export function StaffClient({
                                 value: waiterCallsByTable[selectedTableModal.id] ?? 0,
                               },
                             ].map((item) => (
-                              <div key={item.label} className="min-w-[6rem] flex-1 rounded-[1.25rem] border border-[#eadfce] bg-white px-3 py-3 text-center">
+                              <button
+                                key={item.label}
+                                type="button"
+                                onClick={() =>
+                                  jumpToTableModalSection(
+                                    item.label === "QR" ? "qr" : item.label === "Appels" ? "calls" : "bons",
+                                  )
+                                }
+                                className="min-w-[6rem] flex-1 rounded-[1.25rem] border border-[#eadfce] bg-white px-3 py-3 text-center transition hover:bg-[#faf7f2]"
+                              >
                                 <p className="text-[10px] uppercase tracking-[0.28em] text-[#a38d7c]">{item.label}</p>
                                 <p className="mt-2 text-lg font-semibold text-[#24170f]">{item.value}</p>
-                              </div>
+                              </button>
                             ))}
                           </div>
 
-                          <div className="rounded-[1.5rem] border border-[#eadfce] bg-gradient-to-br from-[#fff7f2] via-[#fffaf8] to-[#fff0e7] p-3 shadow-[0_10px_30px_rgba(124,77,44,0.06)] sm:p-4">
-                            <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">Statut</p>
-                            <p className="mt-1 text-sm text-[#6f5b4a]">
-                              {selectedTableModalOpenOrder
-                                ? selectedTableModalOpenOrder.status === "open"
-                                  ? "À valider par le serveur"
-                                  : selectedTableModalOpenOrder.status === "sent_to_kitchen"
-                                    ? "Envoyé à la cuisine"
-                                    : selectedTableModalOpenOrder.status === "preparing"
-                                      ? "En préparation"
-                                      : selectedTableModalOpenOrder.status === "ready"
-                                        ? "À servir"
-                                        : selectedTableModalOpenOrder.status === "served"
-                                          ? "Servi à la table"
-                                          : selectedTableModalOpenOrder.status === "paid"
-                                            ? "Encaissement terminé"
-                                            : "Archivé"
-                                : "Aucun bon ouvert."}
-                            </p>
+                          <div className="space-y-3">
                           {selectedTableModalOpenOrder ? (
-                            <dl className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                            <div className="rounded-[1.5rem] border border-[#eadfce] bg-gradient-to-br from-[#fff7f2] via-[#fffaf8] to-[#fff0e7] p-3 shadow-[0_10px_30px_rgba(124,77,44,0.06)] sm:p-4">
+                              <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">Bon du jour</p>
+                              <div className="mt-3 grid grid-cols-3 gap-2">
                                 {[
                                   {
                                     label: "Total",
@@ -1959,14 +2010,91 @@ export function StaffClient({
                                 ].map((entry) => (
                                   <div
                                     key={entry.label}
-                                    className="flex items-center justify-between rounded-2xl border border-[#eadfce] bg-white/85 px-3 py-2 text-sm text-[#24170f] shadow-[0_6px_16px_rgba(124,77,44,0.05)]"
+                                    className="rounded-[1.1rem] border border-[#eadfce] bg-white/85 px-3 py-2 text-left text-[#24170f] shadow-[0_6px_16px_rgba(124,77,44,0.05)]"
                                   >
-                                    <dt className="text-[10px] uppercase tracking-[0.28em] text-[#a38d7c]">{entry.label}</dt>
-                                    <dd className="text-sm font-semibold">{entry.value}</dd>
+                                    <p className="text-[9px] uppercase tracking-[0.24em] text-[#a38d7c]">
+                                      {entry.label}
+                                    </p>
+                                    <p className="mt-1 text-sm font-semibold">{entry.value}</p>
                                   </div>
                                 ))}
-                              </dl>
-                            ) : null}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          {selectedTableModalOpenOrder ? (
+                            <div ref={tableBonsRef} className="rounded-[1.5rem] border border-[#eadfce] bg-white/82 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">
+                                    Bon actif
+                                  </p>
+                                  <p className="mt-1 text-sm font-medium text-[#6f5b4a]">
+                                    {orderStatusMeta(selectedTableModalOpenOrder.status).label}
+                                  </p>
+                                </div>
+                                <span className="rounded-full border border-[#eadfce] bg-[#fffdf8] px-3 py-2 text-xs font-semibold text-[#24170f]">
+                                  {selectedTableModalOpenOrder.items.length} article{selectedTableModalOpenOrder.items.length > 1 ? "s" : ""}
+                                </span>
+                              </div>
+                              <div className="mt-3 space-y-2">
+                                {selectedTableModalOpenOrder.items.length === 0 ? (
+                                  <p className="rounded-[1.1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3 text-sm text-[#7f6c5a]">
+                                    Aucun article sur ce bon pour le moment.
+                                  </p>
+                                ) : (
+                                  selectedTableModalOpenOrder.items.map((item) => (
+                                    <div
+                                      key={item.id}
+                                      className="flex items-start justify-between gap-3 rounded-[1.1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3 text-sm"
+                                    >
+                                      <div className="min-w-0">
+                                        <p className="font-medium text-[#24170f]">
+                                          {item.quantity} × {item.nameSnapshot}
+                                        </p>
+                                        <p className="mt-1 text-xs text-[#7f6c5a]">
+                                          {item.assignedClientName ? `Client: ${item.assignedClientName}` : "Partagé"}
+                                          {item.note ? ` · ${item.note}` : ""}
+                                        </p>
+                                      </div>
+                                      <p className="shrink-0 font-semibold text-[#24170f]">
+                                        {formatMoney(item.priceSnapshot * item.quantity, restaurant.currency)}
+                                      </p>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          {selectedTableModalOpenOrder ? (
+                            <div className="rounded-[1.5rem] border border-[#eadfce] bg-white/80 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">
+                                    Note du bon
+                                  </p>
+                                  <p className="mt-1 text-xs text-[#6f5b4a]">
+                                    Note interne, allergies ou précisions pour le service.
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void saveOrderNote(selectedTableModalOpenOrder.id, orderNote)}
+                                  className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-3 py-2 text-xs font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
+                                >
+                                  Sauver la note
+                                </button>
+                              </div>
+                              <textarea
+                                value={orderNote}
+                                onChange={(event) => setOrderNote(event.target.value)}
+                                rows={3}
+                                className="mt-3 w-full rounded-[1.1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3 text-sm text-[#24170f] outline-none"
+                                placeholder="Ex: client allergique, table tranquille, service rapide..."
+                              />
+                            </div>
+                          ) : null}
 
                             {selectedTableModalOrders.length > 1 ? (
                               <div className="mt-3 rounded-[1.35rem] border border-[#eadfce] bg-white/75 p-3">
@@ -2086,7 +2214,7 @@ export function StaffClient({
                                 />
                                 <button
                                   type="button"
-                                  onClick={() => void closeCurrentOrder(paymentMethod)}
+                                  onClick={() => void closeOrderById(selectedTableModalOpenOrder.id, paymentMethod)}
                                   className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-3 py-2 text-xs font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
                                 >
                                   Encaisser
@@ -2162,7 +2290,7 @@ export function StaffClient({
                                   ) : null}
 
                                   {tablePendingOrders.map((order) => (
-                                    <article key={order.id} className="rounded-[1.25rem] border border-[#eadfce] bg-white p-4">
+                                    <article ref={tableQrRef} key={order.id} className="rounded-[1.25rem] border border-[#eadfce] bg-white p-4">
                                       <div className="flex items-center justify-between gap-3">
                                         <div>
                                           <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Commande QR</p>
@@ -2193,7 +2321,7 @@ export function StaffClient({
                                   ))}
 
                                   {tableCalls.map((message) => (
-                                    <article key={message.id} className="rounded-[1.25rem] border border-rose-200 bg-rose-50 p-4">
+                                    <article ref={tableCallsRef} key={message.id} className="rounded-[1.25rem] border border-rose-200 bg-rose-50 p-4">
                                       <p className="text-[11px] uppercase tracking-[0.28em] text-rose-700">Appel de table</p>
                                       <h4 className="mt-1 text-base font-semibold text-rose-950">{message.name}</h4>
                                       <p className="mt-2 text-sm leading-6 text-rose-900/80">{message.message}</p>
@@ -2210,7 +2338,7 @@ export function StaffClient({
                   </div>
                 ) : null}
 
-                {selectedTarget !== "takeaway" ? (
+                {!isFoodTheme && selectedTarget !== "takeaway" ? (
                   <div className="mt-4 rounded-[1.5rem] border border-black/8 bg-white/95 p-4 shadow-[0_12px_35px_rgba(15,23,42,0.04)]">
                     <details open className="group">
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
@@ -2644,7 +2772,7 @@ export function StaffClient({
                         />
                         <button
                           type="button"
-                          onClick={() => void closeCurrentOrder(paymentMethod)}
+                          onClick={() => currentOrder ? void closeOrderById(currentOrder.id, paymentMethod) : undefined}
                           className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white"
                         >
                           Encaisser
@@ -2702,20 +2830,21 @@ export function StaffClient({
                   categories={restaurant.categories}
                   locale={locale}
                   accent={restaurant.accent}
-                    restaurantSlug={restaurant.slug}
-                    orderFlowEnabled={selectedTarget !== "takeaway"}
-                    actionLabel="Ajouter au bon"
-                    showItemModal={true}
-                    compact
-                    testIdPrefix="staff-main-menu"
-                    onItemAction={(item) =>
-                      void addItemToOrder({
+                  restaurantSlug={restaurant.slug}
+                  orderFlowEnabled={Boolean(selectedTableModal)}
+                  actionLabel={selectedTableModal ? "Ajouter à la table" : "Voir le plat"}
+                  showItemModal={!selectedTableModal}
+                  compact
+                  testIdPrefix="staff-main-menu"
+                  onItemAction={(item) => {
+                    if (!selectedTableModal) return;
+                    void addItemToTableRound({
                       id: item.id,
                       name: item.name,
                       price: item.price,
                       displayPrice: getMenuItemEffectivePrice(item),
-                    })
-                  }
+                    });
+                  }}
                 />
               </div>
             </section>

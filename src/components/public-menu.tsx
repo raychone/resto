@@ -249,7 +249,7 @@ export async function PublicMenu({
     <>
       <PublicNavbar
         restaurantSlug={restaurant.slug}
-        logoUrl={restaurant.logoUrl}
+        logoUrl={restaurant.logoUrl || (restaurant.slug === "bar-1" ? "/logoNoirBar.png" : "")}
         locale={locale}
       />
       <main

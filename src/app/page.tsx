@@ -230,7 +230,7 @@ export default async function HomePage() {
           slug={noir1?.slug ?? "bar-1"}
           tagline={noir1?.tagline ?? "Bar mobile-first avec happy hour."}
           accent={noir1?.accent ?? "#7C3AED"}
-          logo={noir1?.logoUrl || "/bar-1-logo.svg"}
+          logo={noir1?.logoUrl || "/logoNoirBar.png"}
           menuHref={noirMenuHref}
           qrHref={`/qr/${noir1?.slug ?? "bar-1"}`}
           roles={noirRoles}
@@ -240,7 +240,7 @@ export default async function HomePage() {
           slug={food1?.slug ?? "food-1"}
           tagline={food1?.tagline ?? "Italian casual food, light theme."}
           accent={food1?.accent ?? "#c41e1e"}
-          logo={food1?.logoUrl || "/food-1-logo.svg"}
+          logo={food1?.logoUrl || "/logoFood.png"}
           menuHref={foodMenuHref}
           qrHref={`/qr/${food1?.slug ?? "food-1"}`}
           roles={foodRoles}
