@@ -46,6 +46,10 @@ async function locateFoodOrder(page: Page) {
   return page.locator("article").filter({ hasText: "Zucchini Fritti" }).first();
 }
 
+function isActiveOrderStatus(status: Order["status"]) {
+  return !["paid", "cancelled", "archived"].includes(status);
+}
+
 async function patchOrderStatusWithRetry(
   context: BrowserContext,
   orderId: string,
@@ -125,10 +129,87 @@ test("Food 1 staff opens a single table modal", async ({ page }) => {
   const modal = page.getByTestId("staff-table-modal");
   await expect(modal).toBeVisible();
   await expect(modal.getByRole("heading", { name: /Table 1/ })).toBeVisible();
-  await expect(modal.getByRole("link", { name: "Fermer" })).toBeVisible();
-  await modal.getByRole("link", { name: "Fermer" }).click();
+  await expect(modal.getByLabel("Fermer")).toBeVisible();
+  await modal.getByLabel("Fermer").click();
   await expect(page).toHaveURL(/\/staff\?restaurantSlug=food-1$/);
   await expect(page.getByTestId("staff-table-modal")).toHaveCount(0);
+});
+
+test("Food 1 staff adds menu items to the existing table order", async ({ browser }) => {
+  const staffContext = await browser.newContext();
+
+  try {
+    await authenticateContext(
+      staffContext,
+      "/api/staff-auth/login",
+      "meniu_staff_session",
+      "food1-staff-root",
+      "foodstaff",
+      "pass123!",
+    );
+
+    const staffPage = await openAuthenticatedPage(staffContext, "/staff?restaurantSlug=food-1");
+    await expect(staffPage.getByRole("heading", { name: "Food 1", exact: true }).first()).toBeVisible();
+
+    const beforeResponse = await staffContext.request.get("/api/restaurants/food-1/orders");
+    expect(beforeResponse.ok()).toBeTruthy();
+    const beforePayload = (await beforeResponse.json()) as { orders: Order[] };
+    const beforeOrders = beforePayload.orders.filter(
+      (order) =>
+        order.source !== "takeaway" &&
+        Boolean(order.tableId) &&
+        isActiveOrderStatus(order.status) &&
+        !order.deletedAt,
+    );
+    expect(beforeOrders.length).toBeGreaterThan(0);
+    const beforeOrder = beforeOrders[0];
+    const targetTableId = beforeOrder.tableId as string;
+    const beforeItemCount = beforeOrder.items.length;
+
+    const tableCard = staffPage.getByTestId(`staff-table-card-${targetTableId}`);
+    await expect(tableCard).toBeVisible({ timeout: 30000 });
+    await tableCard.click();
+
+    const modal = staffPage.getByTestId("staff-table-modal");
+    await expect(modal).toBeVisible();
+    await expect(modal.getByText("À valider par le serveur")).toBeVisible();
+    await modal.getByRole("button", { name: "Ouvrir le menu" }).click();
+    await expect(staffPage.getByRole("button", { name: "Ouvrir le menu" })).toBeVisible();
+
+    const addResponse = await staffContext.request.post(
+      `/api/restaurants/food-1/orders/${beforeOrder.id}/items`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: {
+          menuItemId: "food1-antipasti-zucchini",
+          nameSnapshot: "Zucchini Fritti",
+          priceSnapshot: 12,
+          quantity: 1,
+          note: "",
+          assignedClientId: null,
+          assignedClientName: null,
+        },
+      },
+    );
+    expect(addResponse.ok()).toBeTruthy();
+
+    const afterResponse = await staffContext.request.get("/api/restaurants/food-1/orders");
+    expect(afterResponse.ok()).toBeTruthy();
+    const afterPayload = (await afterResponse.json()) as { orders: Order[] };
+    const afterOrders = afterPayload.orders.filter(
+      (order) =>
+        order.tableId === targetTableId &&
+        isActiveOrderStatus(order.status) &&
+        !order.deletedAt,
+    );
+
+    expect(afterOrders).toHaveLength(1);
+    expect(afterOrders[0].items.length).toBe(beforeItemCount + 1);
+  } finally {
+    await staffContext.close();
+  }
 });
 
 test("Food 1 client order syncs through staff and kitchen", async ({ browser }) => {

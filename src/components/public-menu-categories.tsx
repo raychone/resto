@@ -14,6 +14,7 @@ type Props = {
   actionLabel?: string;
   showItemModal?: boolean;
   compact?: boolean;
+  testIdPrefix?: string;
   onItemAction?: (item: MenuItem, categoryName: string) => void | Promise<void>;
 };
 
@@ -92,6 +93,7 @@ export function PublicMenuCategories({
   actionLabel,
   showItemModal = true,
   compact = false,
+  testIdPrefix,
   onItemAction,
 }: Props) {
   const [openCategoryId, setOpenCategoryId] = useState<string | null>(null);
@@ -202,6 +204,7 @@ export function PublicMenuCategories({
               <button
                 type="button"
                 onClick={() => setOpenCategoryId(isOpen ? null : category.id)}
+                data-testid={testIdPrefix ? `${testIdPrefix}-category-${category.id}` : undefined}
                 className={`flex w-full items-center justify-between gap-4 px-4 py-4 text-left text-[#f5f1ea] transition duration-300 hover:bg-white/[0.02] sm:px-5 sm:py-5 ${
                   compact ? "px-4 py-3 sm:px-4 sm:py-3" : ""
                 }`}
@@ -238,6 +241,7 @@ export function PublicMenuCategories({
                         <button
                           key={item.id}
                           type="button"
+                          data-testid={testIdPrefix ? `${testIdPrefix}-item-${item.id}` : undefined}
                         onClick={() => {
                           if (showItemModal) {
                             openModal(item, category.name);

@@ -42,6 +42,7 @@ type Props = {
   initialOrders: Order[];
   initialPayments: Payment[];
   initialMessages: RestaurantMessage[];
+  initialTableModalView?: "bon" | "payment" | "menu";
 };
 
 function formatDate(date: string) {
@@ -159,6 +160,7 @@ export function StaffClient({
   initialOrders,
   initialPayments,
   initialMessages,
+  initialTableModalView = "bon",
 }: Props) {
   const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
   const [tables, setTables] = useState<Table[]>(initialTables);
@@ -188,7 +190,9 @@ export function StaffClient({
     orderFlowEnabled ? "tables" : "reservations",
   );
   const [selectedTableModalId, setSelectedTableModalId] = useState<string | null>(initialSelectedTableId);
-  const [selectedTableModalView, setSelectedTableModalView] = useState<"bon" | "payment">("bon");
+  const [selectedTableModalView, setSelectedTableModalView] = useState<"bon" | "payment" | "menu">(
+    initialTableModalView,
+  );
   const [pendingScrollTarget, setPendingScrollTarget] = useState<string | null>(null);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const isFoodTheme = theme === "food";
@@ -513,10 +517,6 @@ export function StaffClient({
     return currentTables.find((table) => table.id === selectedTableModalId) ?? null;
   }, [currentTables, selectedTableModalId]);
 
-  useEffect(() => {
-    setSelectedTableModalView("bon");
-  }, [selectedTableModalId]);
-
   const selectedTableModalOpenOrder = useMemo(() => {
     if (!selectedTableModal) return null;
 
@@ -552,6 +552,12 @@ export function StaffClient({
       setSelectedTableModalId(null);
     }
   }, [currentTables, selectedTableModalId]);
+
+  useEffect(() => {
+    if (!selectedTableModalId) return;
+    if (selectedTarget === selectedTableModalId) return;
+    setSelectedTarget(selectedTableModalId);
+  }, [selectedTableModalId, selectedTarget]);
 
   function jumpTo(id: string) {
     window.requestAnimationFrame(() => {
@@ -716,9 +722,22 @@ export function StaffClient({
 
   async function ensureOrder(target: string) {
     const existingOrder = orders.find((order) => order.id === target);
-    if (existingOrder && existingOrder.status === "open") {
-      setSelectedTarget(existingOrder.id);
+    if (existingOrder && isActiveOrder(existingOrder)) {
+      setSelectedTarget(existingOrder.tableId ?? "takeaway");
       return existingOrder;
+    }
+
+    const existingActiveTableOrder = orders.find(
+      (order) =>
+        isActiveOrder(order) &&
+        (target === "takeaway"
+          ? order.source === "takeaway"
+          : (order.source === "table" || order.source === "qr") && order.tableId === target),
+    );
+
+    if (existingActiveTableOrder) {
+      setSelectedTarget(existingActiveTableOrder.tableId ?? "takeaway");
+      return existingActiveTableOrder;
     }
 
     const existing = orders.find(
@@ -730,7 +749,7 @@ export function StaffClient({
     );
 
     if (existing) {
-      setSelectedTarget(existing.id);
+      setSelectedTarget(existing.tableId ?? "takeaway");
       return existing;
     }
 
@@ -755,7 +774,7 @@ export function StaffClient({
     }
 
     const payloadResponse = (await response.json()) as { order: Order };
-    setSelectedTarget(payloadResponse.order.id);
+    setSelectedTarget(payloadResponse.order.tableId ?? "takeaway");
     await loadData();
     return payloadResponse.order;
   }
@@ -1666,7 +1685,8 @@ export function StaffClient({
                         data-testid={`staff-table-card-${table.id}`}
                         onClick={() => {
                           setSelectedTableModalId(table.id);
-                          setSelectedTarget(openOrder?.id ?? table.id);
+                          setSelectedTableModalView("bon");
+                          setSelectedTarget(table.id);
                           if ((waiterCallsByTable[table.id] ?? 0) > 0) {
                             void markWaiterCallsReadForTable(table.id);
                           }
@@ -1853,8 +1873,7 @@ export function StaffClient({
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setSelectedTarget(selectedTableModal.id);
-                                    setSelectedTableModalId(null);
+                                    setSelectedTableModalView("menu");
                                     navigateStaff("menu", "staff-menu", "menu");
                                   }}
                                   className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
@@ -1904,13 +1923,12 @@ export function StaffClient({
                                   <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Paiement</p>
                                   <p className="mt-1 text-xs text-[#6f5b4a]">Enregistre un paiement cash, carte ou partiel.</p>
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setSelectedTableModalView("bon")}
+                                <a
+                                  href={`/staff?restaurantSlug=${encodeURIComponent(restaurant.slug)}&table=${encodeURIComponent(selectedTableModal.id)}`}
                                   className="rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2]"
                                 >
                                   Revenir au bon
-                                </button>
+                                </a>
                               </div>
                               <div className="mt-3 flex flex-wrap items-center gap-2">
                                 <select
@@ -2120,7 +2138,7 @@ export function StaffClient({
                           <button
                             type="button"
                             onClick={() => {
-                              setSelectedTarget(currentOrder?.id ?? currentTargetTable?.id ?? selectedTarget);
+                              setSelectedTarget(currentTargetTable?.id ?? selectedTarget);
                               setStaffQuickNav("bon");
                               setPendingScrollTarget("staff-bon");
                             }}
@@ -2375,12 +2393,56 @@ export function StaffClient({
                               Enregistrer la répartition
                             </button>
                           </div>
-                        </div>
-                      </div>
-                    ) : null}
+                              </div>
+                            </div>
+                          ) : null}
 
-                    <Field label="Note du bon">
-                      <textarea
+                          {selectedTableModalView === "menu" ? (
+                            <div className="rounded-[1.35rem] border border-[#eadfce] bg-white/85 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Menu</p>
+                                  <p className="mt-1 text-xs text-[#6f5b4a]">
+                                    Ajoute des plats directement à la table sélectionnée.
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedTableModalView("bon");
+                                    navigateStaff("tables", "staff-bon", "tables");
+                                  }}
+                                  className="rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2]"
+                                >
+                                  Revenir au bon
+                                </button>
+                              </div>
+                              <div className="mt-3">
+                                <PublicMenuCategories
+                                  categories={restaurant.categories}
+                                  locale={locale}
+                                  accent={restaurant.accent}
+                                  restaurantSlug={restaurant.slug}
+                                  orderFlowEnabled={selectedTableModal !== null}
+                                  actionLabel="Ajouter à la table"
+                                  showItemModal={false}
+                                  compact
+                                  testIdPrefix="staff-table-menu"
+                                  onItemAction={(item) =>
+                                    void addItemToOrder({
+                                      id: item.id,
+                                      name: item.name,
+                                      price: item.price,
+                                      displayPrice: getMenuItemEffectivePrice(item),
+                                    })
+                                  }
+                                />
+                              </div>
+                            </div>
+                          ) : null}
+
+                          <Field label="Note du bon">
+                            <textarea
                         value={orderNote}
                         onChange={(event) => setOrderNote(event.target.value)}
                         rows={3}
@@ -2527,6 +2589,7 @@ export function StaffClient({
                     actionLabel="Ajouter au bon"
                     showItemModal={true}
                     compact
+                    testIdPrefix="staff-main-menu"
                     onItemAction={(item) =>
                       void addItemToOrder({
                       id: item.id,

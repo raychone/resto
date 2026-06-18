@@ -18,13 +18,14 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams?: Promise<{ restaurantSlug?: string; table?: string }>;
+  searchParams?: Promise<{ restaurantSlug?: string; table?: string; view?: string }>;
 };
 
 export default async function StaffPage({ searchParams }: Props) {
   const resolvedSearchParams = searchParams ? await searchParams : null;
   const requestedRestaurantSlug = resolvedSearchParams?.restaurantSlug?.trim() || null;
   const requestedTableId = resolvedSearchParams?.table?.trim() || null;
+  const requestedTableModalView = resolvedSearchParams?.view?.trim() || null;
   const requestedRestaurant = requestedRestaurantSlug ? await getRestaurantBySlug(requestedRestaurantSlug) : null;
   const authenticated = await isStaffAuthenticated();
 
@@ -98,12 +99,18 @@ export default async function StaffPage({ searchParams }: Props) {
         </div>
       </div>
       <StaffClient
+        key={`${restaurant.slug}:${requestedTableId ?? ""}:${requestedTableModalView ?? ""}`}
         restaurant={restaurant}
         staffUserId={staffUser.id}
         locale="fr"
         tableSession={tableSession}
         orderFlowEnabled={restaurant.features.orderFlowEnabled}
         initialSelectedTableId={requestedTableId}
+        initialTableModalView={
+          requestedTableModalView === "payment" || requestedTableModalView === "menu"
+            ? requestedTableModalView
+            : "bon"
+        }
         initialReservations={initialReservations.filter((reservation) => reservation.restaurantId === restaurant.id)}
         initialTables={initialTables}
         initialOrders={initialOrders}
