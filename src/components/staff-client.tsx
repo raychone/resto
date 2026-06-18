@@ -1860,7 +1860,7 @@ export function StaffClient({
                                 setSelectedTableModalId(null);
                                 navigateStaff("menu", "staff-menu", "menu");
                               }}
-                              className="rounded-full border border-[#c41e1e] bg-[#c41e1e] px-4 py-3 text-sm font-medium text-white"
+                              className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
                             >
                               Ouvrir le menu
                             </button>
@@ -1871,7 +1871,7 @@ export function StaffClient({
                                 setSelectedTableModalId(null);
                                 navigateStaff("tables", "staff-bon", "bon");
                               }}
-                              className="rounded-full border border-[#c41e1e] bg-[#c41e1e] px-4 py-3 text-sm font-medium text-white"
+                              className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
                             >
                               Ouvrir le bon
                             </button>
@@ -1916,7 +1916,7 @@ export function StaffClient({
                                             setSelectedTableModalId(null);
                                             navigateStaff("tables", "staff-bon", "bon");
                                           }}
-                                          className="rounded-full border border-[#c41e1e] bg-[#c41e1e] px-3 py-2 text-xs font-medium text-white"
+                                          className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-3 py-2 text-xs font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
                                         >
                                           Voir le bon
                                         </button>
