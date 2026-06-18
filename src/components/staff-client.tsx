@@ -1242,7 +1242,7 @@ export function StaffClient({
                 className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
                   staffQuickNav === "reservations"
                     ? isFoodTheme
-                      ? "border-[#c41e1e] bg-[#c41e1e] text-white"
+                      ? "border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f]"
                       : "border-white bg-white text-black"
                     : isFoodTheme
                       ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
@@ -1261,7 +1261,7 @@ export function StaffClient({
                 className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
                 staffQuickNav === "alerts"
                   ? isFoodTheme
-                    ? "border-[#c41e1e] bg-[#c41e1e] text-white"
+                    ? "border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f]"
                     : "border-white bg-white text-black"
                   : isFoodTheme
                     ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
@@ -1279,7 +1279,7 @@ export function StaffClient({
                 className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
                 staffQuickNav === "tables"
                   ? isFoodTheme
-                    ? "border-[#c41e1e] bg-[#c41e1e] text-white"
+                    ? "border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f]"
                     : "border-white bg-white text-black"
                   : isFoodTheme
                     ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
@@ -1297,12 +1297,12 @@ export function StaffClient({
               className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
                 staffQuickNav === "menu"
                   ? isFoodTheme
-                    ? "border-[#c41e1e] bg-[#c41e1e] text-white"
+                    ? "border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f]"
                     : "border-white bg-white text-black"
                   : isFoodTheme
                     ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
                     : "border-white/8 bg-white/5 text-white/78 hover:bg-white/10"
-              }`}
+                }`}
             >
               <span className="text-base leading-none">📖</span>
               <span className="mt-1">Menu</span>
@@ -1863,13 +1863,6 @@ export function StaffClient({
                                 >
                                   En cuisine
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => void updateOrderStatus(selectedTableModalOpenOrder.id, "served")}
-                                  className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
-                                >
-                                  Servi
-                                </button>
                               </>
                             ) : null}
                           </div>
@@ -1924,6 +1917,33 @@ export function StaffClient({
                                     restaurant.currency,
                                   )}
                                 </span>
+                              </div>
+                            </div>
+                          ) : null}
+
+                          {selectedTableModalOpenOrder ? (
+                            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[1.35rem] border border-[#eadfce] bg-white/75 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
+                              <div>
+                                <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Actions rapides</p>
+                                <p className="mt-1 text-xs text-[#6f5b4a]">Retour possible si `Servi` a été cliqué par erreur.</p>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {selectedTableModalOpenOrder.status !== "open" ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => void updateOrderStatus(selectedTableModalOpenOrder.id, "open")}
+                                    className="rounded-full border border-[#eadfce] bg-white px-4 py-3 text-sm font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2]"
+                                  >
+                                    Revenir au bon
+                                  </button>
+                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={() => void updateOrderStatus(selectedTableModalOpenOrder.id, "served")}
+                                  className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
+                                >
+                                  Servi
+                                </button>
                               </div>
                             </div>
                           ) : null}
@@ -2000,7 +2020,8 @@ export function StaffClient({
                   </div>
                 ) : null}
 
-                <div className="mt-4">
+                {!selectedTableModal ? (
+                  <div className="mt-4">
                   <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">Bon courant</p>
                   <div className="mt-2 rounded-[1.6rem] border border-black/8 bg-black/3 p-4 shadow-[0_12px_35px_rgba(15,23,42,0.06)]">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -2052,7 +2073,8 @@ export function StaffClient({
                       </div>
                     ) : null}
                   </div>
-                </div>
+                  </div>
+                ) : null}
                 {currentOrder ? (
                   <div className="mt-4 rounded-[1.25rem] border border-black/8 bg-black/3 px-4 py-3">
                       <p className="text-[11px] uppercase tracking-[0.3em] text-black/35">Statut actuel</p>
