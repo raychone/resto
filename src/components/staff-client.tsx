@@ -1676,48 +1676,67 @@ export function StaffClient({
                             void markWaiterCallsReadForTable(table.id);
                           }
                         }}
-                        className={`min-h-[7.5rem] rounded-[1.15rem] border p-2.5 text-left transition sm:p-3 ${
+                        className={`min-h-[7rem] rounded-[1.15rem] border p-2.5 text-left transition sm:p-3 ${
                           selectedTarget === table.id || selectedTarget === openOrder?.id
-                            ? "border-transparent bg-black text-white shadow-lg"
+                            ? isFoodTheme
+                              ? "border-[#f0cbc8] bg-[#fff3f0] text-[#24170f] shadow-[0_12px_30px_rgba(196,30,30,0.08)]"
+                              : "border-transparent bg-black text-white shadow-lg"
                             : tableAlerts > 0
-                              ? "border-rose-300 bg-rose-50 text-rose-950 hover:bg-rose-100"
-                              : "border-black/8 bg-black/2 text-black hover:bg-black/4"
+                              ? isFoodTheme
+                                ? "border-[#f0cbc8] bg-[#fffaf7] text-[#24170f] hover:bg-[#fff3f0]"
+                                : "border-rose-300 bg-rose-50 text-rose-950 hover:bg-rose-100"
+                              : isFoodTheme
+                                ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
+                                : "border-black/8 bg-black/2 text-black hover:bg-black/4"
                         }`}
                       >
-                        <span className="block text-[9px] uppercase tracking-[0.26em] opacity-70 sm:text-[10px]">
+                        <span className={`block text-[9px] uppercase tracking-[0.26em] sm:text-[10px] ${isFoodTheme ? "text-[#a38d7c]" : "opacity-70"}`}>
                           {table.zone}
                         </span>
-                        <span className="mt-1 block text-sm font-semibold sm:text-base">{table.name}</span>
-                        <span className="mt-1 block text-[11px] opacity-80 sm:text-xs">{table.seats} places</span>
-                        <span
-                          className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${
-                            openOrder
-                              ? "border-black/20 bg-black text-white"
-                              : "border-black/10 bg-white/80 text-black/80"
-                          }`}
-                        >
-                          {openOrder ? "Bon ouvert" : "Libre"}
-                        </span>
-                        {openOrder ? (
+                        <span className={`mt-1 block text-sm font-semibold sm:text-base ${isFoodTheme ? "text-[#24170f]" : ""}`}>{table.name}</span>
+                        <span className={`mt-1 block text-[11px] sm:text-xs ${isFoodTheme ? "text-[#7f6c5a]" : "opacity-80"}`}>{table.seats} places</span>
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5">
                           <span
-                            className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${
-                              orderStatusMeta(openOrder.status).className
+                            title={openOrder ? "Ouvert" : "Libre"}
+                            aria-label={openOrder ? "Ouvert" : "Libre"}
+                            className={`h-2.5 w-2.5 rounded-full border ${
+                              openOrder
+                                ? isFoodTheme
+                                  ? "border-[#24170f] bg-[#24170f]"
+                                  : "border-white bg-white"
+                                : isFoodTheme
+                                  ? "border-[#eadfce] bg-[#eadfce]"
+                                  : "border-black/20 bg-white"
                             }`}
-                          >
-                            {orderStatusMeta(openOrder.status).label}
-                          </span>
-                        ) : null}
-                        {tableAlerts > 0 ? (
-                          <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-white shadow-[0_8px_20px_rgba(244,63,94,0.25)]">
-                            <span className="h-2 w-2 rounded-full bg-rose-500" />
-                            {tableAlerts} alerte{tableAlerts > 1 ? "s" : ""}
-                          </span>
-                        ) : null}
-                        {pendingClientOrdersByTable[table.id] ? (
-                          <span className="mt-2 inline-flex rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-900">
-                            {pendingClientOrdersByTable[table.id]} commande QR
-                          </span>
-                        ) : null}
+                          />
+                          {openOrder ? (
+                            <span
+                              title={orderStatusMeta(openOrder.status).label}
+                              aria-label={orderStatusMeta(openOrder.status).label}
+                              className={`h-2.5 w-2.5 rounded-full border ${
+                                isFoodTheme ? "border-[#c41e1e] bg-[#c41e1e]" : orderStatusMeta(openOrder.status).className
+                              }`}
+                            />
+                          ) : null}
+                          {tableAlerts > 0 ? (
+                            <span
+                              title={`${tableAlerts} alerte${tableAlerts > 1 ? "s" : ""}`}
+                              aria-label={`${tableAlerts} alerte${tableAlerts > 1 ? "s" : ""}`}
+                              className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[9px] font-semibold leading-none text-white shadow-[0_8px_20px_rgba(244,63,94,0.25)]"
+                            >
+                              {tableAlerts}
+                            </span>
+                          ) : null}
+                          {pendingClientOrdersByTable[table.id] ? (
+                            <span
+                              title={`${pendingClientOrdersByTable[table.id]} commande QR`}
+                              aria-label={`${pendingClientOrdersByTable[table.id]} commande QR`}
+                              className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 text-[9px] font-semibold leading-none text-amber-900"
+                            >
+                              {pendingClientOrdersByTable[table.id]}
+                            </span>
+                          ) : null}
+                        </div>
                       </a>
                     );
                   })}
@@ -1936,19 +1955,24 @@ export function StaffClient({
                           {currentOrder ? `${currentOrder.items.length} articles` : "Aucun bon ouvert."}
                         </p>
                       </div>
-                      {currentOrder ? (
+                      <div className="flex items-center gap-2">
                         <span
-                          className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] ${
-                            orderStatusMeta(currentOrder.status).className
+                          title={currentOrder ? "Ouvert" : "Libre"}
+                          aria-label={currentOrder ? "Ouvert" : "Libre"}
+                          className={`h-2.5 w-2.5 rounded-full border ${
+                            currentOrder ? "border-black bg-black" : "border-black/15 bg-white"
                           }`}
-                        >
-                          {orderStatusMeta(currentOrder.status).label}
-                        </span>
-                      ) : (
-                        <span className="inline-flex rounded-full border border-black/10 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-black/60">
-                          Libre
-                        </span>
-                      )}
+                        />
+                        {currentOrder ? (
+                          <span
+                            title={orderStatusMeta(currentOrder.status).label}
+                            aria-label={orderStatusMeta(currentOrder.status).label}
+                            className="inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-[#eadfce] bg-white px-1.5 text-[9px] font-semibold leading-none text-[#24170f]"
+                          >
+                            •
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                     {currentOrder ? (
                       <div className="mt-4 grid gap-2 sm:grid-cols-3">

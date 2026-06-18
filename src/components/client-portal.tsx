@@ -7,6 +7,7 @@ import {
   removeClientCartItem,
   updateClientCartItemQuantity,
 } from "@/lib/client-cart";
+import type { ClientCartItem } from "@/lib/client-cart";
 import {
   browserNotificationsSupported,
   requestBrowserNotificationPermission,
@@ -78,7 +79,7 @@ export function ClientPortal({
 }: Props) {
   const [callingWaiter, setCallingWaiter] = useState(false);
   const [waiterNotice, setWaiterNotice] = useState<string | null>(null);
-  const [cartItems, setCartItems] = useState(() => listClientCartItems(restaurant.slug));
+  const [cartItems, setCartItems] = useState<ClientCartItem[]>([]);
   const [sendingCart, setSendingCart] = useState(false);
   const [cartNotice, setCartNotice] = useState<string | null>(null);
   const [clientNotice, setClientNotice] = useState<string | null>(null);
