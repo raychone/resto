@@ -1583,16 +1583,6 @@ export function StaffClient({
                         <div className="mt-3 flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={() => {
-                              setSelectedTarget(order.id);
-                              navigateStaff("tables", "staff-bon", "bon");
-                            }}
-                            className="rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-medium text-black"
-                          >
-                            Voir le bon
-                          </button>
-                          <button
-                            type="button"
                             onClick={() => void updateOrderStatus(order.id, "sent_to_kitchen")}
                             className="rounded-full border border-black/10 bg-black px-3 py-2 text-xs font-medium text-white"
                           >
@@ -1864,18 +1854,79 @@ export function StaffClient({
                             >
                               Ouvrir le menu
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedTarget(selectedTableModal.id);
-                                setSelectedTableModalId(null);
-                                navigateStaff("tables", "staff-bon", "bon");
-                              }}
-                              className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
-                            >
-                              Ouvrir le bon
-                            </button>
+                            {selectedTableModalOpenOrder ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => void updateOrderStatus(selectedTableModalOpenOrder.id, "sent_to_kitchen")}
+                                  className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
+                                >
+                                  En cuisine
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void updateOrderStatus(selectedTableModalOpenOrder.id, "served")}
+                                  className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
+                                >
+                                  Servi
+                                </button>
+                              </>
+                            ) : null}
                           </div>
+
+                          {selectedTableModalOpenOrder ? (
+                            <div className="rounded-[1.35rem] border border-[#eadfce] bg-white/80 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Encaissement</p>
+                                  <p className="mt-1 text-xs text-[#6f5b4a]">Enregistre un paiement cash, carte ou partiel.</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void closeCurrentOrder(paymentMethod)}
+                                  className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-3 py-2 text-xs font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
+                                >
+                                  Cash
+                                </button>
+                              </div>
+                              <div className="mt-3 flex flex-wrap items-center gap-2">
+                                <select
+                                  value={paymentMethod}
+                                  onChange={(event) => setPaymentMethod(event.target.value as PaymentMethod)}
+                                  className="rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs text-[#24170f]"
+                                >
+                                  <option value="cash">Cash</option>
+                                  <option value="card">Carte</option>
+                                  <option value="external">Externe</option>
+                                  <option value="other">Autre</option>
+                                </select>
+                                <input
+                                  value={paymentAmount}
+                                  onChange={(event) => setPaymentAmount(event.target.value)}
+                                  type="number"
+                                  min={0}
+                                  step="0.01"
+                                  placeholder={Math.max(
+                                    0,
+                                    orderTotal(selectedTableModalOpenOrder) -
+                                      paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
+                                  ).toString()}
+                                  className="w-28 rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs text-[#24170f]"
+                                />
+                                <span className="text-[11px] text-[#7f6c5a]">
+                                  Total {formatMoney(orderTotal(selectedTableModalOpenOrder), restaurant.currency)} · Reste{" "}
+                                  {formatMoney(
+                                    Math.max(
+                                      0,
+                                      orderTotal(selectedTableModalOpenOrder) -
+                                        paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
+                                    ),
+                                    restaurant.currency,
+                                  )}
+                                </span>
+                              </div>
+                            </div>
+                          ) : null}
                         </div>
 
                         <div className="border-t border-[#eadfce] bg-[#fffdf8] p-4 sm:p-6 lg:border-l lg:border-t-0">
@@ -1909,17 +1960,6 @@ export function StaffClient({
                                             {order.items.length} articles
                                           </h4>
                                         </div>
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            setSelectedTarget(order.id);
-                                            setSelectedTableModalId(null);
-                                            navigateStaff("tables", "staff-bon", "bon");
-                                          }}
-                                          className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-3 py-2 text-xs font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
-                                        >
-                                          Voir le bon
-                                        </button>
                                       </div>
                                       <div className="mt-3 space-y-2">
                                         {order.items.slice(0, 4).map((item) => (
@@ -1989,7 +2029,7 @@ export function StaffClient({
                         ) : null}
                       </div>
                     </div>
-                    {currentOrder ? (
+                    {currentOrder && !selectedTableModal ? (
                       <div className="mt-4 grid gap-2 sm:grid-cols-3">
                         <div className="rounded-2xl border border-black/8 bg-white px-3 py-3">
                           <p className="text-[11px] uppercase tracking-[0.28em] text-black/40">Total</p>
