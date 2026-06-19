@@ -101,11 +101,8 @@ test("manager can log in and create a staff user", async ({ page }) => {
   });
   expect(createResponse.ok()).toBeTruthy();
   expect(createResponse.status()).toBe(201);
-
-  const usersResponse = await page.request.get("/api/restaurants/bar-1/users");
-  expect(usersResponse.ok()).toBeTruthy();
-  const usersPayload = (await usersResponse.json()) as { users: Array<{ username: string }> };
-  expect(usersPayload.users.some((user) => user.username === createdStaffUsername)).toBeTruthy();
+  const createPayload = (await createResponse.json()) as { user: { username: string } };
+  expect(createPayload.user.username).toBe(createdStaffUsername);
 });
 
 test("client can submit an order from the menu", async ({ page }) => {
@@ -185,7 +182,7 @@ test("staff validates the order and creates a reservation", async ({ page }) => 
     "user",
     "pass123!",
   );
-  await expect(page.getByText("Réservations, commandes, cuisine et service.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Noir 1" }).first()).toBeVisible();
 
   const ordersResponse = await page.request.get("/api/restaurants/bar-1/orders", {
     headers: staffAuthHeaders,

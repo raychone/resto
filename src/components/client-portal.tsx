@@ -77,6 +77,7 @@ export function ClientPortal({
   orderFlowEnabled,
   theme = "dark",
 }: Props) {
+  const isFoodTheme = theme === "food";
   const [isMounted, setIsMounted] = useState(false);
   const [callingWaiter, setCallingWaiter] = useState(false);
   const [waiterNotice, setWaiterNotice] = useState<string | null>(null);
@@ -359,10 +360,10 @@ export function ClientPortal({
 
   return (
     <main className={theme === "food" ? "food-theme mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28" : "internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28"}>
-      <section className="rounded-[2rem] border border-white/10 bg-[#171717] p-4 text-[#f5f1ea] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
-        <p className="text-[11px] uppercase tracking-[0.35em] text-white/40">Client</p>
+      <section className={isFoodTheme ? "rounded-[2rem] border border-[#eadfce] bg-[#fffdf8] p-4 text-[#24170f] shadow-[0_20px_60px_rgba(124,77,44,0.08)]" : "rounded-[2rem] border border-white/10 bg-[#171717] p-4 text-[#f5f1ea] shadow-[0_20px_60px_rgba(0,0,0,0.35)]"}>
+        <p className={isFoodTheme ? "text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.35em] text-white/40"}>Client</p>
         <h1 className="mt-1 text-4xl font-semibold">{clientUser.name}</h1>
-        <p className="mt-2 text-sm text-white/65">
+        <p className={isFoodTheme ? "mt-2 text-sm text-[#6f5b4a]" : "mt-2 text-sm text-white/65"}>
           Compte client connecté à {restaurant.name}. Ce portail sert de base pour le login client,
           le loyalty et le split de note.
         </p>
@@ -371,7 +372,7 @@ export function ClientPortal({
             type="button"
             onClick={() => void callServer()}
             disabled={callingWaiter}
-            className="rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-medium text-black transition disabled:opacity-60"
+            className={isFoodTheme ? "rounded-full border border-[#b8d6b2] bg-[#e7f6e1] px-4 py-2 text-sm font-medium text-[#1f2b1f] transition disabled:opacity-60" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-medium text-black transition disabled:opacity-60"}
           >
             {callingWaiter ? "Demande envoyée..." : "Appeler le serveur"}
           </button>
@@ -380,13 +381,13 @@ export function ClientPortal({
               <button
                 type="button"
                 onClick={() => void enableNotifications()}
-                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-[#f5f1ea] transition hover:bg-white/10"
+                className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-white px-4 py-2 text-sm font-medium text-[#24170f] transition hover:bg-[#faf7f2]" : "rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-[#f5f1ea] transition hover:bg-white/10"}
               >
                 {notificationPermission === "granted"
                   ? "Notifications activées"
                   : "Activer notifications"}
               </button>
-              <span className="rounded-full border border-white/10 bg-black/25 px-3 py-2 text-xs font-medium text-white/65">
+              <span className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-[#faf7f2] px-3 py-2 text-xs font-medium text-[#6f5b4a]" : "rounded-full border border-white/10 bg-black/25 px-3 py-2 text-xs font-medium text-white/65"}>
                 {notificationPermission === "granted"
                   ? "Notifications browser actives"
                   : notificationPermission === "denied"
@@ -396,13 +397,13 @@ export function ClientPortal({
             </>
           ) : null}
         </div>
-        {waiterNotice ? <p className="mt-3 text-sm text-white/65">{waiterNotice}</p> : null}
+        {waiterNotice ? <p className={isFoodTheme ? "mt-3 text-sm text-[#6f5b4a]" : "mt-3 text-sm text-white/65"}>{waiterNotice}</p> : null}
       </section>
 
       <section className="mt-6 grid gap-4 xl:grid-cols-[1fr_1fr]">
         <div
           id="client-profile"
-          className={`rounded-[2rem] border border-white/10 bg-[#141414] p-4 text-[#f5f1ea] xl:col-span-2 ${
+          className={`${isFoodTheme ? "rounded-[2rem] border border-[#eadfce] bg-[#fffdf8] p-4 text-[#24170f] shadow-[0_20px_60px_rgba(124,77,44,0.08)]" : "rounded-[2rem] border border-white/10 bg-[#141414] p-4 text-[#f5f1ea]"} xl:col-span-2 ${
             activeTab === "profile" ? "" : "hidden"
           }`}
         >
@@ -422,7 +423,7 @@ export function ClientPortal({
 
         <div
           id="client-loyalty"
-          className={`rounded-[2rem] border border-white/10 bg-[#141414] p-4 text-[#f5f1ea] ${
+          className={`${isFoodTheme ? "rounded-[2rem] border border-[#eadfce] bg-[#fffdf8] p-4 text-[#24170f] shadow-[0_20px_60px_rgba(124,77,44,0.08)]" : "rounded-[2rem] border border-white/10 bg-[#141414] p-4 text-[#f5f1ea]"} ${
             activeTab === "profile" ? "" : "hidden"
           }`}
         >
@@ -433,7 +434,7 @@ export function ClientPortal({
                 <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">Tier</p>
                 <p className="mt-1 text-2xl font-semibold">{loyalty.tierLabel}</p>
               </div>
-              <span className="rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white">
+              <span className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-[#faf7f2] px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#24170f]" : "rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white"}>
                 {formatLoyaltyPoints(customer.currentPoints)}
               </span>
             </div>
@@ -460,18 +461,18 @@ export function ClientPortal({
         {orderFlowEnabled ? (
           <div
             id="client-menu"
-            className={`rounded-[2rem] border border-white/10 bg-[#141414] p-4 text-[#f5f1ea] xl:col-span-2 ${
-              activeTab === "menu" ? "" : "hidden"
-            }`}
+          className={`${isFoodTheme ? "rounded-[2rem] border border-[#eadfce] bg-[#fffdf8] p-4 text-[#24170f] shadow-[0_20px_60px_rgba(124,77,44,0.08)]" : "rounded-[2rem] border border-white/10 bg-[#141414] p-4 text-[#f5f1ea]"} xl:col-span-2 ${
+            activeTab === "menu" ? "" : "hidden"
+          }`}
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-2xl font-semibold">Menu</h2>
-                <p className="text-sm text-white/60">
+                <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/60"}>
                   Sélectionne un produit, ajoute-le au panier et envoie-le au serveur.
                 </p>
               </div>
-              <div className="rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold text-white sm:text-sm">
+              <div className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-[#faf7f2] px-3 py-2 text-xs font-semibold text-[#24170f] sm:text-sm" : "rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold text-white sm:text-sm"}>
                 {cartSummary}
               </div>
             </div>
@@ -482,6 +483,7 @@ export function ClientPortal({
                 accent={restaurant.accent}
                 restaurantSlug={restaurant.slug}
                 orderFlowEnabled={orderFlowEnabled}
+                theme={theme === "food" ? "food" : "dark"}
                 actionLabel="Ajouter au panier"
               />
             </div>
@@ -491,7 +493,7 @@ export function ClientPortal({
         <div
           ref={cartSectionRef}
           id="client-cart"
-          className={`rounded-[2rem] border border-white/10 bg-[#141414] p-4 text-[#f5f1ea] xl:col-span-2 ${
+          className={`${isFoodTheme ? "rounded-[2rem] border border-[#eadfce] bg-[#fffdf8] p-4 text-[#24170f] shadow-[0_20px_60px_rgba(124,77,44,0.08)]" : "rounded-[2rem] border border-white/10 bg-[#141414] p-4 text-[#f5f1ea]"} xl:col-span-2 ${
             activeTab === "cart" || activeTab === "tracking" ? "" : "hidden"
           }`}
         >
@@ -737,7 +739,7 @@ export function ClientPortal({
 
         <div
           id="client-split"
-          className={`rounded-[2rem] border border-white/10 bg-[#141414] p-4 text-[#f5f1ea] ${
+          className={`${isFoodTheme ? "rounded-[2rem] border border-[#eadfce] bg-[#fffdf8] p-4 text-[#24170f] shadow-[0_20px_60px_rgba(124,77,44,0.08)]" : "rounded-[2rem] border border-white/10 bg-[#141414] p-4 text-[#f5f1ea]"} ${
             activeTab === "split" ? "" : "hidden"
           }`}
         >
@@ -845,7 +847,7 @@ export function ClientPortal({
         </div>
       </section>
 
-      <div className="fixed bottom-3 left-1/2 z-30 w-[calc(100%-1.5rem)] max-w-[46rem] -translate-x-1/2 rounded-[1.75rem] border border-white/10 bg-[#090909]/96 px-2 py-2 shadow-[0_16px_45px_rgba(0,0,0,0.38)] backdrop-blur">
+      <div className={isFoodTheme ? "fixed bottom-3 left-1/2 z-30 w-[calc(100%-1.5rem)] max-w-[46rem] -translate-x-1/2 rounded-[1.75rem] border border-[#eadfce] bg-[#fffdf8]/96 px-2 py-2 shadow-[0_16px_45px_rgba(124,77,44,0.18)] backdrop-blur" : "fixed bottom-3 left-1/2 z-30 w-[calc(100%-1.5rem)] max-w-[46rem] -translate-x-1/2 rounded-[1.75rem] border border-white/10 bg-[#090909]/96 px-2 py-2 shadow-[0_16px_45px_rgba(0,0,0,0.38)] backdrop-blur"}>
         <div className="grid grid-cols-5 gap-1">
           {[
             { key: "menu", label: "Menu", icon: "📖", target: "client-menu" },
@@ -865,8 +867,12 @@ export function ClientPortal({
                 }}
                 className={`flex flex-col items-center justify-center rounded-[1.2rem] border px-2 py-2 text-[11px] font-medium transition ${
                   isActive
-                    ? "border-white bg-white text-black shadow-[0_10px_25px_rgba(255,255,255,0.08)]"
-                    : "border-white/8 bg-white/6 text-white/82 hover:bg-white/12"
+                    ? isFoodTheme
+                      ? "border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f] shadow-[0_10px_25px_rgba(127,170,118,0.14)]"
+                      : "border-white bg-white text-black shadow-[0_10px_25px_rgba(255,255,255,0.08)]"
+                    : isFoodTheme
+                      ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
+                      : "border-white/8 bg-white/6 text-white/82 hover:bg-white/12"
                 }`}
               >
                 <span className="text-base leading-none">{item.icon}</span>

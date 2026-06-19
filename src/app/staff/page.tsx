@@ -51,6 +51,7 @@ export default async function StaffPage({ searchParams }: Props) {
   if (!restaurant) {
     return <div>Aucun restaurant configuré.</div>;
   }
+  const displayLogo = restaurant.logoUrl || (restaurant.slug === "bar-1" ? "/logoNoirBar.png" : "/logoFood.png");
 
   if (requestedRestaurantSlug && requestedRestaurantSlug !== restaurant.slug) {
     return (
@@ -91,9 +92,16 @@ export default async function StaffPage({ searchParams }: Props) {
     <main className={restaurant.slug === "food-1" ? "food-theme min-h-screen w-full" : "internal-dark min-h-screen w-full"}>
       <div className={restaurant.slug === "food-1" ? "border-b border-[#eadfce] bg-[#fffdf8]/96 px-3 py-4 sm:px-4 lg:px-6" : "border-b border-white/10 bg-[#111111]/95 px-3 py-4 sm:px-4 lg:px-6"}>
         <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className={restaurant.slug === "food-1" ? "text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.35em] text-black/40"}>Staff</p>
-            <h1 className="text-3xl font-semibold">{restaurant.name}</h1>
+          <div className="flex min-w-0 items-center gap-3">
+            <img
+              src={displayLogo}
+              alt={restaurant.name}
+              className="h-11 w-11 rounded-2xl object-cover ring-1 ring-black/5"
+            />
+            <div className="min-w-0">
+              <p className={restaurant.slug === "food-1" ? "text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.35em] text-black/40"}>Staff</p>
+              <h1 className="truncate text-3xl font-semibold">{restaurant.name}</h1>
+            </div>
           </div>
           <StaffLogoutButton label="Déconnexion" />
         </div>

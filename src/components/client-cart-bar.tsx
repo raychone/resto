@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { clearClientCart, getClientCartCount, getClientCartTotal, listClientCartItems } from "@/lib/client-cart";
+import type { ClientCartItem } from "@/lib/client-cart";
 
 type Props = {
   restaurantSlug: string;
@@ -24,10 +25,11 @@ export function ClientCartBar({
   enabled,
   variant = "dark",
 }: Props) {
-  const [count, setCount] = useState(() => getClientCartCount(restaurantSlug));
-  const [total, setTotal] = useState(() => getClientCartTotal(restaurantSlug));
+  const [mounted, setMounted] = useState(false);
+  const [count, setCount] = useState(0);
+  const [total, setTotal] = useState(0);
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState(() => listClientCartItems(restaurantSlug));
+  const [items, setItems] = useState<ClientCartItem[]>([]);
 
   const refresh = useCallback(() => {
     const nextItems = listClientCartItems(restaurantSlug);
@@ -55,7 +57,12 @@ export function ClientCartBar({
     };
   }, [refresh]);
 
-  if (!enabled || count === 0) {
+  useEffect(() => {
+    setMounted(true);
+    refresh();
+  }, [refresh]);
+
+  if (!enabled || !mounted || count === 0) {
     return null;
   }
 

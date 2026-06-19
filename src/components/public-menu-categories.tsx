@@ -11,6 +11,7 @@ type Props = {
   accent: string;
   restaurantSlug: string;
   orderFlowEnabled: boolean;
+  theme?: "dark" | "food";
   actionLabel?: string;
   showItemModal?: boolean;
   compact?: boolean;
@@ -90,6 +91,7 @@ export function PublicMenuCategories({
   accent,
   restaurantSlug,
   orderFlowEnabled,
+  theme = "dark",
   actionLabel,
   showItemModal = true,
   compact = false,
@@ -103,6 +105,7 @@ export function PublicMenuCategories({
   const modalCloseTimer = useRef<number | null>(null);
   const cartNoticeTimer = useRef<number | null>(null);
   const text = labels[locale];
+  const isFoodTheme = theme === "food";
 
   function openModal(item: MenuItem, categoryName: string) {
     if (modalCloseTimer.current) {
@@ -197,7 +200,11 @@ export function PublicMenuCategories({
           return (
             <section
               key={category.id}
-              className={`overflow-hidden rounded-[2rem] border border-white/8 bg-[#141414] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition duration-300 hover:border-white/15 ${
+              className={`overflow-hidden rounded-[2rem] border transition duration-300 ${
+                isFoodTheme
+                  ? "border-[#eadfce] bg-white shadow-[0_18px_50px_rgba(124,77,44,0.06)] hover:border-[#d8cabc]"
+                  : "border-white/8 bg-[#141414] shadow-[0_24px_80px_rgba(0,0,0,0.28)] hover:border-white/15"
+              } ${
                 compact ? "rounded-[1.5rem]" : ""
               }`}
             >
@@ -205,7 +212,11 @@ export function PublicMenuCategories({
                 type="button"
                 onClick={() => setOpenCategoryId(isOpen ? null : category.id)}
                 data-testid={testIdPrefix ? `${testIdPrefix}-category-${category.id}` : undefined}
-                className={`flex w-full items-center justify-between gap-4 px-4 py-4 text-left text-[#f5f1ea] transition duration-300 hover:bg-white/[0.02] sm:px-5 sm:py-5 ${
+                className={`flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition duration-300 sm:px-5 sm:py-5 ${
+                  isFoodTheme
+                    ? "text-[#24170f] hover:bg-[#faf7f2]"
+                    : "text-[#f5f1ea] hover:bg-white/[0.02]"
+                } ${
                   compact ? "px-4 py-3 sm:px-4 sm:py-3" : ""
                 }`}
               >
@@ -221,7 +232,9 @@ export function PublicMenuCategories({
                   </h2>
                 </div>
                 <span
-                  className={`text-xl leading-none text-white transition-transform duration-300 ${
+                  className={`text-xl leading-none transition-transform duration-300 ${
+                    isFoodTheme ? "text-[#7f6c5a]" : "text-white"
+                  } ${
                     isOpen ? "rotate-180" : "rotate-0"
                   }`}
                 >
@@ -235,7 +248,7 @@ export function PublicMenuCategories({
                 }`}
               >
                 <div className="overflow-hidden">
-                  <div className={`border-t border-white/8 px-4 pb-2 pt-1 sm:px-5 ${compact ? "px-3 pb-1 pt-0.5 sm:px-4" : ""}`}>
+                  <div className={`px-4 pb-2 pt-1 sm:px-5 ${isFoodTheme ? "border-t border-[#eadfce]" : "border-t border-white/8"} ${compact ? "px-3 pb-1 pt-0.5 sm:px-4" : ""}`}>
                     <div className="mt-2">
                       {category.items.map((item, index) => (
                         <button
@@ -249,11 +262,17 @@ export function PublicMenuCategories({
                           }
                           void triggerItemAction(item, category.name);
                         }}
-                          className={`group flex w-full items-center justify-between gap-4 py-3 text-left text-[#f5f1ea] transition duration-300 hover:translate-x-0.5 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/20 ${
+                          className={`group flex w-full items-center justify-between gap-4 py-3 text-left transition duration-300 hover:translate-x-0.5 focus:outline-none ${
+                            isFoodTheme
+                              ? "text-[#24170f] hover:text-[#24170f] focus:ring-2 focus:ring-[#d8ecd3]"
+                              : "text-[#f5f1ea] hover:text-white focus:ring-2 focus:ring-white/20"
+                          } ${
                             compact ? "py-2.5" : "py-3"
                           } ${
                             index !== category.items.length - 1
-                              ? "border-b border-dashed border-white/12"
+                              ? isFoodTheme
+                                ? "border-b border-dashed border-[#eadfce]"
+                                : "border-b border-dashed border-white/12"
                               : ""
                           }`}
                         >
@@ -268,7 +287,9 @@ export function PublicMenuCategories({
                           </div>
                           <div className="shrink-0 text-right">
                             <span
-                              className={`inline-block font-medium leading-none text-white/90 ${
+                              className={`inline-block font-medium leading-none ${
+                                isFoodTheme ? "text-[#6f5b4a]" : "text-white/90"
+                              } ${
                                 compact ? "text-[0.8rem] sm:text-[0.86rem]" : "text-[0.85rem] sm:text-[0.95rem]"
                               }`}
                             >
@@ -288,7 +309,7 @@ export function PublicMenuCategories({
 
       {modalState ? (
         <div
-          className={`fixed inset-0 z-[80] bg-black/75 p-2 sm:p-4 ${isModalClosing ? "opacity-0" : "opacity-100"} transition-opacity duration-200`}
+          className={`fixed inset-0 z-[80] p-2 sm:p-4 ${isFoodTheme ? "bg-[#24170f]/30" : "bg-black/75"} ${isModalClosing ? "opacity-0" : "opacity-100"} transition-opacity duration-200`}
           role="dialog"
           aria-modal="true"
           aria-label={text.modalTitle}
@@ -300,24 +321,28 @@ export function PublicMenuCategories({
         >
           <div className="mx-auto flex h-full w-full max-w-3xl items-start justify-center overflow-hidden">
             <section
-              className={`flex h-[calc(100vh-1rem)] w-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-[#111111] text-[#f5f1ea] shadow-[0_40px_120px_rgba(0,0,0,0.45)] transition-all duration-300 sm:h-[calc(100vh-2rem)] ${
+              className={`flex h-[calc(100vh-1rem)] w-full flex-col overflow-hidden rounded-[2rem] border transition-all duration-300 sm:h-[calc(100vh-2rem)] ${
+                isFoodTheme
+                  ? "border-[#eadfce] bg-[#fffdf8] text-[#24170f] shadow-[0_30px_90px_rgba(124,77,44,0.18)]"
+                  : "border-white/10 bg-[#111111] text-[#f5f1ea] shadow-[0_40px_120px_rgba(0,0,0,0.45)]"
+              } ${
                 isModalClosing ? "scale-[0.985] opacity-0" : "scale-100 opacity-100"
               }`}
             >
-              <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/8 bg-[#111111]/95 px-4 py-4 backdrop-blur sm:px-6">
+              <div className={`sticky top-0 z-10 flex items-start justify-between gap-4 border-b px-4 py-4 backdrop-blur sm:px-6 ${isFoodTheme ? "border-[#eadfce] bg-[#fffdf8]/95" : "border-white/8 bg-[#111111]/95"}`}>
                 <div className="space-y-1">
-                  <p className="text-[11px] uppercase tracking-[0.35em] text-white/35">
+                  <p className={`text-[11px] uppercase tracking-[0.35em] ${isFoodTheme ? "text-[#a38d7c]" : "text-white/35"}`}>
                     {modalState.categoryName}
                   </p>
                   <h3 className="text-2xl font-semibold sm:text-3xl">
                     {modalState.item.name}
                   </h3>
-                  <p className="text-sm leading-6 text-white/60">{text.details}</p>
+                  <p className={`text-sm leading-6 ${isFoodTheme ? "text-[#6f5b4a]" : "text-white/60"}`}>{text.details}</p>
                 </div>
                   <button
                   type="button"
                   onClick={closeModal}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-2xl leading-none text-[#f5f1ea] transition hover:bg-white/10"
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-2xl leading-none transition ${isFoodTheme ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]" : "border-white/10 bg-white/5 text-[#f5f1ea] hover:bg-white/10"}`}
                   aria-label={text.close}
                 >
                   ×
@@ -325,7 +350,7 @@ export function PublicMenuCategories({
               </div>
 
               <div className="grid flex-1 gap-5 overflow-y-auto p-4 sm:grid-cols-[0.95fr_1.05fr] sm:p-6">
-                <div className="relative overflow-hidden rounded-[1.75rem] border border-white/8 bg-white/5">
+                <div className={`relative overflow-hidden rounded-[1.75rem] border ${isFoodTheme ? "border-[#eadfce] bg-[#faf7f2]" : "border-white/8 bg-white/5"}`}>
                   <img
                     src={modalState.item.imageUrl}
                     alt={modalState.item.name}
@@ -344,24 +369,24 @@ export function PublicMenuCategories({
                 </div>
 
                 <div className="space-y-4">
-                  <p className="text-base leading-7 text-white/80">{modalState.item.description}</p>
+                  <p className={`text-base leading-7 ${isFoodTheme ? "text-[#6f5b4a]" : "text-white/80"}`}>{modalState.item.description}</p>
 
-                  <div className="rounded-[1.4rem] border border-white/8 bg-white/5 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">
+                  <div className={`rounded-[1.4rem] border p-4 ${isFoodTheme ? "border-[#eadfce] bg-white" : "border-white/8 bg-white/5"}`}>
+                    <p className={`text-[11px] uppercase tracking-[0.3em] ${isFoodTheme ? "text-[#a38d7c]" : "text-white/35"}`}>
                       {text.recipe}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-white/75">{modalState.item.recipe}</p>
+                    <p className={`mt-2 text-sm leading-6 ${isFoodTheme ? "text-[#6f5b4a]" : "text-white/75"}`}>{modalState.item.recipe}</p>
                   </div>
 
-                  <div className="rounded-[1.4rem] border border-white/8 bg-white/5 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">
+                  <div className={`rounded-[1.4rem] border p-4 ${isFoodTheme ? "border-[#eadfce] bg-white" : "border-white/8 bg-white/5"}`}>
+                    <p className={`text-[11px] uppercase tracking-[0.3em] ${isFoodTheme ? "text-[#a38d7c]" : "text-white/35"}`}>
                       {text.ingredients}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {modalState.item.ingredients.map((ingredient) => (
                         <span
                           key={ingredient}
-                          className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white/80"
+                          className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-[#faf7f2] px-3 py-1.5 text-sm text-[#24170f]" : "rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white/80"}
                         >
                           {ingredient}
                         </span>
@@ -369,17 +394,17 @@ export function PublicMenuCategories({
                     </div>
                   </div>
 
-                  <div className="rounded-[1.4rem] border border-white/8 bg-white/5 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">
+                  <div className={`rounded-[1.4rem] border p-4 ${isFoodTheme ? "border-[#eadfce] bg-white" : "border-white/8 bg-white/5"}`}>
+                    <p className={`text-[11px] uppercase tracking-[0.3em] ${isFoodTheme ? "text-[#a38d7c]" : "text-white/35"}`}>
                       {text.allergens}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-white/75">
+                    <p className={`mt-2 text-sm leading-6 ${isFoodTheme ? "text-[#6f5b4a]" : "text-white/75"}`}>
                       {activeItemMeta?.allergens}
                     </p>
                   </div>
 
-                  <div className="rounded-[1.4rem] border border-white/8 bg-white/5 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/35">
+                  <div className={`rounded-[1.4rem] border p-4 ${isFoodTheme ? "border-[#eadfce] bg-white" : "border-white/8 bg-white/5"}`}>
+                    <p className={`text-[11px] uppercase tracking-[0.3em] ${isFoodTheme ? "text-[#a38d7c]" : "text-white/35"}`}>
                       Prix
                     </p>
                     <p className="mt-2 text-3xl font-semibold" style={{ color: accent }}>
@@ -391,17 +416,17 @@ export function PublicMenuCategories({
                     <button
                       type="button"
                       onClick={() => void handleAction()}
-                      className="w-full rounded-full border border-white/10 bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-white/90"
+                      className={isFoodTheme ? "w-full rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-semibold text-[#1f2b1f] transition hover:brightness-95" : "w-full rounded-full border border-white/10 bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-white/90"}
                     >
                       {actionLabel ?? "Ajouter au panier"}
                     </button>
                   ) : (
-                    <div className="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-center text-sm text-white/60">
+                    <div className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-[#faf7f2] px-4 py-3 text-center text-sm text-[#6f5b4a]" : "rounded-full border border-white/10 bg-white/5 px-4 py-3 text-center text-sm text-white/60"}>
                       Commande désactivée pour ce restaurant.
                     </div>
                   )}
                   {cartNotice ? (
-                    <p className="text-sm text-emerald-300">{cartNotice}</p>
+                    <p className={isFoodTheme ? "text-sm text-[#2f6e41]" : "text-sm text-emerald-300"}>{cartNotice}</p>
                   ) : null}
                 </div>
               </div>

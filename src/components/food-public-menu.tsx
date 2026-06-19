@@ -77,7 +77,7 @@ const copy: Record<
     menuIntro: "Une carte italienne simple, généreuse et très lisible sur mobile.",
     loyaltyCopy: "Cumulez des points sur chaque commande et suivez votre progression depuis le portail client.",
     offersCopy: "Des formules déjeuner, des menus famille et des plats du moment mis en avant sur le menu.",
-    deliveryCopy: "Sur place, à emporter ou en livraison: Food 1 reste conçu pour un service fluide.",
+    deliveryCopy: "Sur place, à emporter ou en livraison: ce restaurant reste conçu pour un service fluide.",
   },
   en: {
     viewMenu: "View menu",
@@ -104,7 +104,7 @@ const copy: Record<
     menuIntro: "A simple, generous Italian menu designed to stay readable on mobile.",
     loyaltyCopy: "Earn points on every order and track your progress from the client portal.",
     offersCopy: "Lunch sets, family menus and highlighted dishes give the menu a food-first rhythm.",
-    deliveryCopy: "Dine in, take away or delivery: Food 1 is built for a smooth service flow.",
+    deliveryCopy: "Dine in, take away or delivery: this restaurant is built for a smooth service flow.",
   },
   it: {
     viewMenu: "Vedi menu",
@@ -131,7 +131,7 @@ const copy: Record<
     menuIntro: "Una carta italiana semplice, generosa e leggibile su mobile.",
     loyaltyCopy: "Accumula punti su ogni ordine e segui i progressi dal portale clienti.",
     offersCopy: "Pranzi, menu famiglia e piatti del momento in evidenza sul menu.",
-    deliveryCopy: "Dine in, asporto o delivery: Food 1 è pensato per un flusso fluido.",
+    deliveryCopy: "Dine in, asporto o delivery: questo ristorante è pensato per un flusso fluido.",
   },
   es: {
     viewMenu: "Ver menú",
@@ -158,7 +158,7 @@ const copy: Record<
     menuIntro: "Una carta italiana simple, generosa y muy clara en móvil.",
     loyaltyCopy: "Gana puntos en cada pedido y sigue tu progreso desde el portal del cliente.",
     offersCopy: "Menús del día, menús familiares y platos destacados con foco en comida.",
-    deliveryCopy: "En sala, para llevar o delivery: Food 1 está pensado para un servicio fluido.",
+    deliveryCopy: "En sala, para llevar o delivery: este restaurante está pensado para un servicio fluido.",
   },
 };
 
@@ -601,7 +601,7 @@ export function FoodPublicMenu({
   const cleanWhatsapp = restaurant.whatsappNumber.replace(/[^\d+]/g, "");
 
   return (
-    <>
+    <div className="min-h-screen w-full bg-[#faf7f2] text-[#24170f]">
       <header className="sticky top-0 z-50 w-full px-2 pt-2 sm:px-4 lg:px-6">
         <div className="mx-auto max-w-[1440px] rounded-[1.75rem] border border-[#e9dfd4] bg-[#fffdf8]/98 px-3 py-3 text-[#24170f] shadow-[0_20px_60px_rgba(70,35,22,0.12)] backdrop-blur">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
@@ -706,7 +706,7 @@ export function FoodPublicMenu({
                   </div>
                   <div className="space-y-4">
                     <h1 className="max-w-3xl text-4xl font-semibold leading-[0.95] sm:text-5xl lg:text-7xl">
-                      Food 1
+                      {restaurant.name}
                     </h1>
                     <p className="max-w-2xl text-base leading-8 text-[#6f5b4a] sm:text-lg">
                       {restaurant.tagline}
@@ -776,7 +776,7 @@ export function FoodPublicMenu({
             <div className="grid gap-4 lg:grid-cols-3">
               <div className="lg:col-span-2">
                 <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">{text.about}</p>
-                <h2 className="mt-2 text-3xl font-semibold">Food 1</h2>
+                <h2 className="mt-2 text-3xl font-semibold">{restaurant.name}</h2>
                 <p className="mt-3 max-w-3xl text-base leading-8 text-[#6f5b4a]">{restaurant.description}</p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
@@ -796,7 +796,7 @@ export function FoodPublicMenu({
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]">{text.menu}</p>
-                <h2 className="mt-2 text-3xl font-semibold">Menu Food 1</h2>
+                <h2 className="mt-2 text-3xl font-semibold">Menu {restaurant.name}</h2>
               </div>
               <a
                 href="#reservations"
@@ -984,14 +984,14 @@ export function FoodPublicMenu({
           initialAvailability={initialAvailability}
         />
       ) : null}
-      <footer className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-4 pb-8 pt-6 text-[#6f5b4a] sm:px-6 lg:px-8">
+      <footer className="mx-auto flex w-full max-w-[1440px] flex-col items-center justify-between gap-3 rounded-[1.75rem] border border-[#eadfce] bg-white px-4 py-4 text-[#24170f] shadow-[0_18px_60px_rgba(70,35,22,0.06)] sm:flex-row sm:px-6 lg:px-8">
         <div className="flex items-center gap-2">
           <a
             href="https://www.facebook.com"
             target="_blank"
             rel="noreferrer"
             aria-label="Facebook"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#eadfce] bg-white transition hover:bg-[#faf7f2]"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#eadfce] bg-[#faf7f2] transition hover:bg-white"
           >
             <span className="text-sm font-semibold text-[#24170f]">f</span>
           </a>
@@ -1000,18 +1000,23 @@ export function FoodPublicMenu({
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#eadfce] bg-white transition hover:bg-[#faf7f2]"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#eadfce] bg-[#faf7f2] transition hover:bg-white"
           >
             <span className="text-sm font-semibold text-[#24170f]">◎</span>
           </a>
         </div>
-        <p className="text-center text-[11px] uppercase tracking-[0.35em] text-[#7f6c5a]">
-          Food 1 · Italian casual food
-        </p>
-        <div className="w-18 text-right text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]">
-          Service food-first
+        <div className="flex min-w-0 flex-1 flex-col items-center text-center">
+          <p className="max-w-full truncate text-[10px] font-semibold uppercase tracking-[0.3em] text-[#7f6c5a] sm:text-[11px] sm:tracking-[0.35em]">
+            Le Bistrot
+          </p>
+          <p className="mt-1 text-[9px] uppercase tracking-[0.22em] text-[#a38d7c] sm:text-[10px] sm:tracking-[0.28em]">
+            Italian casual food
+          </p>
+        </div>
+        <div className="text-center text-[9px] uppercase tracking-[0.2em] text-[#a38d7c] sm:text-right sm:text-[10px] sm:tracking-[0.24em]">
+          Powered by LACStudio
         </div>
       </footer>
-    </>
+    </div>
   );
 }

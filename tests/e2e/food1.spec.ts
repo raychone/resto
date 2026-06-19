@@ -161,8 +161,23 @@ test("Food 1 staff adds menu items to the existing table order", async ({ browse
         isActiveOrderStatus(order.status) &&
         !order.deletedAt,
     );
-    expect(beforeOrders.length).toBeGreaterThan(0);
-    const beforeOrder = beforeOrders[0];
+    let beforeOrder = beforeOrders[0];
+    if (!beforeOrder) {
+      const createOrderResponse = await staffContext.request.post("/api/restaurants/food-1/orders", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        data: {
+          tableId: "food-1-restaurant-table-1",
+          source: "table",
+          note: "E2E round seed",
+        },
+      });
+      expect(createOrderResponse.ok()).toBeTruthy();
+      const createdOrderPayload = (await createOrderResponse.json()) as { order: Order };
+      beforeOrder = createdOrderPayload.order;
+    }
+    expect(beforeOrder).toBeTruthy();
     const targetTableId = beforeOrder.tableId as string;
     const beforeItemCount = beforeOrder.items.length;
 

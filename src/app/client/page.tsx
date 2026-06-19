@@ -104,6 +104,7 @@ export default async function ClientPage({
   const tableSession = await getOrCreateTableSessionForCustomer(restaurant.id, customer);
   const tables = await listTablesForRestaurant(restaurant.id);
   const orders = await listOrdersForRestaurant(restaurant.id);
+  const displayLogo = restaurant.logoUrl || (restaurant.slug === "bar-1" ? "/logoNoirBar.png" : "/logoFood.png");
   const activeOrder =
     (tableSession.orderId ? orders.find((order) => order.id === tableSession.orderId) : null) ??
     orders.find(
@@ -118,9 +119,16 @@ export default async function ClientPage({
     <main className={restaurant.slug === "food-1" ? "food-theme min-h-screen w-full" : "internal-dark min-h-screen w-full"}>
       <div className={restaurant.slug === "food-1" ? "border-b border-[#eadfce] bg-[#fffdf8]/96 px-3 py-4 sm:px-4 lg:px-8" : "border-b border-white/10 bg-[#111111]/95 px-3 py-4 sm:px-4 lg:px-8"}>
         <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className={restaurant.slug === "food-1" ? "text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.35em] text-white/40"}>Client</p>
-            <h1 className="text-3xl font-semibold">{restaurant.name}</h1>
+          <div className="flex min-w-0 items-center gap-3">
+            <img
+              src={displayLogo}
+              alt={restaurant.name}
+              className="h-11 w-11 rounded-2xl object-cover ring-1 ring-black/5"
+            />
+            <div className="min-w-0">
+              <p className={restaurant.slug === "food-1" ? "text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.35em] text-white/40"}>Client</p>
+              <h1 className="truncate text-3xl font-semibold">{restaurant.name}</h1>
+            </div>
           </div>
           <DashboardLogoutButton endpoint="/api/client-auth/logout" label="Déconnexion" />
         </div>

@@ -73,18 +73,18 @@ function RoleDropdown({
   }>;
 }) {
   return (
-    <details className="group rounded-[1.4rem] border border-[#eadfce] bg-[#fffdf8] p-4">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+    <div className="rounded-[1.4rem] border border-[#eadfce] bg-[#fffdf8] p-4">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[11px] uppercase tracking-[0.32em] text-[#a38d7c]">{title}</p>
           <p className="mt-2 text-sm leading-6 text-[#6f5b4a]">{description}</p>
         </div>
-        <span className="rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs font-semibold text-[#24170f] transition group-open:bg-[#faf7f2]">
+        <span className="rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs font-semibold text-[#24170f]">
           Rôles
         </span>
-      </summary>
+      </div>
 
-      <div className="mt-4 grid gap-2">
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {roles.map((role) => (
           <Link
             key={role.label}
@@ -101,7 +101,7 @@ function RoleDropdown({
           </Link>
         ))}
       </div>
-    </details>
+    </div>
   );
 }
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { DashboardClient } from "@/components/dashboard-client";
 import { DashboardLogin } from "@/components/dashboard-login";
 import { DashboardLogoutButton } from "@/components/dashboard-logout-button";
@@ -22,6 +23,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   const requestedRestaurantSlug = resolvedSearchParams.restaurant?.trim() || null;
   const requestedRestaurant = requestedRestaurantSlug ? await getRestaurantBySlug(requestedRestaurantSlug) : null;
   const authenticated = await isDashboardAuthenticated();
+  const requestHeaders = await headers();
 
   if (!authenticated) {
     const isFoodDemo = requestedRestaurantSlug === "food-1";
@@ -42,6 +44,9 @@ export default async function DashboardPage({ searchParams }: Props) {
   const restaurant = dashboardUser?.restaurantId
     ? await getRestaurantById(dashboardUser.restaurantId)
     : null;
+  const origin =
+    requestHeaders.get("origin") ??
+    `${requestHeaders.get("x-forwarded-proto") ?? "http"}://${requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000"}`;
 
   if (!restaurant) {
     return <div>Aucun restaurant configuré.</div>;
@@ -76,8 +81,8 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return (
     <main className={restaurant.slug === "food-1" ? "food-theme min-h-screen w-full" : "internal-dark min-h-screen w-full"}>
-      <section className={restaurant.slug === "food-1" ? "border-b border-[#eadfce] bg-[#fffdf8]/96 px-0 py-6 shadow-[0_24px_90px_rgba(196,30,30,0.08)] backdrop-blur" : "border-b border-white/10 bg-[#111111]/95 px-0 py-6 shadow-[0_24px_90px_rgba(0,0,0,0.22)] backdrop-blur"}>
-        <div className="flex w-full flex-col gap-4 px-0 sm:px-0 lg:flex-row lg:items-end lg:justify-between">
+      <section className={restaurant.slug === "food-1" ? "border-b border-[#eadfce] bg-[#fffdf8]/96 px-2 py-6 shadow-[0_24px_90px_rgba(196,30,30,0.08)] backdrop-blur sm:px-4" : "border-b border-white/10 bg-[#111111]/95 px-2 py-6 shadow-[0_24px_90px_rgba(0,0,0,0.22)] backdrop-blur sm:px-4"}>
+        <div className="flex w-full flex-col gap-4 px-2 sm:px-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
             <p className={restaurant.slug === "food-1" ? "text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.35em] text-black/40"}>
               Tableau de bord
@@ -103,11 +108,12 @@ export default async function DashboardPage({ searchParams }: Props) {
         </div>
       </section>
 
-      <div className="px-0 py-0">
+      <div className="px-2 py-0 sm:px-4">
         <DashboardClient
           initialRestaurants={[restaurant]}
           initialSelectedSlug={resolvedSearchParams.restaurant ?? restaurant.slug}
           theme={restaurant.slug === "food-1" ? "food" : "dark"}
+          siteOrigin={origin}
         />
       </div>
     </main>

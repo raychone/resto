@@ -1455,30 +1455,8 @@ export function StaffClient({
           <div>
             <p className="text-[11px] uppercase tracking-[0.35em] text-black/40">Staff</p>
             <h1 className="font-display text-4xl">{restaurant.name}</h1>
-            <p className="mt-2 text-sm text-black/60">
-              Réservations, commandes, cuisine et service.
-            </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {bookingEnabled ? (
-              <>
-                <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                  {reservationStats.pending} pending
-                </span>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                  {reservationStats.confirmed} confirmées
-                </span>
-                <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
-                  {reservationStats.cancelled} annulées
-                </span>
-                <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700">
-                  {reservationStats.noShow} no show
-                </span>
-                <div className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm font-medium text-white">
-                  {loading ? "Chargement..." : `${reservations.length} réservations`}
-                </div>
-              </>
-            ) : null}
             {orderFlowEnabled ? (
               <button
                 type="button"
@@ -1672,32 +1650,6 @@ export function StaffClient({
       <section className="mt-6 grid gap-6 xl:grid-cols-[1fr_1fr]">
         {bookingEnabled && staffTab === "reservations" ? (
         <div id="staff-reservations" className="space-y-4 xl:col-span-2 scroll-mt-28">
-          <section className="rounded-[2rem] border border-[#eadfce] bg-white/90 p-4 shadow-[0_16px_40px_rgba(36,23,15,0.05)]">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]">Staff</p>
-                <h2 className="mt-1 text-3xl font-semibold text-[#24170f]">{restaurant.name}</h2>
-                <p className="mt-2 text-sm text-[#6f5b4a]">Réservations, confirmations et disponibilité en direct.</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                  {reservationStats.pending} pending
-                </span>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                  {reservationStats.confirmed} confirmées
-                </span>
-                <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
-                  {reservationStats.cancelled} annulées
-                </span>
-                <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700">
-                  {reservationStats.noShow} no show
-                </span>
-                <span className="rounded-full border border-[#eadfce] bg-[#24170f] px-4 py-2 text-sm font-medium text-white">
-                  {loading ? "Chargement..." : `${reservations.length} réservations`}
-                </span>
-              </div>
-            </div>
-          </section>
           <form
             onSubmit={submitReservation}
             className="rounded-[2rem] border border-[#eadfce] bg-[#fffdf8] p-4 shadow-[0_20px_60px_rgba(15,23,42,0.06)] sm:p-5"
@@ -1914,7 +1866,7 @@ export function StaffClient({
                             disabled={!isCurrent || !dayInfo}
                             className={`relative flex min-h-[4rem] flex-col overflow-hidden rounded-2xl border p-1.5 text-left transition sm:min-h-[5rem] sm:p-2 ${
                               isSelected
-                                ? 'border-[#24170f] bg-[#24170f] text-white shadow-[0_10px_30px_rgba(0,0,0,0.18)]'
+                                ? 'border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f] shadow-[0_10px_30px_rgba(118,162,104,0.14)]'
                                 : !isCurrent || !dayInfo
                                   ? 'border-[#eadfce] bg-[#f7f2ea] text-[#c8b7a6]'
                                   : hasSlots
@@ -2011,8 +1963,8 @@ export function StaffClient({
                 onClick={() => setReservationFilter(filter.key as typeof reservationFilter)}
                 className={`rounded-full border px-3 py-2 text-xs font-medium transition ${
                   reservationFilter === filter.key
-                    ? "border-black bg-black text-white"
-                    : "border-black/10 bg-white text-black hover:bg-black/3"
+                    ? "border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f]"
+                    : "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
                 }`}
               >
                 {filter.label}
@@ -2071,7 +2023,7 @@ export function StaffClient({
                         <button
                           type="button"
                           onClick={() => mutateReservation(reservation.id, "confirmed")}
-                          className="rounded-full border border-black/10 bg-black px-3 py-2 text-xs font-medium text-white"
+                          className="rounded-full border border-[#b8d6b2] bg-[#e7f6e1] px-3 py-2 text-xs font-medium text-[#1f2b1f]"
                         >
                           Confirmer
                         </button>
@@ -2114,7 +2066,7 @@ export function StaffClient({
                           href={notificationUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="rounded-full border border-black/10 bg-black px-3 py-2 text-xs font-medium text-white"
+                          className="rounded-full border border-[#b8d6b2] bg-[#e7f6e1] px-3 py-2 text-xs font-medium text-[#1f2b1f]"
                         >
                           {notificationLabel || "Notification"}
                         </a>
@@ -2198,7 +2150,7 @@ export function StaffClient({
                           <button
                             type="button"
                             onClick={() => void updateOrderStatus(order.id, "sent_to_kitchen")}
-                            className="rounded-full border border-black/10 bg-black px-3 py-2 text-xs font-medium text-white"
+                            className={isFoodTheme ? "rounded-full border border-[#b8d6b2] bg-[#e7f6e1] px-3 py-2 text-xs font-medium text-[#1f2b1f]" : "rounded-full border border-black/10 bg-black px-3 py-2 text-xs font-medium text-white"}
                           >
                             Confirmer et envoyer
                           </button>
@@ -2243,8 +2195,12 @@ export function StaffClient({
                       onClick={() => setSelectedTarget("takeaway")}
                       className={`rounded-full border px-3 py-2 text-xs font-medium transition ${
                         selectedTarget === "takeaway"
-                          ? "border-black bg-black text-white"
-                          : "border-black/10 bg-white text-black hover:bg-black/3"
+                          ? isFoodTheme
+                            ? "border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f]"
+                            : "border-black bg-black text-white"
+                          : isFoodTheme
+                            ? "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
+                            : "border-black/10 bg-white text-black hover:bg-black/3"
                       }`}
                     >
                       À emporter
@@ -2680,6 +2636,7 @@ export function StaffClient({
                                 accent={restaurant.accent}
                                 restaurantSlug={restaurant.slug}
                                 orderFlowEnabled={selectedTableModal !== null}
+                                theme={theme === "food" ? "food" : "dark"}
                                 actionLabel="Ajouter à la table"
                                 showItemModal={false}
                                 compact
@@ -3237,6 +3194,7 @@ export function StaffClient({
                   accent={restaurant.accent}
                   restaurantSlug={restaurant.slug}
                   orderFlowEnabled={Boolean(selectedTableModal)}
+                  theme={theme === "food" ? "food" : "dark"}
                   actionLabel={selectedTableModal ? "Ajouter à la table" : "Voir le plat"}
                   showItemModal={!selectedTableModal}
                   compact
