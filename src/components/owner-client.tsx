@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import type { AuditEntry } from "@/lib/audit-store";
+import { humanizeAuditEntry } from "@/lib/audit-humanize";
 import { type Invoice, type InvoiceStatus } from "@/lib/billing-store";
 import type { Restaurant } from "@/lib/types";
 
@@ -1435,32 +1436,32 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
               {auditEntries.length === 0 ? (
                 <p className="text-sm text-black/55">Aucun log pour le moment.</p>
               ) : (
-                auditEntries.slice(0, 12).map((entry) => (
-                  <article key={entry.id} className="rounded-[1.4rem] border border-black/8 bg-black/2 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold">{entry.action}</p>
-                        <p className="text-xs text-black/55">
-                          {entry.restaurantSlug} · {entry.actorRole} · {entry.actorName}
-                        </p>
-                        <p className="mt-1 text-xs text-black/55">
-                          {entry.targetType} · {entry.targetId}
-                        </p>
+                auditEntries.slice(0, 12).map((entry) => {
+                  const humanized = humanizeAuditEntry(entry);
+
+                  return (
+                    <article key={entry.id} className="rounded-[1.4rem] border border-black/8 bg-black/2 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold">{humanized.title}</p>
+                          <p className="text-xs text-black/55">
+                            {entry.restaurantSlug} · {entry.actorRole} · {entry.actorName}
+                          </p>
+                          <p className="mt-1 text-xs text-black/55">{humanized.subtitle}</p>
+                        </div>
+                        <span className="text-[11px] uppercase tracking-[0.22em] text-black/45">
+                          {new Intl.DateTimeFormat("fr-FR", {
+                            day: "2-digit",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }).format(new Date(entry.createdAt))}
+                        </span>
                       </div>
-                      <span className="text-[11px] uppercase tracking-[0.22em] text-black/45">
-                        {new Intl.DateTimeFormat("fr-FR", {
-                          day: "2-digit",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }).format(new Date(entry.createdAt))}
-                      </span>
-                    </div>
-                    {entry.details ? (
-                      <p className="mt-2 text-sm text-black/65">{entry.details}</p>
-                    ) : null}
-                  </article>
-                ))
+                      {humanized.details ? <p className="mt-2 text-sm text-black/65">{humanized.details}</p> : null}
+                    </article>
+                  );
+                })
               )}
             </div>
           </div>

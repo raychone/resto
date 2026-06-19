@@ -7,6 +7,7 @@ import { listTablesForRestaurant } from "@/lib/table-store";
 
 const dataDir = path.join(process.cwd(), "data");
 const tableSessionsFile = path.join(dataDir, "table-sessions.json");
+const tableSessionsLockFile = path.join(dataDir, "table-sessions.lock");
 const canPersistDataFiles = process.env.VERCEL !== "1";
 
 function normalizeParticipant(participant: TableSessionParticipant): TableSessionParticipant {
@@ -57,6 +58,38 @@ async function normalizeTableSessionForRestaurant(session: TableSession) {
     ...session,
     tableId: hasMatchingTable ? session.tableId : fallbackTableId,
   });
+}
+
+async function withFileLock<T>(lockFilePath: string, task: () => Promise<T>): Promise<T> {
+  if (!canPersistDataFiles) {
+    return task();
+  }
+
+  await fs.mkdir(dataDir, { recursive: true });
+  const startedAt = Date.now();
+
+  while (true) {
+    try {
+      const handle = await fs.open(lockFilePath, "wx");
+      try {
+        return await task();
+      } finally {
+        await handle.close();
+        await fs.rm(lockFilePath, { force: true });
+      }
+    } catch (error) {
+      const nodeError = error as NodeJS.ErrnoException;
+      if (nodeError.code !== "EEXIST") {
+        throw error;
+      }
+
+      if (Date.now() - startedAt > 5000) {
+        throw new Error(`Timeout while waiting for ${path.basename(lockFilePath)}`);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+  }
 }
 
 async function createSeedSessions(): Promise<TableSession[]> {
@@ -186,125 +219,161 @@ export async function getActiveTableSessionForRestaurant(restaurantId: string) {
 export async function getOrCreateTableSessionForCustomer(
   restaurantId: string,
   customer: Customer,
+  tableId?: string | null,
 ) {
-  const sessions = await listTableSessions();
-  const customerSession = sessions.find(
-    (session) =>
-      session.restaurantId === restaurantId &&
-      !session.deletedAt &&
-      session.participants.some((participant) => participant.customerId === customer.id),
-  );
+  return withFileLock(tableSessionsLockFile, async () => {
+    const sessions = await listTableSessions();
+    const customerSession = sessions.find(
+      (session) =>
+        session.restaurantId === restaurantId &&
+        !session.deletedAt &&
+        session.participants.some((participant) => participant.customerId === customer.id),
+    );
 
-  if (customerSession) {
-    const normalized = await normalizeTableSessionForRestaurant(customerSession);
-    if (
-      normalized.tableId !== customerSession.tableId ||
-      JSON.stringify(normalized.participants) !== JSON.stringify(customerSession.participants)
-    ) {
-      if (canPersistDataFiles) {
-        await updateTableSession(customerSession.id, {
-          tableId: normalized.tableId,
-          participants: normalized.participants,
+    if (customerSession) {
+      const normalized = await normalizeTableSessionForRestaurant(customerSession);
+      if (
+        normalized.tableId !== customerSession.tableId ||
+        JSON.stringify(normalized.participants) !== JSON.stringify(customerSession.participants)
+      ) {
+        const customerIndex = sessions.findIndex((session) => session.id === customerSession.id);
+        if (customerIndex !== -1) {
+          const nextSessions = [...sessions];
+          nextSessions[customerIndex] = normalized;
+          if (canPersistDataFiles) {
+            await writeTableSessionsFile(nextSessions);
+          }
+        }
+        return normalized;
+      }
+
+      return customerSession;
+    }
+
+    if (tableId) {
+      const selectedSession = sessions.find(
+        (session) =>
+          session.restaurantId === restaurantId &&
+          session.status === "open" &&
+          !session.deletedAt &&
+          session.tableId === tableId,
+      );
+
+      if (selectedSession) {
+        const hasCustomer = selectedSession.participants.some((participant) => participant.customerId === customer.id);
+        const nextParticipants = hasCustomer
+          ? selectedSession.participants
+          : [
+              ...selectedSession.participants,
+              {
+                id: createId("participant"),
+                customerId: customer.id,
+                name: customer.name,
+                sharePercent: selectedSession.participants.length > 0
+                  ? Math.max(1, Math.floor(100 / (selectedSession.participants.length + 1)))
+                  : 100,
+                settledAmount: 0,
+                note: "Client connecté",
+              },
+            ];
+
+        const nextSession = normalizeTableSession({
+          ...selectedSession,
+          guestCount: Math.max(selectedSession.guestCount, nextParticipants.length),
+          participants: nextParticipants,
         });
+
+        const selectedIndex = sessions.findIndex((session) => session.id === selectedSession.id);
+        if (selectedIndex !== -1 && canPersistDataFiles) {
+          const nextSessions = [...sessions];
+          nextSessions[selectedIndex] = nextSession;
+          await writeTableSessionsFile(nextSessions);
+        }
+        return nextSession;
       }
-      return normalized;
     }
 
-    return customerSession;
-  }
+    const tables = await listTablesForRestaurant(restaurantId);
+    const fallbackTableId = tableId ?? tables[0]?.id ?? null;
 
-  const activeSession = sessions.find(
-    (session) => session.restaurantId === restaurantId && session.status === "open" && !session.deletedAt,
-  );
-  if (activeSession) {
-    const normalized = await normalizeTableSessionForRestaurant(activeSession);
-    if (normalized.tableId !== activeSession.tableId) {
-      if (canPersistDataFiles) {
-        await updateTableSession(activeSession.id, { tableId: normalized.tableId });
-      }
-      return normalized;
+    const session = normalizeTableSession({
+      id: createId("table-session"),
+      restaurantId,
+      tableId: fallbackTableId,
+      orderId: null,
+      status: "open",
+      guestCount: 1,
+      estimatedTotal: 0,
+      paidTotal: 0,
+      note: "Session client liée au portail.",
+      participants: [
+        {
+          id: createId("participant"),
+          customerId: customer.id,
+          name: customer.name,
+          sharePercent: 100,
+          settledAmount: 0,
+          note: "Client connecté",
+        },
+      ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      closedAt: null,
+      deletedAt: null,
+    });
+
+    if (canPersistDataFiles) {
+      await writeTableSessionsFile([...sessions, session]);
     }
-    return activeSession;
-  }
-
-  const tables = await listTablesForRestaurant(restaurantId);
-  const fallbackTableId = tables[0]?.id ?? null;
-
-  const session = normalizeTableSession({
-    id: createId("table-session"),
-    restaurantId,
-    tableId: fallbackTableId,
-    orderId: null,
-    status: "open",
-    guestCount: 1,
-    estimatedTotal: 0,
-    paidTotal: 0,
-    note: "Session client liée au portail.",
-    participants: [
-      {
-        id: createId("participant"),
-        customerId: customer.id,
-        name: customer.name,
-        sharePercent: 100,
-        settledAmount: 0,
-        note: "Client connecté",
-      },
-    ],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    closedAt: null,
-    deletedAt: null,
+    publishRestaurantRealtimeEvent({
+      type: "table_sessions",
+      restaurantId,
+      entityId: session.id,
+      action: "created",
+    });
+    return session;
   });
-
-  if (canPersistDataFiles) {
-    await writeTableSessionsFile([...sessions, session]);
-  }
-  publishRestaurantRealtimeEvent({
-    type: "table_sessions",
-    restaurantId,
-    entityId: session.id,
-    action: "created",
-  });
-  return session;
 }
 
 export async function updateTableSession(sessionId: string, patch: Partial<TableSession>) {
-  const sessions = await listTableSessions();
-  const index = sessions.findIndex((session) => session.id === sessionId);
-  if (index === -1) {
-    return null;
-  }
+  return withFileLock(tableSessionsLockFile, async () => {
+    const sessions = await listTableSessions();
+    const index = sessions.findIndex((session) => session.id === sessionId);
+    if (index === -1) {
+      return null;
+    }
 
-  const nextSession = normalizeTableSession({
-    ...sessions[index],
-    ...patch,
-    restaurantId: patch.restaurantId ?? sessions[index].restaurantId,
-    tableId: patch.tableId !== undefined ? patch.tableId : sessions[index].tableId,
-    orderId: patch.orderId !== undefined ? patch.orderId : sessions[index].orderId,
-    status: patch.status ?? sessions[index].status,
-    guestCount:
-      patch.guestCount !== undefined ? patch.guestCount : sessions[index].guestCount,
-    estimatedTotal:
-      patch.estimatedTotal !== undefined ? patch.estimatedTotal : sessions[index].estimatedTotal,
-    paidTotal: patch.paidTotal !== undefined ? patch.paidTotal : sessions[index].paidTotal,
-    note: patch.note !== undefined ? patch.note : sessions[index].note,
-    participants: patch.participants ?? sessions[index].participants,
-    createdAt: patch.createdAt ?? sessions[index].createdAt,
-    updatedAt: new Date().toISOString(),
-    closedAt: patch.closedAt !== undefined ? patch.closedAt : sessions[index].closedAt,
-    deletedAt: patch.deletedAt !== undefined ? patch.deletedAt : sessions[index].deletedAt,
-  });
+    const nextSession = normalizeTableSession({
+      ...sessions[index],
+      ...patch,
+      restaurantId: patch.restaurantId ?? sessions[index].restaurantId,
+      tableId: patch.tableId !== undefined ? patch.tableId : sessions[index].tableId,
+      orderId: patch.orderId !== undefined ? patch.orderId : sessions[index].orderId,
+      status: patch.status ?? sessions[index].status,
+      guestCount:
+        patch.guestCount !== undefined ? patch.guestCount : sessions[index].guestCount,
+      estimatedTotal:
+        patch.estimatedTotal !== undefined ? patch.estimatedTotal : sessions[index].estimatedTotal,
+      paidTotal: patch.paidTotal !== undefined ? patch.paidTotal : sessions[index].paidTotal,
+      note: patch.note !== undefined ? patch.note : sessions[index].note,
+      participants: patch.participants ?? sessions[index].participants,
+      createdAt: patch.createdAt ?? sessions[index].createdAt,
+      updatedAt: new Date().toISOString(),
+      closedAt: patch.closedAt !== undefined ? patch.closedAt : sessions[index].closedAt,
+      deletedAt: patch.deletedAt !== undefined ? patch.deletedAt : sessions[index].deletedAt,
+    });
 
-  const nextSessions = [...sessions];
-  nextSessions[index] = nextSession;
-  if (canPersistDataFiles) {
-    await writeTableSessionsFile(nextSessions);
-  }
-  publishRestaurantRealtimeEvent({
-    type: "table_sessions",
-    restaurantId: nextSession.restaurantId,
-    entityId: nextSession.id,
-    action: "updated",
+    const nextSessions = [...sessions];
+    nextSessions[index] = nextSession;
+    if (canPersistDataFiles) {
+      await writeTableSessionsFile(nextSessions);
+    }
+    publishRestaurantRealtimeEvent({
+      type: "table_sessions",
+      restaurantId: nextSession.restaurantId,
+      entityId: nextSession.id,
+      action: "updated",
+    });
+    return nextSession;
   });
-  return nextSession;
 }

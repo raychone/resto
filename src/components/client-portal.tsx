@@ -150,6 +150,7 @@ export function ClientPortal({
   const cartSummary = isMounted
     ? `${cartItems.length} article${cartItems.length > 1 ? "s" : ""} · ${formatMoney(cartTotal, restaurant.currency)}`
     : "Panier";
+  const isGuestCustomer = Boolean(customer.isGuest);
 
   const refreshCart = useCallback(() => {
     setCartItems(listClientCartItems(restaurant.slug));
@@ -304,6 +305,7 @@ export function ClientPortal({
       body: JSON.stringify({
         note: `Commande client ${clientUser.name}`,
         items: cartItems,
+        tableId: tableSession.tableId,
       }),
     });
 
@@ -410,13 +412,15 @@ export function ClientPortal({
           <h2 className="text-2xl font-semibold">Mon profil</h2>
           <div className="mt-4 space-y-3 text-sm text-white/70">
             <p>
-              <span className="font-semibold text-white">Identifiant:</span> {clientUser.username}
+              <span className="font-semibold text-white">Identifiant:</span>{" "}
+              {isGuestCustomer ? "Compte invité" : clientUser.username}
             </p>
             <p>
               <span className="font-semibold text-white">Restaurant:</span> {restaurant.name}
             </p>
             <p>
-              <span className="font-semibold text-white">Statut:</span> Compte actif
+              <span className="font-semibold text-white">Statut:</span>{" "}
+              {isGuestCustomer ? "Commande anonyme" : "Compte actif"}
             </p>
           </div>
         </div>
@@ -428,34 +432,44 @@ export function ClientPortal({
           }`}
         >
           <h2 className="text-2xl font-semibold">Loyalty</h2>
-          <div className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">Tier</p>
-                <p className="mt-1 text-2xl font-semibold">{loyalty.tierLabel}</p>
-              </div>
-              <span className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-[#faf7f2] px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#24170f]" : "rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white"}>
-                {formatLoyaltyPoints(customer.currentPoints)}
-              </span>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-center justify-between text-xs text-white/55">
-                <span>Points de vie</span>
-                <span>{formatLoyaltyPoints(customer.lifetimePoints)}</span>
-              </div>
-              <div className="mt-2 h-2 rounded-full bg-white/10">
-                <div
-                  className="h-2 rounded-full bg-white transition-all"
-                  style={{ width: `${Math.max(8, loyalty.progress * 100)}%` }}
-                />
-              </div>
-              <p className="mt-3 text-sm text-white/65">
-                {remainingToNextTier > 0
-                  ? `${remainingToNextTier} points avant ${loyalty.nextTier?.toUpperCase()}`
-                  : "Niveau maximum atteint."}
+          {isGuestCustomer ? (
+            <div className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4 text-sm text-white/65">
+              <p className="font-medium text-white">Mode invité actif</p>
+              <p className="mt-2 leading-6">
+                Pas de points de fidélité ni d’abonnement. La note reste suivie par table et par
+                personne.
               </p>
             </div>
-          </div>
+          ) : (
+            <div className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">Tier</p>
+                  <p className="mt-1 text-2xl font-semibold">{loyalty.tierLabel}</p>
+                </div>
+                <span className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-[#faf7f2] px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#24170f]" : "rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white"}>
+                  {formatLoyaltyPoints(customer.currentPoints)}
+                </span>
+              </div>
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-xs text-white/55">
+                  <span>Points de vie</span>
+                  <span>{formatLoyaltyPoints(customer.lifetimePoints)}</span>
+                </div>
+                <div className="mt-2 h-2 rounded-full bg-white/10">
+                  <div
+                    className="h-2 rounded-full bg-white transition-all"
+                    style={{ width: `${Math.max(8, loyalty.progress * 100)}%` }}
+                  />
+                </div>
+                <p className="mt-3 text-sm text-white/65">
+                  {remainingToNextTier > 0
+                    ? `${remainingToNextTier} points avant ${loyalty.nextTier?.toUpperCase()}`
+                    : "Niveau maximum atteint."}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {orderFlowEnabled ? (
@@ -497,7 +511,7 @@ export function ClientPortal({
             activeTab === "cart" || activeTab === "tracking" ? "" : "hidden"
           }`}
         >
-          {liveOrder ? (
+          {activeTab === "tracking" && liveOrder ? (
             <div id="client-tracking" className="mb-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -602,7 +616,7 @@ export function ClientPortal({
               </div>
             </div>
           ) : null}
-          {liveOrder ? (
+          {activeTab === "tracking" && liveOrder ? (
             <div className="mb-4 grid gap-2 sm:grid-cols-3">
               <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3">
                 <p className="text-[11px] uppercase tracking-[0.28em] text-white/40">Table</p>

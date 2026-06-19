@@ -182,27 +182,35 @@ Setarile trebuie sa fie grupate pe intentii reale, nu pe campuri brute.
 
 ---
 
-## Etapa 7 - Staff, kitchen si client in aceeasi tema
-Status: `pending`
+## Etapa 7 - Staff, kitchen, client si comenzi anonime
+Status: `completed`
 
 ### Obiectiv
-Toate rolurile trebuie sa arate ca apartin aceluiasi produs.
+Toate rolurile trebuie sa arate ca apartin aceluiasi produs, iar clientii fara cont trebuie sa poata comanda in siguranta pe o masa clara.
 
 ### Reguli
 - tema `Food 1` ramane light peste tot pentru acest restaurant
 - stari active nu sunt black-on-black
 - modalurile trebuie sa fie lizibile pe mobil
 - butoanele de actiune importante au culori calme, nu agresive
+- clientul anonim primeste un identifiant unic si poate comanda fara cont
+- fiecare comanda anonima se leaga de o masa selectata explicit
+- mai multi clienti pot imparti aceeasi masa, dar fiecare are propriul identificator si propriile articole
+- ospatarul vede totalul pe masa si totalul pe persoana, inclusiv coplatitori
+- clientii logati continua sa aiba fidelitate si abonament; anonimii nu acumuleaza puncte si nu au plan
 
 ### Livrabile
 - consistenta vizuala pe roluri
 - contrast corect
 - mobile UX mai clar
+- identitate de masa si identitate de client anonima
+- selectie de masa la comanda si asociere clara cu bonul
+- baza sigura pentru urmatoarele ecrane de audit si plata
 
 ---
 
 ## Etapa 8 - Audit umanizat
-Status: `pending`
+Status: `completed`
 
 ### Obiectiv
 Auditul trebuie sa fie citibil pentru patron, nu pentru developer.
@@ -223,7 +231,7 @@ Auditul trebuie sa fie citibil pentru patron, nu pentru developer.
 ---
 
 ## Etapa 9 - Linkuri si branding comercial
-Status: `pending`
+Status: `in_progress`
 
 ### Obiectiv
 Managerul trebuie sa vada brandul si linkurile utile ca in produs comercial, nu ca in admin.

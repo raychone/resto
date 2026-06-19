@@ -12,9 +12,10 @@ export const managerDashboardCookieName = "meniu_manager_session";
 export const staffDashboardCookieName = "meniu_staff_session";
 export const kitchenDashboardCookieName = "meniu_kitchen_session";
 export const clientDashboardCookieName = "meniu_client_session";
+export const clientGuestSessionCookieName = "meniu_client_guest_session";
 export const ownerDashboardCookieName = "meniu_owner_session";
 
-function decodeSessionCookie(value: string): User | null {
+function decodePayloadCookie<T>(value: string): T | null {
   if (!value.startsWith("payload:")) {
     return null;
   }
@@ -23,7 +24,7 @@ function decodeSessionCookie(value: string): User | null {
 
   try {
     const decoded = Buffer.from(encoded, "base64url").toString("utf8");
-    const parsed = JSON.parse(decoded) as User;
+    const parsed = JSON.parse(decoded) as T;
     return parsed ?? null;
   } catch {
     return null;
@@ -69,7 +70,7 @@ async function getSessionUser(cookieName: string, role: UserRole) {
   const userId = cookieStore.get(cookieName)?.value;
   if (!userId) return null;
 
-  const payloadUser = decodeSessionCookie(userId);
+  const payloadUser = decodePayloadCookie<User>(userId);
   if (payloadUser && isUserRole(payloadUser, role)) {
     return payloadUser;
   }
@@ -100,7 +101,7 @@ async function getSessionUserFromRequest(
     return null;
   }
 
-  const payloadUser = decodeSessionCookie(userId);
+  const payloadUser = decodePayloadCookie<User>(userId);
   if (payloadUser && isUserRole(payloadUser, role)) {
     return payloadUser;
   }
@@ -198,4 +199,44 @@ export async function getClientUserFromRequest(request: Request) {
 
 export async function getOwnerUserFromRequest(request: Request) {
   return getSessionUserFromRequest(request, ownerDashboardCookieName, "owner");
+}
+
+export type ClientGuestSession = {
+  id: string;
+  restaurantId: string;
+  restaurantSlug: string;
+  tableId: string | null;
+  name: string;
+  createdAt: string;
+};
+
+export function encodePayloadCookieValue<T>(payload: T) {
+  return `payload:${Buffer.from(JSON.stringify(payload), "utf8").toString("base64url")}`;
+}
+
+export async function getClientGuestSession(): Promise<ClientGuestSession | null> {
+  const cookieStore = await cookies();
+  const rawValue = cookieStore.get(clientGuestSessionCookieName)?.value;
+  if (!rawValue) {
+    return null;
+  }
+
+  return decodePayloadCookie<ClientGuestSession>(rawValue);
+}
+
+export async function getClientGuestSessionFromRequest(request: Request): Promise<ClientGuestSession | null> {
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const rawValue = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${clientGuestSessionCookieName}=`))
+    ?.split("=")
+    .slice(1)
+    .join("=");
+
+  if (!rawValue) {
+    return null;
+  }
+
+  return decodePayloadCookie<ClientGuestSession>(rawValue);
 }

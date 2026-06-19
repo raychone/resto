@@ -471,6 +471,7 @@ export type Customer = {
   id: string;
   restaurantId: string;
   userId?: string | null;
+  isGuest?: boolean;
   firstName: string;
   lastName: string;
   name: string;

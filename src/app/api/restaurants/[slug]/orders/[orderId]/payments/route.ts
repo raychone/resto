@@ -146,7 +146,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     for (const [customerId, earnedPoints] of earnedPointsByCustomer.entries()) {
       const customer = await getCustomerById(customerId);
-      if (!customer) continue;
+      if (!customer || customer.isGuest) continue;
 
       await updateCustomer(customerId, {
         currentPoints: customer.currentPoints + earnedPoints,

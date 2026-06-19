@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getClientUserFromRequest } from "@/lib/auth";
+import { getClientGuestSessionFromRequest, getClientUserFromRequest } from "@/lib/auth";
 import { recordAuditEntry } from "@/lib/audit-store";
-import { getOrCreateCustomerForUser } from "@/lib/customer-store";
+import {
+  getOrCreateAnonymousCustomerForRestaurant,
+  getOrCreateCustomerForUser,
+} from "@/lib/customer-store";
 import { dispatchOrderRequestNotification } from "@/lib/notification-service";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
 import {
@@ -35,12 +38,27 @@ export async function GET(
   }
 
   const clientUser = await getClientUserFromRequest(request);
-  if (!clientUser || clientUser.restaurantId !== restaurant.id) {
+  const guestSession = clientUser ? null : await getClientGuestSessionFromRequest(request);
+  if (!clientUser && (!guestSession || guestSession.restaurantId !== restaurant.id)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const customer = await getOrCreateCustomerForUser(clientUser, restaurant.id);
-  const tableSession = await getOrCreateTableSessionForCustomer(restaurant.id, customer);
+  if (clientUser && clientUser.restaurantId !== restaurant.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const customer = clientUser
+    ? await getOrCreateCustomerForUser(clientUser, restaurant.id)
+    : await getOrCreateAnonymousCustomerForRestaurant(
+        restaurant.id,
+        guestSession!.id,
+        guestSession!.name,
+      );
+  const tableSession = await getOrCreateTableSessionForCustomer(
+    restaurant.id,
+    customer,
+    guestSession?.tableId ?? null,
+  );
   const currentOrder = tableSession.orderId ? await getOrderById(tableSession.orderId) : null;
   if (currentOrder) {
     return NextResponse.json({ order: currentOrder, tableSession });
@@ -70,13 +88,19 @@ export async function POST(
   }
 
   const clientUser = await getClientUserFromRequest(request);
-  if (!clientUser || clientUser.restaurantId !== restaurant.id) {
+  const guestSession = clientUser ? null : await getClientGuestSessionFromRequest(request);
+  if (!clientUser && (!guestSession || guestSession.restaurantId !== restaurant.id)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (clientUser && clientUser.restaurantId !== restaurant.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = (await request.json()) as {
     items?: CartItem[];
     note?: string;
+    tableId?: string | null;
   };
 
   const items = Array.isArray(body.items) ? body.items : [];
@@ -84,8 +108,18 @@ export async function POST(
     return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
   }
 
-  const customer = await getOrCreateCustomerForUser(clientUser, restaurant.id);
-  const tableSession = await getOrCreateTableSessionForCustomer(restaurant.id, customer);
+  const customer = clientUser
+    ? await getOrCreateCustomerForUser(clientUser, restaurant.id)
+    : await getOrCreateAnonymousCustomerForRestaurant(
+        restaurant.id,
+        guestSession!.id,
+        guestSession!.name,
+      );
+  const tableSession = await getOrCreateTableSessionForCustomer(
+    restaurant.id,
+    customer,
+    body.tableId ?? guestSession?.tableId ?? null,
+  );
   const currentOrder = tableSession.orderId ? await getOrderById(tableSession.orderId) : null;
 
   let order = currentOrder;
@@ -138,7 +172,7 @@ export async function POST(
     restaurantSlug: restaurant.slug,
     restaurantId: restaurant.id,
     actorRole: "client",
-    actorName: clientUser.name,
+    actorName: clientUser?.name ?? guestSession?.name ?? customer.name,
     action: "client_order_requested",
     targetType: "order",
     targetId: order.id,

@@ -8,6 +8,8 @@ import { listTablesForRestaurant } from "@/lib/table-store";
 const dataDir = path.join(process.cwd(), "data");
 const ordersFile = path.join(dataDir, "orders.json");
 const paymentsFile = path.join(dataDir, "payments.json");
+const ordersLockFile = path.join(dataDir, "orders.lock");
+const paymentsLockFile = path.join(dataDir, "payments.lock");
 const canPersistDataFiles = process.env.VERCEL !== "1";
 
 function normalizeOrder(order: Order): Order {
@@ -107,6 +109,38 @@ function normalizePayment(payment: Payment): Payment {
 
 function orderTotal(order: Order) {
   return order.items.reduce((sum, item) => sum + item.priceSnapshot * item.quantity, 0);
+}
+
+async function withFileLock<T>(lockFilePath: string, task: () => Promise<T>): Promise<T> {
+  if (!canPersistDataFiles) {
+    return task();
+  }
+
+  await fs.mkdir(dataDir, { recursive: true });
+  const startedAt = Date.now();
+
+  while (true) {
+    try {
+      const handle = await fs.open(lockFilePath, "wx");
+      try {
+        return await task();
+      } finally {
+        await handle.close();
+        await fs.rm(lockFilePath, { force: true });
+      }
+    } catch (error) {
+      const nodeError = error as NodeJS.ErrnoException;
+      if (nodeError.code !== "EEXIST") {
+        throw error;
+      }
+
+      if (Date.now() - startedAt > 5000) {
+        throw new Error(`Timeout while waiting for ${path.basename(lockFilePath)}`);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+  }
 }
 
 async function ensureStore(filePath: string) {
@@ -221,68 +255,86 @@ export async function listPaymentsForOrder(orderId: string) {
 export async function createOrder(input: Omit<Order, "id" | "createdAt" | "updatedAt" | "items"> & {
   items?: OrderItem[];
 }) {
-  const orders = await listOrders();
-  const now = new Date().toISOString();
-  const order = await normalizeOrderForRestaurant({
-    ...input,
-    id: createId("order"),
-    items: input.items ?? [],
-    createdAt: now,
-    updatedAt: now,
-  });
+  return withFileLock(ordersLockFile, async () => {
+    const orders = await listOrders();
+    const duplicateExisting = orders.find(
+      (order) =>
+        order.restaurantId === input.restaurantId &&
+        !order.deletedAt &&
+        order.status === "open" &&
+        order.source === (input.source ?? (input.tableId ? "table" : "takeaway")) &&
+        (input.tableId ? order.tableId === input.tableId : !order.tableId),
+    );
+    if (duplicateExisting) {
+      return duplicateExisting;
+    }
 
-  const nextOrders = [...orders, order];
-  await writeOrdersFile(nextOrders);
-  publishOrderEvent(order, "created");
-  return order;
+    const now = new Date().toISOString();
+    const order = await normalizeOrderForRestaurant({
+      ...input,
+      id: createId("order"),
+      items: input.items ?? [],
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    const nextOrders = [...orders, order];
+    await writeOrdersFile(nextOrders);
+    publishOrderEvent(order, "created");
+    return order;
+  });
 }
 
 export async function updateOrder(orderId: string, patch: Partial<Omit<Order, "id" | "createdAt">>) {
-  const orders = await listOrders();
-  const index = orders.findIndex((order) => order.id === orderId);
-  if (index === -1) return null;
+  return withFileLock(ordersLockFile, async () => {
+    const orders = await listOrders();
+    const index = orders.findIndex((order) => order.id === orderId);
+    if (index === -1) return null;
 
-  const nextOrder = await normalizeOrderForRestaurant({
-    ...orders[index],
-    ...patch,
-    updatedAt: new Date().toISOString(),
+    const nextOrder = await normalizeOrderForRestaurant({
+      ...orders[index],
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const nextOrders = [...orders];
+    nextOrders[index] = nextOrder;
+    await writeOrdersFile(nextOrders);
+    publishOrderEvent(nextOrder, "updated");
+    return nextOrder;
   });
-
-  const nextOrders = [...orders];
-  nextOrders[index] = nextOrder;
-  await writeOrdersFile(nextOrders);
-  publishOrderEvent(nextOrder, "updated");
-  return nextOrder;
 }
 
 export async function addOrderItem(
   orderId: string,
   input: Omit<OrderItem, "id" | "orderId" | "createdAt" | "deletedAt">,
 ) {
-  const orders = await listOrders();
-  const index = orders.findIndex((order) => order.id === orderId);
-  if (index === -1) return null;
+  return withFileLock(ordersLockFile, async () => {
+    const orders = await listOrders();
+    const index = orders.findIndex((order) => order.id === orderId);
+    if (index === -1) return null;
 
-  const currentOrder = orders[index];
-  const item: OrderItem = normalizeOrderItem({
-    ...input,
-    id: createId("order-item"),
-    orderId,
-    createdAt: new Date().toISOString(),
-    deletedAt: null,
+    const currentOrder = orders[index];
+    const item: OrderItem = normalizeOrderItem({
+      ...input,
+      id: createId("order-item"),
+      orderId,
+      createdAt: new Date().toISOString(),
+      deletedAt: null,
+    });
+
+    const nextOrder = await normalizeOrderForRestaurant({
+      ...currentOrder,
+      items: [...currentOrder.items, item],
+      updatedAt: new Date().toISOString(),
+    });
+
+    const nextOrders = [...orders];
+    nextOrders[index] = nextOrder;
+    await writeOrdersFile(nextOrders);
+    publishOrderEvent(nextOrder, "item_added");
+    return nextOrder;
   });
-
-  const nextOrder = await normalizeOrderForRestaurant({
-    ...currentOrder,
-    items: [...currentOrder.items, item],
-    updatedAt: new Date().toISOString(),
-  });
-
-  const nextOrders = [...orders];
-  nextOrders[index] = nextOrder;
-  await writeOrdersFile(nextOrders);
-  publishOrderEvent(nextOrder, "item_added");
-  return nextOrder;
 }
 
 export async function updateOrderItem(
@@ -292,56 +344,60 @@ export async function updateOrderItem(
     Pick<OrderItem, "quantity" | "note" | "assignedClientId" | "assignedClientName">
   >,
 ) {
-  const orders = await listOrders();
-  const index = orders.findIndex((order) => order.id === orderId);
-  if (index === -1) return null;
+  return withFileLock(ordersLockFile, async () => {
+    const orders = await listOrders();
+    const index = orders.findIndex((order) => order.id === orderId);
+    if (index === -1) return null;
 
-  const currentOrder = orders[index];
-  const itemIndex = currentOrder.items.findIndex((item) => item.id === itemId);
-  if (itemIndex === -1) return null;
+    const currentOrder = orders[index];
+    const itemIndex = currentOrder.items.findIndex((item) => item.id === itemId);
+    if (itemIndex === -1) return null;
 
-  const nextItems = [...currentOrder.items];
-  nextItems[itemIndex] = normalizeOrderItem({
-    ...nextItems[itemIndex],
-    ...patch,
-    quantity:
-      typeof patch.quantity === "number" && patch.quantity > 0
-        ? Math.floor(patch.quantity)
-        : nextItems[itemIndex].quantity,
+    const nextItems = [...currentOrder.items];
+    nextItems[itemIndex] = normalizeOrderItem({
+      ...nextItems[itemIndex],
+      ...patch,
+      quantity:
+        typeof patch.quantity === "number" && patch.quantity > 0
+          ? Math.floor(patch.quantity)
+          : nextItems[itemIndex].quantity,
+    });
+
+    const nextOrder = await normalizeOrderForRestaurant({
+      ...currentOrder,
+      items: nextItems,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const nextOrders = [...orders];
+    nextOrders[index] = nextOrder;
+    await writeOrdersFile(nextOrders);
+    publishOrderEvent(nextOrder, "item_updated");
+    return nextOrder;
   });
-
-  const nextOrder = await normalizeOrderForRestaurant({
-    ...currentOrder,
-    items: nextItems,
-    updatedAt: new Date().toISOString(),
-  });
-
-  const nextOrders = [...orders];
-  nextOrders[index] = nextOrder;
-  await writeOrdersFile(nextOrders);
-  publishOrderEvent(nextOrder, "item_updated");
-  return nextOrder;
 }
 
 export async function removeOrderItem(orderId: string, itemId: string) {
-  const orders = await listOrders();
-  const index = orders.findIndex((order) => order.id === orderId);
-  if (index === -1) return null;
+  return withFileLock(ordersLockFile, async () => {
+    const orders = await listOrders();
+    const index = orders.findIndex((order) => order.id === orderId);
+    if (index === -1) return null;
 
-  const currentOrder = orders[index];
-  const nextItems = currentOrder.items.filter((item) => item.id !== itemId);
+    const currentOrder = orders[index];
+    const nextItems = currentOrder.items.filter((item) => item.id !== itemId);
 
-  const nextOrder = await normalizeOrderForRestaurant({
-    ...currentOrder,
-    items: nextItems,
-    updatedAt: new Date().toISOString(),
+    const nextOrder = await normalizeOrderForRestaurant({
+      ...currentOrder,
+      items: nextItems,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const nextOrders = [...orders];
+    nextOrders[index] = nextOrder;
+    await writeOrdersFile(nextOrders);
+    publishOrderEvent(nextOrder, "item_removed");
+    return nextOrder;
   });
-
-  const nextOrders = [...orders];
-  nextOrders[index] = nextOrder;
-  await writeOrdersFile(nextOrders);
-  publishOrderEvent(nextOrder, "item_removed");
-  return nextOrder;
 }
 
 export async function updateOrderItemQuantity(
@@ -357,42 +413,44 @@ export async function updateOrderItemQuantity(
 }
 
 export async function createPayment(input: Omit<Payment, "id" | "createdAt" | "updatedAt">) {
-  const payments = await readPaymentsFile();
-  const orders = await listOrders();
-  const orderIndex = orders.findIndex((order) => order.id === input.orderId);
-  if (orderIndex === -1) return null;
-  const order = orders[orderIndex];
-  const existingPayments = payments.filter(
-    (payment) => payment.orderId === input.orderId && !payment.deletedAt,
-  );
+  return withFileLock(paymentsLockFile, async () => {
+    const payments = await readPaymentsFile();
+    const orders = await listOrders();
+    const orderIndex = orders.findIndex((order) => order.id === input.orderId);
+    if (orderIndex === -1) return null;
+    const order = orders[orderIndex];
+    const existingPayments = payments.filter(
+      (payment) => payment.orderId === input.orderId && !payment.deletedAt,
+    );
 
-  const payment = normalizePayment({
-    ...input,
-    id: createId("payment"),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    const payment = normalizePayment({
+      ...input,
+      id: createId("payment"),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    const nextPayments = [...payments, payment];
+    await writePaymentsFile(nextPayments);
+
+    const nextPaidTotal = [...existingPayments, payment].reduce((sum, entry) => sum + entry.amount, 0);
+    const total = orderTotal(order);
+    const isFullyPaid = nextPaidTotal >= total;
+    const nextOrder = await normalizeOrderForRestaurant({
+      ...order,
+      status: isFullyPaid ? "paid" : order.status,
+      closedAt: isFullyPaid ? new Date().toISOString() : order.closedAt,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const nextOrders = [...orders];
+    nextOrders[orderIndex] = nextOrder;
+    await writeOrdersFile(nextOrders);
+    publishPaymentEvent(payment, "payment_created");
+    publishOrderEvent(nextOrder, "payment_created");
+
+    return payment;
   });
-
-  const nextPayments = [...payments, payment];
-  await writePaymentsFile(nextPayments);
-
-  const nextPaidTotal = [...existingPayments, payment].reduce((sum, entry) => sum + entry.amount, 0);
-  const total = orderTotal(order);
-  const isFullyPaid = nextPaidTotal >= total;
-  const nextOrder = await normalizeOrderForRestaurant({
-    ...order,
-    status: isFullyPaid ? "paid" : order.status,
-    closedAt: isFullyPaid ? new Date().toISOString() : order.closedAt,
-    updatedAt: new Date().toISOString(),
-  });
-
-  const nextOrders = [...orders];
-  nextOrders[orderIndex] = nextOrder;
-  await writeOrdersFile(nextOrders);
-  publishPaymentEvent(payment, "payment_created");
-  publishOrderEvent(nextOrder, "payment_created");
-
-  return payment;
 }
 
 export async function archiveOrder(orderId: string) {

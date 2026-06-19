@@ -20,6 +20,7 @@ function normalizeCustomer(customer: Customer): Customer {
     id: customer.id?.trim() || createId("customer"),
     restaurantId: customer.restaurantId?.trim() || "",
     userId: customer.userId?.trim() || null,
+    isGuest: Boolean(customer.isGuest),
     firstName: customer.firstName?.trim() || "Client",
     lastName: customer.lastName?.trim() || "",
     name: customer.name?.trim() || `${customer.firstName ?? "Client"} ${customer.lastName ?? ""}`.trim(),
@@ -66,6 +67,7 @@ async function createSeedCustomers(): Promise<Customer[]> {
         currentPoints,
         lifetimePoints,
         tier: getLoyaltySummary(lifetimePoints).tier,
+        isGuest: false,
         status: "active",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -97,6 +99,7 @@ async function createSeedCustomers(): Promise<Customer[]> {
       currentPoints: 180,
       lifetimePoints,
       tier: getLoyaltySummary(lifetimePoints).tier,
+      isGuest: false,
       status: "active",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -178,6 +181,7 @@ export async function getOrCreateCustomerForUser(user: User, restaurantId: strin
     currentPoints: 180,
     lifetimePoints: 1280,
     tier: getLoyaltySummary(1280).tier,
+    isGuest: false,
     status: "active",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -210,4 +214,45 @@ export async function updateCustomer(customerId: string, patch: Partial<Customer
     await writeCustomersFile(nextCustomers);
   }
   return nextCustomer;
+}
+
+export async function getOrCreateAnonymousCustomerForRestaurant(
+  restaurantId: string,
+  guestId: string,
+  guestName?: string | null,
+) {
+  const existing = await getCustomerById(guestId);
+  if (existing && existing.restaurantId === restaurantId) {
+    return existing;
+  }
+
+  const normalizedName = guestName?.trim() || "Invité";
+  const nameParts = normalizedName.split(" ");
+  const firstName = nameParts[0] || "Invité";
+  const lastName = nameParts.slice(1).join(" ");
+  const customer = normalizeCustomer({
+    id: guestId,
+    restaurantId,
+    userId: null,
+    isGuest: true,
+    firstName,
+    lastName,
+    name: normalizedName,
+    email: "",
+    phone: "",
+    currentPoints: 0,
+    lifetimePoints: 0,
+    tier: getLoyaltySummary(0).tier,
+    status: "active",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    deletedAt: null,
+  });
+
+  const customers = await listCustomers();
+  const nextCustomers = [...customers.filter((entry) => entry.id !== guestId), customer];
+  if (canPersistDataFiles) {
+    await writeCustomersFile(nextCustomers);
+  }
+  return customer;
 }
