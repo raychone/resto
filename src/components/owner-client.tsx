@@ -1447,7 +1447,7 @@ export function OwnerClient({ initialRestaurants, initialInvoices, initialAuditE
                           <p className="text-xs text-black/55">
                             {entry.restaurantSlug} · {entry.actorRole} · {entry.actorName}
                           </p>
-                          <p className="mt-1 text-xs text-black/55">{humanized.subtitle}</p>
+                          {humanized.subtitle ? <p className="mt-1 text-xs text-black/55">{humanized.subtitle}</p> : null}
                         </div>
                         <span className="text-[11px] uppercase tracking-[0.22em] text-black/45">
                           {new Intl.DateTimeFormat("fr-FR", {

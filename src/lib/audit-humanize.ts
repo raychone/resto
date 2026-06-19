@@ -2,7 +2,7 @@ import type { AuditEntry } from "@/lib/audit-store";
 
 export type HumanizedAuditEntry = {
   title: string;
-  subtitle: string;
+  subtitle: string | null;
   details: string | null;
 };
 
@@ -71,10 +71,6 @@ function humanizeKeyValueDetails(entry: AuditEntry) {
     chunks.push(`Quantité: ${values.qty}`);
   }
 
-  if (values.provider) {
-    chunks.push(`Provider: ${values.provider}${values.sent ? ` (${values.sent === "yes" ? "envoyé" : "non envoyé"})` : ""}`);
-  }
-
   if (values.participants || values.guestCount) {
     const participants = values.participants ? `${values.participants} participant${Number(values.participants) > 1 ? "s" : ""}` : null;
     const guestCount = values.guestCount ? `${values.guestCount} personne${Number(values.guestCount) > 1 ? "s" : ""}` : null;
@@ -83,10 +79,6 @@ function humanizeKeyValueDetails(entry: AuditEntry) {
 
   if (values.item) {
     chunks.push(`Article ${values.item}`);
-  }
-
-  if (values.client) {
-    chunks.push(`Client ${values.client}`);
   }
 
   return chunks.filter(Boolean).join(" · ") || null;
@@ -170,20 +162,9 @@ export function humanizeAuditEntry(entry: AuditEntry): HumanizedAuditEntry {
 
   const humanizedDetails = humanizeKeyValueDetails(entry);
   const fallbackDetails = entry.details?.trim() || null;
-  const subtitle =
-    entry.targetType === "order"
-      ? `Commande ${entry.targetId.slice(-6)}`
-      : entry.targetType === "reservation"
-        ? `Réservation ${entry.targetId.slice(-6)}`
-        : entry.targetType === "table_session"
-          ? `Table ${entry.targetId.slice(-6)}`
-          : entry.targetType === "restaurant"
-            ? "Restaurant"
-            : entry.targetType;
-
   return {
     title,
-    subtitle,
+    subtitle: null,
     details: humanizedDetails || fallbackDetails,
   };
 }

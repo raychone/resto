@@ -1226,7 +1226,7 @@ export function DashboardClient({
             <div className="min-w-0">
               <h2 className="truncate text-2xl font-semibold">{draft.name}</h2>
               <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/55"}>
-                Manager dashboard
+                Centre de pilotage
               </p>
             </div>
           </div>
@@ -2118,7 +2118,7 @@ export function DashboardClient({
                               <p className="text-xs text-black/55">
                                 {entry.actorRole} · {entry.actorName}
                               </p>
-                              <p className="mt-1 text-xs text-black/55">{humanized.subtitle}</p>
+                              {humanized.subtitle ? <p className="mt-1 text-xs text-black/55">{humanized.subtitle}</p> : null}
                             </div>
                             <span className="text-[11px] uppercase tracking-[0.22em] text-black/45">
                               {new Intl.DateTimeFormat("fr-FR", {
