@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { clientDashboardCookieName } from "@/lib/auth";
+import { clientDashboardCookieName, clientGuestSessionCookieName } from "@/lib/auth";
 import { getOrCreateCustomerForUser } from "@/lib/customer-store";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
 import { createUser, hashUserPassword, getUserByUsername } from "@/lib/user-store";
@@ -67,6 +67,13 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 24 * 7,
     });
   }
+  response.cookies.set(clientGuestSessionCookieName, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+  });
 
   return response;
 }

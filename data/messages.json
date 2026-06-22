@@ -74,13 +74,41 @@
     "restaurantId": "food-1-restaurant",
     "restaurantSlug": "food-1",
     "createdAt": "2026-06-22T09:46:47.171Z",
-    "status": "new",
+    "status": "read",
     "tableId": "food-1-restaurant-table-1",
     "tableLabel": "Table 1",
     "name": "Food Client",
     "phone": "+33 6 00 00 00 00",
     "email": "foodclient@demo.local",
     "message": "Appel serveur depuis Table 1",
+    "locale": "fr"
+  },
+  {
+    "id": "message-6sng54nb",
+    "restaurantId": "food-1-restaurant",
+    "restaurantSlug": "food-1",
+    "createdAt": "2026-06-22T09:59:23.867Z",
+    "status": "read",
+    "tableId": "food-1-restaurant-table-6",
+    "tableLabel": "Table 6",
+    "name": "Invité",
+    "phone": "",
+    "email": "",
+    "message": "Appel serveur depuis Table 6",
+    "locale": "fr"
+  },
+  {
+    "id": "message-abgmhd5i",
+    "restaurantId": "food-1-restaurant",
+    "restaurantSlug": "food-1",
+    "createdAt": "2026-06-22T11:32:13.701Z",
+    "status": "read",
+    "tableId": "food-1-restaurant-table-6",
+    "tableLabel": "Table 6",
+    "name": "Andrei",
+    "phone": "",
+    "email": "",
+    "message": "Appel serveur depuis Table 6",
     "locale": "fr"
   }
 ]

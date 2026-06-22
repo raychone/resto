@@ -42,6 +42,18 @@ function normalizeTableSession(session: TableSession): TableSession {
     paidTotal,
     note: session.note?.trim() || "",
     participants,
+    lastPaymentMethod:
+      session.lastPaymentMethod === "cash" ||
+      session.lastPaymentMethod === "card" ||
+      session.lastPaymentMethod === "external" ||
+      session.lastPaymentMethod === "other"
+        ? session.lastPaymentMethod
+        : null,
+    lastPaymentAmount:
+      Number.isFinite(session.lastPaymentAmount) && Number(session.lastPaymentAmount) > 0
+        ? Math.max(0, Number(session.lastPaymentAmount))
+        : 0,
+    lastPaymentAt: session.lastPaymentAt ?? null,
     createdAt: session.createdAt ?? now,
     updatedAt: now,
     closedAt: session.closedAt ?? null,
@@ -232,6 +244,23 @@ export async function getOrCreateTableSessionForCustomer(
 
     if (customerSession) {
       const normalized = await normalizeTableSessionForRestaurant(customerSession);
+      const desiredTableId = tableId?.trim() || null;
+      if (desiredTableId && normalized.tableId !== desiredTableId) {
+        const customerIndex = sessions.findIndex((session) => session.id === customerSession.id);
+        const nextSession = normalizeTableSession({
+          ...normalized,
+          tableId: desiredTableId,
+          updatedAt: new Date().toISOString(),
+        });
+        if (customerIndex !== -1) {
+          const nextSessions = [...sessions];
+          nextSessions[customerIndex] = nextSession;
+          if (canPersistDataFiles) {
+            await writeTableSessionsFile(nextSessions);
+          }
+        }
+        return nextSession;
+      }
       if (
         normalized.tableId !== customerSession.tableId ||
         JSON.stringify(normalized.participants) !== JSON.stringify(customerSession.participants)
@@ -357,6 +386,11 @@ export async function updateTableSession(sessionId: string, patch: Partial<Table
       paidTotal: patch.paidTotal !== undefined ? patch.paidTotal : sessions[index].paidTotal,
       note: patch.note !== undefined ? patch.note : sessions[index].note,
       participants: patch.participants ?? sessions[index].participants,
+      lastPaymentMethod:
+        patch.lastPaymentMethod !== undefined ? patch.lastPaymentMethod : sessions[index].lastPaymentMethod,
+      lastPaymentAmount:
+        patch.lastPaymentAmount !== undefined ? patch.lastPaymentAmount : sessions[index].lastPaymentAmount,
+      lastPaymentAt: patch.lastPaymentAt !== undefined ? patch.lastPaymentAt : sessions[index].lastPaymentAt,
       createdAt: patch.createdAt ?? sessions[index].createdAt,
       updatedAt: new Date().toISOString(),
       closedAt: patch.closedAt !== undefined ? patch.closedAt : sessions[index].closedAt,

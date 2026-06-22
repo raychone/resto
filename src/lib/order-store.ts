@@ -3,6 +3,7 @@ import path from "node:path";
 import { listRestaurants } from "@/lib/restaurant-store";
 import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
 import { createId, type Order, type OrderItem, type Payment } from "@/lib/types";
+import { summarizeTaxBreakdown, taxRateForCategory } from "@/lib/tax";
 import { listTablesForRestaurant } from "@/lib/table-store";
 
 const dataDir = path.join(process.cwd(), "data");
@@ -65,6 +66,11 @@ async function normalizeOrderForRestaurant(order: Order) {
 
 function normalizeOrderItem(item: OrderItem): OrderItem {
   const now = new Date().toISOString();
+  const taxCategory = item.taxCategory === "drink" ? "drink" : "food";
+  const taxRate =
+    Number.isFinite(item.taxRate) && Number(item.taxRate) >= 0
+      ? Number(item.taxRate)
+      : taxRateForCategory(taxCategory);
   return {
     ...item,
     id: item.id?.trim() || createId("order-item"),
@@ -76,6 +82,8 @@ function normalizeOrderItem(item: OrderItem): OrderItem {
     note: item.note ?? "",
     assignedClientId: item.assignedClientId ?? null,
     assignedClientName: item.assignedClientName ?? null,
+    taxCategory,
+    taxRate,
     createdAt: item.createdAt ?? now,
     deletedAt: item.deletedAt ?? null,
   };
@@ -108,7 +116,7 @@ function normalizePayment(payment: Payment): Payment {
 }
 
 function orderTotal(order: Order) {
-  return order.items.reduce((sum, item) => sum + item.priceSnapshot * item.quantity, 0);
+  return summarizeTaxBreakdown(order.items).total;
 }
 
 async function withFileLock<T>(lockFilePath: string, task: () => Promise<T>): Promise<T> {
@@ -252,21 +260,28 @@ export async function listPaymentsForOrder(orderId: string) {
   return payments.filter((payment) => payment.orderId === orderId && !payment.deletedAt);
 }
 
-export async function createOrder(input: Omit<Order, "id" | "createdAt" | "updatedAt" | "items"> & {
-  items?: OrderItem[];
-}) {
+export async function createOrder(
+  input: Omit<Order, "id" | "createdAt" | "updatedAt" | "items"> & {
+    items?: OrderItem[];
+  },
+  options?: {
+    allowDuplicateOpen?: boolean;
+  },
+) {
   return withFileLock(ordersLockFile, async () => {
     const orders = await listOrders();
-    const duplicateExisting = orders.find(
-      (order) =>
-        order.restaurantId === input.restaurantId &&
-        !order.deletedAt &&
-        order.status === "open" &&
-        order.source === (input.source ?? (input.tableId ? "table" : "takeaway")) &&
-        (input.tableId ? order.tableId === input.tableId : !order.tableId),
-    );
-    if (duplicateExisting) {
-      return duplicateExisting;
+    if (!options?.allowDuplicateOpen) {
+      const duplicateExisting = orders.find(
+        (order) =>
+          order.restaurantId === input.restaurantId &&
+          !order.deletedAt &&
+          order.status === "open" &&
+          order.source === (input.source ?? (input.tableId ? "table" : "takeaway")) &&
+          (input.tableId ? order.tableId === input.tableId : !order.tableId),
+      );
+      if (duplicateExisting) {
+        return duplicateExisting;
+      }
     }
 
     const now = new Date().toISOString();

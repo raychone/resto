@@ -13,8 +13,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.691Z",
+    "updatedAt": "2026-06-22T12:01:49.452Z",
     "deletedAt": null
   },
   {
@@ -31,8 +31,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.691Z",
+    "updatedAt": "2026-06-22T12:01:49.452Z",
     "deletedAt": null
   },
   {
@@ -49,8 +49,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.691Z",
+    "updatedAt": "2026-06-22T12:01:49.452Z",
     "deletedAt": null
   },
   {
@@ -67,8 +67,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.691Z",
+    "updatedAt": "2026-06-22T12:01:49.452Z",
     "deletedAt": null
   },
   {
@@ -85,8 +85,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.691Z",
+    "updatedAt": "2026-06-22T12:01:49.452Z",
     "deletedAt": null
   },
   {
@@ -103,8 +103,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.691Z",
+    "updatedAt": "2026-06-22T12:01:49.452Z",
     "deletedAt": null
   },
   {
@@ -121,8 +121,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.691Z",
+    "updatedAt": "2026-06-22T12:01:49.452Z",
     "deletedAt": null
   },
   {
@@ -139,8 +139,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.691Z",
+    "updatedAt": "2026-06-22T12:01:49.453Z",
     "deletedAt": null
   },
   {
@@ -157,8 +157,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.691Z",
+    "updatedAt": "2026-06-22T12:01:49.453Z",
     "deletedAt": null
   },
   {
@@ -175,8 +175,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.691Z",
+    "updatedAt": "2026-06-22T12:01:49.453Z",
     "deletedAt": null
   },
   {
@@ -193,8 +193,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.692Z",
+    "updatedAt": "2026-06-22T12:01:49.453Z",
     "deletedAt": null
   },
   {
@@ -211,8 +211,8 @@
     "tier": "silver",
     "isGuest": false,
     "status": "active",
-    "createdAt": "2026-06-22T09:47:01.403Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.692Z",
+    "updatedAt": "2026-06-22T12:01:49.453Z",
     "deletedAt": null
   },
   {
@@ -229,8 +229,44 @@
     "lifetimePoints": 0,
     "tier": "bronze",
     "status": "active",
-    "createdAt": "2026-06-22T09:55:46.280Z",
-    "updatedAt": "2026-06-22T09:58:00.963Z",
+    "createdAt": "2026-06-22T10:58:34.973Z",
+    "updatedAt": "2026-06-22T12:01:49.453Z",
+    "deletedAt": null
+  },
+  {
+    "id": "guest-customer-lq7mev3v",
+    "restaurantId": "food-1-restaurant",
+    "userId": null,
+    "isGuest": true,
+    "firstName": "Andrei",
+    "lastName": "",
+    "name": "Andrei",
+    "email": "",
+    "phone": "",
+    "currentPoints": 0,
+    "lifetimePoints": 0,
+    "tier": "bronze",
+    "status": "active",
+    "createdAt": "2026-06-22T11:19:05.449Z",
+    "updatedAt": "2026-06-22T12:01:49.453Z",
+    "deletedAt": null
+  },
+  {
+    "id": "customer-d98nm3pp",
+    "restaurantId": "food-1-restaurant",
+    "userId": "user-czd0ifs9",
+    "firstName": "andrei",
+    "lastName": "",
+    "name": "andrei",
+    "email": "gg@gg.com@demo.local",
+    "phone": "+33 6 00 00 00 00",
+    "currentPoints": 180,
+    "lifetimePoints": 1280,
+    "tier": "silver",
+    "isGuest": false,
+    "status": "active",
+    "createdAt": "2026-06-22T11:41:50.820Z",
+    "updatedAt": "2026-06-22T12:01:49.453Z",
     "deletedAt": null
   }
 ]

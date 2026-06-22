@@ -3,6 +3,7 @@ import { getOwnerUserFromRequest, getManagerUserFromRequest, getStaffUserFromReq
 import { recordAuditEntry } from "@/lib/audit-store";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
 import { addOrderItem, getOrderById, removeOrderItem } from "@/lib/order-store";
+import { inferTaxCategory, taxRateForCategory } from "@/lib/tax";
 
 export const dynamic = "force-dynamic";
 
@@ -59,12 +60,14 @@ export async function POST(request: NextRequest, { params }: Params) {
     note?: string;
     assignedClientId?: string | null;
     assignedClientName?: string | null;
+    categoryName?: string | null;
   };
 
   if (!body.menuItemId || !body.nameSnapshot || typeof body.priceSnapshot !== "number") {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
+  const taxCategory = inferTaxCategory(body.categoryName ?? null, body.nameSnapshot ?? null);
   const next = await addOrderItem(orderId, {
     menuItemId: body.menuItemId,
     nameSnapshot: body.nameSnapshot,
@@ -73,6 +76,8 @@ export async function POST(request: NextRequest, { params }: Params) {
     note: body.note ?? "",
     assignedClientId: body.assignedClientId ?? null,
     assignedClientName: body.assignedClientName ?? null,
+    taxCategory,
+    taxRate: taxRateForCategory(taxCategory),
   });
 
   const actor = await resolveAuditActor(request, restaurant.id);

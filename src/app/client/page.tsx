@@ -28,13 +28,14 @@ export const metadata: Metadata = {
 export default async function ClientPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ focus?: string; google?: string; restaurantSlug?: string }>;
+  searchParams?: Promise<{ focus?: string; google?: string; restaurantSlug?: string; tableId?: string }>;
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : null;
   const authenticated = await isClientAuthenticated();
   const guestSession = authenticated ? null : await getClientGuestSession();
   const clientUser = authenticated ? await getClientSessionUser() : null;
   const sessionRestaurant = clientUser?.restaurantId ? await getRestaurantById(clientUser.restaurantId) : null;
+  const requestedTableId = resolvedSearchParams?.tableId?.trim() || null;
   const requestedRestaurantSlug =
     resolvedSearchParams?.restaurantSlug?.trim() || sessionRestaurant?.slug || guestSession?.restaurantSlug || "bar-1";
   const requestedRestaurant = await getRestaurantBySlug(requestedRestaurantSlug);
@@ -53,7 +54,7 @@ export default async function ClientPage({
         const tableSession = await getOrCreateTableSessionForCustomer(
           guestRestaurant.id,
           customer,
-          guestSession.tableId,
+          guestSession.tableId ?? requestedTableId,
         );
         const tables = await listTablesForRestaurant(guestRestaurant.id);
         const orders = await listOrdersForRestaurant(guestRestaurant.id);
@@ -249,7 +250,7 @@ export default async function ClientPage({
   }
 
   const customer = await getOrCreateCustomerForUser(clientUser, restaurant.id);
-  const tableSession = await getOrCreateTableSessionForCustomer(restaurant.id, customer);
+  const tableSession = await getOrCreateTableSessionForCustomer(restaurant.id, customer, requestedTableId);
   const tables = await listTablesForRestaurant(restaurant.id);
   const orders = await listOrdersForRestaurant(restaurant.id);
   const displayLogo = restaurant.logoUrl || (restaurant.slug === "bar-1" ? "/logoNoirBar.png" : "/logoFood.png");

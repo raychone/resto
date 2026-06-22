@@ -21,6 +21,7 @@ import {
 } from "@/lib/order-store";
 import { getTableById } from "@/lib/table-store";
 import { getOrCreateTableSessionForCustomer, updateTableSession } from "@/lib/table-session-store";
+import { inferTaxCategory, taxRateForCategory } from "@/lib/tax";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ type CartItem = {
   price?: number;
   quantity?: number;
   note?: string;
+  categoryName?: string;
 };
 
 export async function GET(
@@ -129,11 +131,8 @@ export async function POST(
     customer,
     body.tableId ?? guestSession?.tableId ?? null,
   );
-  const currentOrder = tableSession.orderId ? await getOrderById(tableSession.orderId) : null;
-
-  let order = currentOrder;
-  if (!order || order.deletedAt || order.status !== "open") {
-    order = await createOrder({
+  const order = await createOrder(
+    {
       restaurantId: restaurant.id,
       tableId: tableSession.tableId,
       tableSessionId: tableSession.id,
@@ -144,9 +143,10 @@ export async function POST(
       closedAt: null,
       archivedAt: null,
       note: body.note?.trim() || "Commande client",
-    });
-    await updateTableSession(tableSession.id, { orderId: order.id });
-  }
+    },
+    { allowDuplicateOpen: true },
+  );
+  await updateTableSession(tableSession.id, { orderId: order.id });
 
   for (const item of items) {
     if (!item.menuItemId || !item.name || !Number.isFinite(item.price)) {
@@ -163,6 +163,8 @@ export async function POST(
       note: item.note ?? "",
       assignedClientId: customer.id,
       assignedClientName: customer.name,
+      taxCategory: inferTaxCategory(item.categoryName ?? null, item.name ?? null),
+      taxRate: taxRateForCategory(inferTaxCategory(item.categoryName ?? null, item.name ?? null)),
     });
   }
 

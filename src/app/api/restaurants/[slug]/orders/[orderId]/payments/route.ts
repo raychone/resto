@@ -6,6 +6,7 @@ import { getRestaurantBySlug } from "@/lib/restaurant-store";
 import { createPayment, getOrderById, listPaymentsForOrder } from "@/lib/order-store";
 import { getTableById } from "@/lib/table-store";
 import { listTableSessionsForRestaurant, updateTableSession } from "@/lib/table-session-store";
+import { summarizeTaxBreakdown } from "@/lib/tax";
 
 export const dynamic = "force-dynamic";
 
@@ -72,10 +73,14 @@ export async function POST(request: NextRequest, { params }: Params) {
     status: "completed",
     note: body.note ?? "",
   });
+  if (!payment) {
+    return NextResponse.json({ error: "Unable to record payment" }, { status: 500 });
+  }
 
   const refreshedOrder = await getOrderById(orderId);
   const orderPayments = await listPaymentsForOrder(orderId);
-  const total = order?.items.reduce((sum, item) => sum + item.priceSnapshot * item.quantity, 0) ?? 0;
+  const taxSummary = summarizeTaxBreakdown(order?.items ?? []);
+  const total = taxSummary.total;
   const paidTotal = orderPayments.reduce((sum, entry) => sum + entry.amount, 0);
   const remaining = Math.max(0, total - paidTotal);
   const table = order?.tableId ? await getTableById(order.tableId) : null;
@@ -129,6 +134,9 @@ export async function POST(request: NextRequest, { params }: Params) {
       paidTotal,
       status: remaining <= 0 ? "closed" : tableSession.status,
       closedAt: remaining <= 0 ? new Date().toISOString() : tableSession.closedAt ?? null,
+      lastPaymentMethod: payment.method,
+      lastPaymentAmount: payment.amount,
+      lastPaymentAt: payment.createdAt,
     });
 
     const earnedPointsByCustomer = new Map<string, number>();
@@ -163,6 +171,11 @@ export async function POST(request: NextRequest, { params }: Params) {
         targetLabel,
         methodLabel,
         amount: body.amount,
+        subtotal: taxSummary.subtotal,
+        foodTax: taxSummary.foodTax,
+        drinkTax: taxSummary.drinkTax,
+        taxTotal: taxSummary.taxTotal,
+        total,
         paidTotal,
         remaining,
       },

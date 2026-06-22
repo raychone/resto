@@ -15,6 +15,7 @@ import {
 import { PublicMenuCategories } from "@/components/public-menu-categories";
 import { useRestaurantRealtime } from "@/components/use-restaurant-realtime";
 import { createId } from "@/lib/types";
+import { summarizeTaxBreakdown } from "@/lib/tax";
 import { countTablesNeeded } from "@/lib/booking";
 import type {
   TableSession,
@@ -189,7 +190,7 @@ function reservationStatusRank(status: Reservation["status"]) {
 }
 
 function orderTotal(order: Order) {
-  return order.items.reduce((sum, item) => sum + item.priceSnapshot * item.quantity, 0);
+  return summarizeTaxBreakdown(order.items).total;
 }
 
 function paymentsForOrder(payments: Payment[], orderId: string) {
@@ -268,6 +269,9 @@ export function StaffClient({
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const toastTimer = useRef<number | null>(null);
   const [notificationPermission, setNotificationPermission] = useState<string>("unsupported");
+  const [optimisticReadWaiterCallTables, setOptimisticReadWaiterCallTables] = useState<Set<string>>(
+    () => new Set(),
+  );
   const previousOrdersRef = useRef<Map<string, Order["status"]>>(new Map());
   const initializedOrdersRef = useRef(false);
   const tableBonsRef = useRef<HTMLDivElement | null>(null);
@@ -386,7 +390,7 @@ export function StaffClient({
       ? null
       : window.setInterval(() => {
           void loadData();
-        }, 1200);
+        }, 500);
 
     const refreshOnFocus = () => {
       void loadData();
@@ -603,12 +607,14 @@ export function StaffClient({
         return haystack.includes(table.name.toLowerCase());
       }).length;
 
-      if (count > 0) {
-        accumulator[table.id] = count;
+      const optimisticCount = optimisticReadWaiterCallTables.has(table.id) ? 0 : count;
+
+      if (optimisticCount > 0) {
+        accumulator[table.id] = optimisticCount;
       }
       return accumulator;
     }, {});
-  }, [currentTables, messages]);
+  }, [currentTables, messages, optimisticReadWaiterCallTables]);
 
   const alertSummary = useMemo(() => {
     const qrOrders = Object.values(pendingClientOrdersByTable).reduce((sum, value) => sum + value, 0);
@@ -701,6 +707,18 @@ export function StaffClient({
       null
     );
   }, [orders, selectedTableModal, selectedTarget]);
+
+  const selectedTableModalTaxSummary = useMemo(() => {
+    if (!selectedTableModalOpenOrder) return null;
+    return summarizeTaxBreakdown(selectedTableModalOpenOrder.items);
+  }, [selectedTableModalOpenOrder]);
+  const selectedTableModalPayments = useMemo(
+    () =>
+      selectedTableModalOpenOrder
+        ? payments.filter((payment) => payment.orderId === selectedTableModalOpenOrder.id && !payment.deletedAt)
+        : [],
+    [payments, selectedTableModalOpenOrder],
+  );
 
   const selectedTableModalOrders = useMemo(() => {
     if (!selectedTableModal) return [];
@@ -804,6 +822,12 @@ export function StaffClient({
   async function markWaiterCallsReadForTable(tableId: string) {
     if (!tableId) return;
 
+    setOptimisticReadWaiterCallTables((previous) => {
+      const next = new Set(previous);
+      next.add(tableId);
+      return next;
+    });
+
     const response = await fetch(`/api/restaurants/${restaurant.slug}/messages`, {
       method: "PATCH",
       headers: {
@@ -817,7 +841,20 @@ export function StaffClient({
 
     if (response.ok) {
       await loadData();
+    } else {
+      setOptimisticReadWaiterCallTables((previous) => {
+        const next = new Set(previous);
+        next.delete(tableId);
+        return next;
+      });
+      return;
     }
+
+    setOptimisticReadWaiterCallTables((previous) => {
+      const next = new Set(previous);
+      next.delete(tableId);
+      return next;
+    });
   }
 
   useEffect(() => {
@@ -993,6 +1030,7 @@ export function StaffClient({
       price: number;
       displayPrice?: number;
     },
+    categoryName?: string,
     orderOverrideId?: string,
   ) {
     const order = orderOverrideId ? orders.find((existingOrder) => existingOrder.id === orderOverrideId) ?? null : await ensureOrder(selectedTarget);
@@ -1016,6 +1054,7 @@ export function StaffClient({
         note: "",
         assignedClientId: assignedParticipant?.id ?? null,
         assignedClientName: assignedParticipant?.name ?? null,
+        categoryName,
       }),
     });
 
@@ -1033,9 +1072,9 @@ export function StaffClient({
     name: string;
     price: number;
     displayPrice?: number;
-  }) {
+  }, categoryName?: string) {
     if (!selectedTableModal) {
-      await addItemToOrder(item);
+      await addItemToOrder(item, categoryName);
       return;
     }
 
@@ -1069,6 +1108,7 @@ export function StaffClient({
           note: "",
           assignedClientId: null,
           assignedClientName: null,
+          categoryName,
         }),
       });
 
@@ -1106,16 +1146,17 @@ export function StaffClient({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        menuItemId: item.id,
-        nameSnapshot: item.name,
-        priceSnapshot: item.displayPrice ?? item.price,
-        quantity: 1,
-        note: "",
-        assignedClientId: null,
-        assignedClientName: null,
-      }),
-    });
+        body: JSON.stringify({
+          menuItemId: item.id,
+          nameSnapshot: item.name,
+          priceSnapshot: item.displayPrice ?? item.price,
+          quantity: 1,
+          note: "",
+          assignedClientId: null,
+          assignedClientName: null,
+          categoryName,
+        }),
+      });
 
     if (!itemResponse.ok) {
       setNotice("Impossible d'ajouter le plat.");
@@ -1335,6 +1376,7 @@ export function StaffClient({
         ? `${label} encaissé partiellement`
         : `${label} encaissé`,
     );
+    setPaymentAmount("");
     await loadData();
   }
 
@@ -2639,18 +2681,22 @@ export function StaffClient({
                                     <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Actions rapides</p>
                                     <p className="mt-1 text-xs text-[#6f5b4a]">Passe en paiement après le service.</p>
                                   </div>
-                                {selectedTableModalOpenOrder.status === "ready" ? (
+                                {selectedTableModalOpenOrder.status === "ready" || selectedTableModalOpenOrder.status === "served" ? (
                                   <button
                                     type="button"
                                     onClick={async () => {
-                                      const ok = await updateOrderStatus(selectedTableModalOpenOrder.id, "served");
-                                      if (ok) {
+                                      if (selectedTableModalOpenOrder.status === "ready") {
+                                        const ok = await updateOrderStatus(selectedTableModalOpenOrder.id, "served");
+                                        if (ok) {
+                                          setSelectedTableModalView("payment");
+                                        }
+                                      } else {
                                         setSelectedTableModalView("payment");
                                       }
                                     }}
                                     className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
                                   >
-                                    Servi
+                                    Encaisser
                                   </button>
                                 ) : null}
                                 </div>
@@ -2659,19 +2705,77 @@ export function StaffClient({
                           ) : null}
 
                           {selectedTableModalView === "payment" && selectedTableModalOpenOrder ? (
-                            <div className="rounded-[1.35rem] border border-[#eadfce] bg-white/80 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
-                              <div className="flex items-center justify-between gap-3">
+                            <div className="rounded-[1.35rem] border border-[#eadfce] bg-white/90 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
+                              <div className="flex flex-col gap-3 border-b border-[#eadfce] pb-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>
                                   <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Paiement</p>
-                                  <p className="mt-1 text-xs text-[#6f5b4a]">Enregistre un paiement cash, carte ou partiel.</p>
+                                  <h4 className="mt-1 text-lg font-semibold text-[#24170f]">Encaisser le bon</h4>
+                                  <p className="mt-1 text-xs text-[#6f5b4a]">
+                                    Paiement cash, carte ou partiel. Le bon reste ouvert tant que le restant n’est pas à 0.
+                                  </p>
                                 </div>
-                                <a
-                                  href={`/staff?restaurantSlug=${encodeURIComponent(restaurant.slug)}&table=${encodeURIComponent(selectedTableModal.id)}`}
-                                  className="rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2]"
-                                >
-                                  Revenir au bon
-                                </a>
+                                <div className="flex flex-wrap gap-2">
+                                  <a
+                                    href={`/staff?restaurantSlug=${encodeURIComponent(restaurant.slug)}&table=${encodeURIComponent(selectedTableModal.id)}`}
+                                    className="rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2]"
+                                  >
+                                    Revenir au bon
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={() => void closeOrderById(selectedTableModalOpenOrder.id, paymentMethod)}
+                                    className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
+                                  >
+                                    {Math.max(
+                                      0,
+                                      (selectedTableModalTaxSummary?.total ?? orderTotal(selectedTableModalOpenOrder)) -
+                                        paidTotalForOrder(payments, selectedTableModalOpenOrder.id) -
+                                        (Number(paymentAmount) > 0 ? Number(paymentAmount) : Math.max(
+                                          0,
+                                          (selectedTableModalTaxSummary?.total ?? orderTotal(selectedTableModalOpenOrder)) -
+                                            paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
+                                        )),
+                                    ) > 0
+                                      ? "Enregistrer paiement"
+                                      : "Encaisser et clôturer"}
+                                  </button>
+                                </div>
                               </div>
+
+                              <div className="mt-3 grid gap-2 sm:grid-cols-4">
+                                <div className="rounded-2xl border border-[#eadfce] bg-[#faf7f2] px-3 py-3">
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Sous-total</p>
+                                  <p className="mt-1 text-sm font-semibold text-[#24170f]">
+                                    {formatMoney(selectedTableModalTaxSummary?.subtotal ?? orderTotal(selectedTableModalOpenOrder), restaurant.currency)}
+                                  </p>
+                                </div>
+                                <div className="rounded-2xl border border-[#eadfce] bg-[#faf7f2] px-3 py-3">
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">TVA nourriture</p>
+                                  <p className="mt-1 text-sm font-semibold text-[#24170f]">
+                                    {formatMoney(selectedTableModalTaxSummary?.foodTax ?? 0, restaurant.currency)}
+                                  </p>
+                                </div>
+                                <div className="rounded-2xl border border-[#eadfce] bg-[#faf7f2] px-3 py-3">
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">TVA boissons</p>
+                                  <p className="mt-1 text-sm font-semibold text-[#24170f]">
+                                    {formatMoney(selectedTableModalTaxSummary?.drinkTax ?? 0, restaurant.currency)}
+                                  </p>
+                                </div>
+                                <div className="rounded-2xl border border-[#eadfce] bg-[#faf7f2] px-3 py-3">
+                                  <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Reste</p>
+                                  <p className="mt-1 text-sm font-semibold text-[#24170f]">
+                                    {formatMoney(
+                                      Math.max(
+                                        0,
+                                        (selectedTableModalTaxSummary?.total ?? orderTotal(selectedTableModalOpenOrder)) -
+                                          paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
+                                      ),
+                                      restaurant.currency,
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+
                               <div className="mt-3 flex flex-wrap items-center gap-2">
                                 <select
                                   value={paymentMethod}
@@ -2691,29 +2795,51 @@ export function StaffClient({
                                   step="0.01"
                                   placeholder={Math.max(
                                     0,
-                                    orderTotal(selectedTableModalOpenOrder) -
+                                    (selectedTableModalTaxSummary?.total ?? orderTotal(selectedTableModalOpenOrder)) -
                                       paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
                                   ).toString()}
                                   className="w-28 rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs text-[#24170f]"
                                 />
-                                <button
-                                  type="button"
-                                  onClick={() => void closeOrderById(selectedTableModalOpenOrder.id, paymentMethod)}
-                                  className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-3 py-2 text-xs font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
-                                >
-                                  Encaisser
-                                </button>
                                 <span className="text-[11px] text-[#7f6c5a]">
-                                  Total {formatMoney(orderTotal(selectedTableModalOpenOrder), restaurant.currency)} · Reste{" "}
-                                  {formatMoney(
-                                    Math.max(
-                                      0,
-                                      orderTotal(selectedTableModalOpenOrder) -
-                                        paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
-                                    ),
-                                    restaurant.currency,
-                                  )}
+                                  Méthode mémorisée pour le ticket et la facture.
                                 </span>
+                              </div>
+
+                              <div className="mt-3 rounded-[1.25rem] border border-[#eadfce] bg-[#fbf7f1] p-3">
+                                <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Paiements enregistrés</p>
+                                <div className="mt-2 space-y-2">
+                                  {selectedTableModalPayments.length === 0 ? (
+                                    <p className="rounded-2xl border border-[#eadfce] bg-white px-3 py-2 text-xs text-[#7f6c5a]">
+                                      Aucun paiement pour ce bon.
+                                    </p>
+                                  ) : (
+                                    selectedTableModalPayments.map((payment) => (
+                                      <div
+                                        key={payment.id}
+                                        className="flex items-center justify-between gap-3 rounded-2xl border border-[#eadfce] bg-white px-3 py-2 text-xs text-[#24170f]"
+                                      >
+                                        <div>
+                                          <p className="font-medium">
+                                            {payment.method === "card"
+                                              ? "Carte"
+                                              : payment.method === "external"
+                                                ? "Externe"
+                                                : payment.method === "other"
+                                                  ? "Autre"
+                                                  : "Cash"}
+                                          </p>
+                                          <p className="text-[#7f6c5a]">
+                                            {new Date(payment.createdAt).toLocaleTimeString("fr-FR", {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                            })}
+                                          </p>
+                                        </div>
+                                        <p className="font-semibold">{formatMoney(payment.amount, restaurant.currency)}</p>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
                               </div>
                             </div>
                           ) : null}
@@ -2739,13 +2865,13 @@ export function StaffClient({
                                 showItemModal={false}
                                 compact
                                 testIdPrefix="staff-table-menu"
-                                onItemAction={(item) =>
+                                onItemAction={(item, categoryName) =>
                                   void addItemToTableRound({
                                     id: item.id,
                                     name: item.name,
                                     price: item.price,
                                     displayPrice: getMenuItemEffectivePrice(item),
-                                  })
+                                  }, categoryName)
                                 }
                               />
                             </div>
@@ -3297,14 +3423,14 @@ export function StaffClient({
                   showItemModal={!selectedTableModal}
                   compact
                   testIdPrefix="staff-main-menu"
-                  onItemAction={(item) => {
+                  onItemAction={(item, categoryName) => {
                     if (!selectedTableModal) return;
                     void addItemToTableRound({
                       id: item.id,
                       name: item.name,
                       price: item.price,
                       displayPrice: getMenuItemEffectivePrice(item),
-                    });
+                    }, categoryName);
                   }}
                 />
               </div>

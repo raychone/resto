@@ -11,9 +11,12 @@
     "note": "Session démo pour Camille Martin",
     "participants": [],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-22T09:58:07.047Z",
+    "updatedAt": "2026-06-22T12:01:54.428Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-2-session",
@@ -36,9 +39,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-22T09:58:07.049Z",
+    "updatedAt": "2026-06-22T12:01:54.428Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-3-session",
@@ -61,9 +67,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-22T09:58:07.050Z",
+    "updatedAt": "2026-06-22T12:01:54.428Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-4-session",
@@ -86,9 +95,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-22T09:58:07.051Z",
+    "updatedAt": "2026-06-22T12:01:54.428Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-5-session",
@@ -111,9 +123,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-22T09:58:07.051Z",
+    "updatedAt": "2026-06-22T12:01:54.428Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-6-session",
@@ -136,9 +151,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-22T09:58:07.051Z",
+    "updatedAt": "2026-06-22T12:01:54.429Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-7-session",
@@ -161,9 +179,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-22T09:58:07.052Z",
+    "updatedAt": "2026-06-22T12:01:54.429Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-8-session",
@@ -186,9 +207,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-22T09:58:07.052Z",
+    "updatedAt": "2026-06-22T12:01:54.429Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-9-session",
@@ -211,9 +235,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-22T09:58:07.053Z",
+    "updatedAt": "2026-06-22T12:01:54.429Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-10-session",
@@ -236,9 +263,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-22T09:58:07.054Z",
+    "updatedAt": "2026-06-22T12:01:54.429Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "food-1-restaurant-table-1-session",
@@ -261,9 +291,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:55.162Z",
-    "updatedAt": "2026-06-22T09:58:07.055Z",
+    "updatedAt": "2026-06-22T12:01:54.430Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "food-1-restaurant-table-2-session",
@@ -286,9 +319,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:55.162Z",
-    "updatedAt": "2026-06-22T09:58:07.055Z",
+    "updatedAt": "2026-06-22T12:01:54.430Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "food-1-restaurant-table-3-session",
@@ -311,9 +347,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:55.162Z",
-    "updatedAt": "2026-06-22T09:58:07.056Z",
+    "updatedAt": "2026-06-22T12:01:54.431Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "food-1-restaurant-table-4-session",
@@ -336,9 +375,12 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:55.162Z",
-    "updatedAt": "2026-06-22T09:58:07.056Z",
+    "updatedAt": "2026-06-22T12:01:54.431Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "table-session-xt46tcoo",
@@ -361,9 +403,12 @@
       }
     ],
     "createdAt": "2026-06-22T09:32:41.434Z",
-    "updatedAt": "2026-06-22T09:58:07.056Z",
+    "updatedAt": "2026-06-22T12:01:54.432Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "table-session-lv4hfjqd",
@@ -402,19 +447,22 @@
       }
     ],
     "createdAt": "2026-06-22T09:37:26.104Z",
-    "updatedAt": "2026-06-22T09:58:07.056Z",
+    "updatedAt": "2026-06-22T12:01:54.432Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   },
   {
     "id": "table-session-s4tuob56",
     "restaurantId": "food-1-restaurant",
     "tableId": "food-1-restaurant-table-6",
-    "orderId": "order-y98jmawe",
-    "status": "open",
+    "orderId": "order-0ch76hq1",
+    "status": "closed",
     "guestCount": 1,
     "estimatedTotal": 0,
-    "paidTotal": 0,
+    "paidTotal": 20,
     "note": "Session client liée au portail.",
     "participants": [
       {
@@ -427,8 +475,67 @@
       }
     ],
     "createdAt": "2026-06-22T09:55:47.783Z",
-    "updatedAt": "2026-06-22T09:58:07.057Z",
+    "updatedAt": "2026-06-22T12:01:54.433Z",
+    "closedAt": "2026-06-22T10:30:48.448Z",
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
+  },
+  {
+    "id": "table-session-7w7wp70n",
+    "restaurantId": "food-1-restaurant",
+    "tableId": "food-1-restaurant-table-6",
+    "orderId": "order-dgmt51zf",
+    "status": "closed",
+    "guestCount": 1,
+    "estimatedTotal": 0,
+    "paidTotal": 9.9,
+    "note": "Session client liée au portail.",
+    "participants": [
+      {
+        "id": "participant-ji1e0r9a",
+        "customerId": "guest-customer-lq7mev3v",
+        "name": "Andrei",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-22T11:19:06.931Z",
+    "updatedAt": "2026-06-22T12:01:54.433Z",
+    "closedAt": "2026-06-22T11:31:04.396Z",
+    "deletedAt": null,
+    "lastPaymentMethod": "external",
+    "lastPaymentAmount": 3.9,
+    "lastPaymentAt": "2026-06-22T11:30:57.839Z"
+  },
+  {
+    "id": "table-session-2w1t3zno",
+    "restaurantId": "food-1-restaurant",
+    "tableId": "food-1-restaurant-table-1",
+    "orderId": null,
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 0,
+    "paidTotal": 0,
+    "note": "Session client liée au portail.",
+    "participants": [
+      {
+        "id": "participant-s156szne",
+        "customerId": "customer-d98nm3pp",
+        "name": "andrei",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-22T11:41:57.383Z",
+    "updatedAt": "2026-06-22T12:01:54.436Z",
     "closedAt": null,
-    "deletedAt": null
+    "deletedAt": null,
+    "lastPaymentMethod": null,
+    "lastPaymentAmount": 0,
+    "lastPaymentAt": null
   }
 ]

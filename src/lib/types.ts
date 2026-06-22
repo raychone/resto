@@ -417,6 +417,7 @@ export type OrderStatus =
   | "archived";
 export type PaymentMethod = "cash" | "card" | "external" | "other";
 export type PaymentStatus = "pending" | "completed" | "cancelled";
+export type TaxCategory = "food" | "drink";
 
 export type OrderItem = {
   id: string;
@@ -428,6 +429,8 @@ export type OrderItem = {
   note: string;
   assignedClientId?: string | null;
   assignedClientName?: string | null;
+  taxCategory?: TaxCategory | null;
+  taxRate?: number | null;
   createdAt: string;
   deletedAt?: string | null;
 };
@@ -508,6 +511,9 @@ export type TableSession = {
   paidTotal: number;
   note: string;
   participants: TableSessionParticipant[];
+  lastPaymentMethod?: PaymentMethod | null;
+  lastPaymentAmount?: number;
+  lastPaymentAt?: string | null;
   createdAt: string;
   updatedAt: string;
   closedAt?: string | null;

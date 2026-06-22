@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   clearClientCart,
   listClientCartItems,
@@ -9,13 +10,12 @@ import {
 } from "@/lib/client-cart";
 import type { ClientCartItem } from "@/lib/client-cart";
 import {
-  browserNotificationsSupported,
-  requestBrowserNotificationPermission,
   sendBrowserNotification,
 } from "@/lib/browser-notifications";
 import { PublicMenuCategories } from "@/components/public-menu-categories";
 import { useRestaurantRealtime } from "@/components/use-restaurant-realtime";
 import { formatLoyaltyPoints, getLoyaltySummary } from "@/lib/loyalty";
+import { summarizeTaxBreakdown } from "@/lib/tax";
 import type { Customer, Order, Restaurant, Table, TableSession, User } from "@/lib/types";
 
 type Props = {
@@ -88,25 +88,41 @@ export function ClientPortal({
   const [cartNotice, setCartNotice] = useState<string | null>(null);
   const [clientNotice, setClientNotice] = useState<string | null>(null);
   const [liveOrder, setLiveOrder] = useState<Order | null>(activeOrder);
-  const [notificationPermission, setNotificationPermission] = useState<string>("unsupported");
+  const [liveTableSession, setLiveTableSession] = useState<TableSession>(tableSession);
   const [activeTab, setActiveTab] = useState<ClientTab>(focusCart ? "cart" : "menu");
   const cartSectionRef = useRef<HTMLDivElement | null>(null);
+  const router = useRouter();
   const previousOrderStatusRef = useRef<Order["status"] | null>(activeOrder?.status ?? null);
   const loyalty = getLoyaltySummary(customer.lifetimePoints);
   const remainingToNextTier = loyalty.pointsToNext;
   const liveOrderItems = liveOrder?.items.filter((item) => !item.deletedAt) ?? [];
-  const liveOrderTotal = liveOrderItems.reduce((sum, item) => sum + item.priceSnapshot * item.quantity, 0);
-  const livePaidTotal = tableSession.paidTotal;
+  const liveTaxSummary = useMemo(() => summarizeTaxBreakdown(liveOrderItems), [liveOrderItems]);
+  const liveOrderTotal = liveTaxSummary.total;
+  const livePaidTotal = liveTableSession.paidTotal;
   const liveRemaining = Math.max(0, liveOrderTotal - livePaidTotal);
   const equalShare =
-    tableSession.guestCount > 0 ? (liveOrder ? liveOrderTotal : tableSession.estimatedTotal) / tableSession.guestCount : 0;
-  const splitTotal = tableSession.participants.reduce((sum, participant) => sum + participant.settledAmount, 0);
-  const remaining = Math.max(0, (liveOrder ? liveOrderTotal : tableSession.estimatedTotal) - splitTotal);
+    liveTableSession.guestCount > 0
+      ? (liveOrder ? liveOrderTotal : liveTableSession.estimatedTotal) / liveTableSession.guestCount
+      : 0;
+  const splitTotal = liveTableSession.participants.reduce((sum, participant) => sum + participant.settledAmount, 0);
+  const remaining = Math.max(0, (liveOrder ? liveOrderTotal : liveTableSession.estimatedTotal) - splitTotal);
   const tableLabel =
-    tables.find((table) => table.id === tableSession.tableId)?.name ?? tableSession.tableId ?? "Table";
+    tables.find((table) => table.id === liveTableSession.tableId)?.name ?? liveTableSession.tableId ?? "Table";
   const myItems =
     liveOrder?.items.filter((item) => item.assignedClientId === customer.id && !item.deletedAt) ?? [];
   const myItemsTotal = myItems.reduce((sum, item) => sum + item.priceSnapshot * item.quantity, 0);
+  const livePaymentLabel =
+    liveTableSession.lastPaymentMethod === "card"
+      ? "Carte"
+      : liveTableSession.lastPaymentMethod === "external"
+        ? "Externe"
+        : liveTableSession.lastPaymentMethod === "other"
+          ? "Autre"
+          : liveTableSession.lastPaymentMethod === "cash"
+            ? "Cash"
+    : "";
+
+  const selectedTableId = liveTableSession.tableId ?? "";
 
   function jumpTo(id: string) {
     window.requestAnimationFrame(() => {
@@ -191,13 +207,12 @@ export function ClientPortal({
   }, [refreshCart]);
 
   useEffect(() => {
-    if (!browserNotificationsSupported()) return;
-    setNotificationPermission(window.Notification.permission);
+    setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    setLiveTableSession(tableSession);
+  }, [tableSession]);
 
   useEffect(() => {
     if (!focusCart || !cartSectionRef.current) return;
@@ -218,6 +233,9 @@ export function ClientPortal({
       };
 
       const nextOrder = payload.order ?? null;
+      if (payload.tableSession) {
+        setLiveTableSession(payload.tableSession);
+      }
       const previousStatus = previousOrderStatusRef.current;
       const nextStatus = nextOrder?.status ?? null;
 
@@ -257,7 +275,7 @@ export function ClientPortal({
       ? null
       : window.setInterval(() => {
           void refreshLiveOrder();
-        }, 1200);
+        }, 500);
 
     visibilityListener = () => {
       if (!document.hidden) {
@@ -295,12 +313,14 @@ export function ClientPortal({
     },
   });
 
-  async function enableNotifications() {
-    const permission = await requestBrowserNotificationPermission();
-    setNotificationPermission(permission);
-    if (permission === "granted") {
-      sendBrowserNotification(restaurant.name, "Les notifications client sont activées.");
+  function changeTable(nextTableId: string) {
+    const params = new URLSearchParams();
+    params.set("restaurantSlug", restaurant.slug);
+    params.set("tableId", nextTableId);
+    if (focusCart || activeTab === "cart") {
+      params.set("focus", "cart");
     }
+    router.replace(`/client?${params.toString()}`);
   }
 
   async function submitCart() {
@@ -317,7 +337,7 @@ export function ClientPortal({
       body: JSON.stringify({
         note: `Commande client ${clientUser.name}`,
         items: cartItems,
-        tableId: tableSession.tableId,
+        tableId: liveTableSession.tableId,
       }),
     });
 
@@ -355,7 +375,7 @@ export function ClientPortal({
           phone: customer.phone || "",
           email: customer.email || "",
           message: `Appel serveur depuis ${tableLabel}`,
-          tableId: tableSession.tableId ?? null,
+          tableId: liveTableSession.tableId ?? null,
           tableLabel,
         }),
       });
@@ -381,6 +401,26 @@ export function ClientPortal({
           Compte client connecté à {restaurant.name}. Ce portail sert de base pour le login client,
           le loyalty et le split de note.
         </p>
+        {tables.length > 0 ? (
+          <div className="mt-4 grid gap-2 sm:max-w-md">
+            <label className="grid gap-2">
+              <span className={isFoodTheme ? "text-xs font-semibold uppercase tracking-[0.28em] text-[#a38d7c]" : "text-xs font-semibold uppercase tracking-[0.28em] text-white/45"}>
+                Table
+              </span>
+              <select
+                value={selectedTableId}
+                onChange={(event) => changeTable(event.target.value)}
+                className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"}
+              >
+                {tables.map((table) => (
+                  <option key={table.id} value={table.id}>
+                    {table.name} · {table.seats} places
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        ) : null}
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
@@ -390,26 +430,6 @@ export function ClientPortal({
           >
             {callingWaiter ? "Demande envoyée..." : "Appeler le serveur"}
           </button>
-          {orderFlowEnabled ? (
-            <>
-              <button
-                type="button"
-                onClick={() => void enableNotifications()}
-                className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-white px-4 py-2 text-sm font-medium text-[#24170f] transition hover:bg-[#faf7f2]" : "rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-[#f5f1ea] transition hover:bg-white/10"}
-              >
-                {notificationPermission === "granted"
-                  ? "Notifications activées"
-                  : "Activer notifications"}
-              </button>
-              <span className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-[#faf7f2] px-3 py-2 text-xs font-medium text-[#6f5b4a]" : "rounded-full border border-white/10 bg-black/25 px-3 py-2 text-xs font-medium text-white/65"}>
-                {notificationPermission === "granted"
-                  ? "Notifications browser actives"
-                  : notificationPermission === "denied"
-                    ? "Notifications bloquées"
-                    : "Notifications disponibles"}
-              </span>
-            </>
-          ) : null}
         </div>
         {waiterNotice ? <p className={isFoodTheme ? "mt-3 text-sm text-[#6f5b4a]" : "mt-3 text-sm text-white/65"}>{waiterNotice}</p> : null}
       </section>
@@ -572,12 +592,12 @@ export function ClientPortal({
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">Note de table</p>
                     <p className="mt-1 text-sm text-white/60">
-                      Ce que le serveur ajoute apparaît ici en temps réel, avec le total restant à payer.
+                      Ce que le serveur ajoute apparaît ici en temps réel, avec les taxes et le total restant à payer.
                     </p>
                   </div>
                   <div className="rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold text-white">
                     {liveOrderItems.length} article{liveOrderItems.length > 1 ? "s" : ""} ·{" "}
-                    {formatMoney(liveOrderTotal, restaurant.currency)}
+                    {formatMoney(liveTaxSummary.total, restaurant.currency)}
                   </div>
                 </div>
                 <div className="mt-3 space-y-2">
@@ -605,11 +625,17 @@ export function ClientPortal({
                     ))
                   )}
                 </div>
-                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                <div className="mt-4 grid gap-2 sm:grid-cols-4">
                   <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
-                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">Total note</p>
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">Sous-total</p>
                     <p className="mt-1 text-lg font-semibold text-white">
-                      {formatMoney(liveOrderTotal, restaurant.currency)}
+                      {formatMoney(liveTaxSummary.subtotal, restaurant.currency)}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">TVA</p>
+                    <p className="mt-1 text-lg font-semibold text-white">
+                      {formatMoney(liveTaxSummary.taxTotal, restaurant.currency)}
                     </p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3">
@@ -625,6 +651,19 @@ export function ClientPortal({
                     </p>
                   </div>
                 </div>
+                {liveTableSession.status === "closed" || liveOrder?.status === "paid" ? (
+                  <div className="mt-4 rounded-[1.25rem] border border-emerald-400/25 bg-emerald-500/10 p-4">
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-emerald-100/70">Note réglée</p>
+                    <p className="mt-1 text-sm text-emerald-50">
+                      {livePaymentLabel
+                        ? `Paiement enregistré en ${livePaymentLabel}.`
+                        : "Paiement enregistré."}
+                    </p>
+                    <p className="mt-2 text-sm text-emerald-50/80">
+                      {formatMoney(livePaidTotal, restaurant.currency)} encaissés · {formatMoney(liveTaxSummary.total, restaurant.currency)} TTC.
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </div>
           ) : null}
@@ -749,6 +788,14 @@ export function ClientPortal({
                   Appeler le serveur
                 </button>
               </div>
+              {liveTableSession.status === "closed" || liveOrder?.status === "paid" ? (
+                <div className="mt-4 rounded-[1.25rem] border border-emerald-400/25 bg-emerald-500/10 p-4">
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-emerald-100/70">Note réglée</p>
+                  <p className="mt-1 text-sm text-emerald-50">
+                    Le paiement a été enregistré et la note est clôturée.
+                  </p>
+                </div>
+              ) : null}
               {cartNotice ? <p className="mt-3 text-sm text-white/65">{cartNotice}</p> : null}
               {clientNotice ? <p className="mt-2 text-sm text-white/65">{clientNotice}</p> : null}
             </>
@@ -778,14 +825,14 @@ export function ClientPortal({
                   <p className="mt-1 text-xl font-semibold">{tableLabel}</p>
                 </div>
                 <span className="rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white">
-                  {tableSession.status.toUpperCase()}
+                  {liveTableSession.status.toUpperCase()}
                 </span>
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
                   <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">Total table</p>
                   <p className="mt-1 text-lg font-semibold">
-                    {formatMoney(liveOrder ? liveOrderTotal : tableSession.estimatedTotal, restaurant.currency)}
+                    {formatMoney(liveOrder ? liveOrderTotal : liveTableSession.estimatedTotal, restaurant.currency)}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
@@ -848,8 +895,9 @@ export function ClientPortal({
             <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
               <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">Participants</p>
               <div className="mt-3 space-y-2">
-                {tableSession.participants.map((participant) => {
-                  const shareAmount = ((liveOrder ? liveOrderTotal : tableSession.estimatedTotal) * participant.sharePercent) / 100;
+                {liveTableSession.participants.map((participant) => {
+                  const shareAmount =
+                    ((liveOrder ? liveOrderTotal : liveTableSession.estimatedTotal) * participant.sharePercent) / 100;
                   return (
                     <div
                       key={participant.id}

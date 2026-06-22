@@ -97,7 +97,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
       ? null
       : window.setInterval(() => {
           void loadData();
-        }, 1200);
+        }, 500);
 
     return () => {
       if (intervalId) {
