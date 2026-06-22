@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getClientGuestSessionFromRequest, getClientUserFromRequest } from "@/lib/auth";
+import {
+  decodePayloadCookieValue,
+  getClientGuestSessionFromRequest,
+  getClientUserFromRequest,
+  type ClientGuestSession,
+} from "@/lib/auth";
 import { recordAuditEntry } from "@/lib/audit-store";
 import {
   getOrCreateAnonymousCustomerForRestaurant,
@@ -38,7 +43,9 @@ export async function GET(
   }
 
   const clientUser = await getClientUserFromRequest(request);
-  const guestSession = clientUser ? null : await getClientGuestSessionFromRequest(request);
+  const guestToken = request.nextUrl.searchParams.get("guestToken");
+  const tokenGuestSession = guestToken ? decodePayloadCookieValue<ClientGuestSession>(guestToken) : null;
+  const guestSession = clientUser ? null : tokenGuestSession ?? (await getClientGuestSessionFromRequest(request));
   if (!clientUser && (!guestSession || guestSession.restaurantId !== restaurant.id)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -88,7 +95,9 @@ export async function POST(
   }
 
   const clientUser = await getClientUserFromRequest(request);
-  const guestSession = clientUser ? null : await getClientGuestSessionFromRequest(request);
+  const guestToken = request.nextUrl.searchParams.get("guestToken");
+  const tokenGuestSession = guestToken ? decodePayloadCookieValue<ClientGuestSession>(guestToken) : null;
+  const guestSession = clientUser ? null : tokenGuestSession ?? (await getClientGuestSessionFromRequest(request));
   if (!clientUser && (!guestSession || guestSession.restaurantId !== restaurant.id)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -11,7 +11,7 @@
     "note": "Session démo pour Camille Martin",
     "participants": [],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-19T20:42:09.166Z",
+    "updatedAt": "2026-06-22T09:58:07.047Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -36,7 +36,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-19T20:42:09.167Z",
+    "updatedAt": "2026-06-22T09:58:07.049Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -61,7 +61,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-19T20:42:09.167Z",
+    "updatedAt": "2026-06-22T09:58:07.050Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -86,7 +86,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-19T20:42:09.168Z",
+    "updatedAt": "2026-06-22T09:58:07.051Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -111,7 +111,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-19T20:42:09.167Z",
+    "updatedAt": "2026-06-22T09:58:07.051Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -136,7 +136,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-19T20:42:09.168Z",
+    "updatedAt": "2026-06-22T09:58:07.051Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -161,7 +161,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-19T20:42:09.168Z",
+    "updatedAt": "2026-06-22T09:58:07.052Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -186,7 +186,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-19T20:42:09.168Z",
+    "updatedAt": "2026-06-22T09:58:07.052Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -211,7 +211,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-19T20:42:09.169Z",
+    "updatedAt": "2026-06-22T09:58:07.053Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -236,7 +236,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:54.641Z",
-    "updatedAt": "2026-06-19T20:42:09.169Z",
+    "updatedAt": "2026-06-22T09:58:07.054Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -261,7 +261,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:55.162Z",
-    "updatedAt": "2026-06-19T20:42:09.170Z",
+    "updatedAt": "2026-06-22T09:58:07.055Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -286,7 +286,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:55.162Z",
-    "updatedAt": "2026-06-19T20:42:09.170Z",
+    "updatedAt": "2026-06-22T09:58:07.055Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -311,7 +311,7 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:55.162Z",
-    "updatedAt": "2026-06-19T20:42:09.170Z",
+    "updatedAt": "2026-06-22T09:58:07.056Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -336,7 +336,98 @@
       }
     ],
     "createdAt": "2026-06-18T23:21:55.162Z",
-    "updatedAt": "2026-06-19T20:42:09.171Z",
+    "updatedAt": "2026-06-22T09:58:07.056Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "table-session-xt46tcoo",
+    "restaurantId": "food-1-restaurant",
+    "tableId": "food-1-restaurant-table-12",
+    "orderId": null,
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 0,
+    "paidTotal": 0,
+    "note": "Session client liée au portail.",
+    "participants": [
+      {
+        "id": "participant-you5jirl",
+        "customerId": "guest-customer-dofpfsfq",
+        "name": "Invité",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-22T09:32:41.434Z",
+    "updatedAt": "2026-06-22T09:58:07.056Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "table-session-lv4hfjqd",
+    "restaurantId": "food-1-restaurant",
+    "tableId": "food-1-restaurant-table-7",
+    "orderId": null,
+    "status": "open",
+    "guestCount": 3,
+    "estimatedTotal": 0,
+    "paidTotal": 0,
+    "note": "Session client liée au portail.",
+    "participants": [
+      {
+        "id": "participant-51oxw82z",
+        "customerId": "guest-customer-7fj5wcs6",
+        "name": "Invité",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      },
+      {
+        "id": "participant-qdyktm0f",
+        "customerId": "guest-customer-71sqw571",
+        "name": "Invité",
+        "sharePercent": 50,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      },
+      {
+        "id": "participant-6r87vw4t",
+        "customerId": "guest-customer-abk9gups",
+        "name": "Invité",
+        "sharePercent": 33,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-22T09:37:26.104Z",
+    "updatedAt": "2026-06-22T09:58:07.056Z",
+    "closedAt": null,
+    "deletedAt": null
+  },
+  {
+    "id": "table-session-s4tuob56",
+    "restaurantId": "food-1-restaurant",
+    "tableId": "food-1-restaurant-table-6",
+    "orderId": "order-y98jmawe",
+    "status": "open",
+    "guestCount": 1,
+    "estimatedTotal": 0,
+    "paidTotal": 0,
+    "note": "Session client liée au portail.",
+    "participants": [
+      {
+        "id": "participant-yh0kb9ge",
+        "customerId": "guest-customer-bj3j0anx",
+        "name": "Invité",
+        "sharePercent": 100,
+        "settledAmount": 0,
+        "note": "Client connecté"
+      }
+    ],
+    "createdAt": "2026-06-22T09:55:47.783Z",
+    "updatedAt": "2026-06-22T09:58:07.057Z",
     "closedAt": null,
     "deletedAt": null
   }

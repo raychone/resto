@@ -62,11 +62,25 @@
     "tableId": "food-1-restaurant-table-2",
     "tableLabel": "Table 2",
     "createdAt": "2026-06-18T23:21:55.162Z",
-    "status": "new",
+    "status": "read",
     "name": "Giulia Bianchi",
     "phone": "+39 02 00 00 10 02",
     "email": "foodclient2@demo.local",
     "message": "Le client Giulia Bianchi souhaite appeler le serveur depuis Table 2.",
+    "locale": "fr"
+  },
+  {
+    "id": "message-ri0it9if",
+    "restaurantId": "food-1-restaurant",
+    "restaurantSlug": "food-1",
+    "createdAt": "2026-06-22T09:46:47.171Z",
+    "status": "new",
+    "tableId": "food-1-restaurant-table-1",
+    "tableLabel": "Table 1",
+    "name": "Food Client",
+    "phone": "+33 6 00 00 00 00",
+    "email": "foodclient@demo.local",
+    "message": "Appel serveur depuis Table 1",
     "locale": "fr"
   }
 ]

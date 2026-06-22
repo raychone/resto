@@ -6,12 +6,14 @@ import type { RestaurantRealtimeEvent } from "@/lib/realtime";
 type UseRestaurantRealtimeOptions = {
   restaurantSlug: string;
   enabled: boolean;
+  guestSessionToken?: string | null;
   onEvent: (event: RestaurantRealtimeEvent) => void;
 };
 
 export function useRestaurantRealtime({
   restaurantSlug,
   enabled,
+  guestSessionToken = null,
   onEvent,
 }: UseRestaurantRealtimeOptions) {
   const onEventRef = useRef(onEvent);
@@ -32,7 +34,12 @@ export function useRestaurantRealtime({
     const connect = () => {
       if (cancelled) return;
 
-      source = new EventSource(`/api/restaurants/${restaurantSlug}/realtime`);
+      const realtimeUrl = new URL(`/api/restaurants/${restaurantSlug}/realtime`, window.location.origin);
+      if (guestSessionToken) {
+        realtimeUrl.searchParams.set("guestToken", guestSessionToken);
+      }
+
+      source = new EventSource(realtimeUrl.toString());
       source.onmessage = (event) => {
         if (!event.data) return;
 
@@ -69,5 +76,5 @@ export function useRestaurantRealtime({
         window.clearTimeout(reconnectTimer);
       }
     };
-  }, [enabled, restaurantSlug]);
+  }, [enabled, guestSessionToken, restaurantSlug]);
 }

@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { getAnySessionUserFromRequest } from "@/lib/auth";
+import {
+  decodePayloadCookieValue,
+  getAnySessionUserFromRequest,
+  getClientGuestSessionFromRequest,
+  type ClientGuestSession,
+} from "@/lib/auth";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
 import { subscribeRestaurantRealtime } from "@/lib/realtime";
 
@@ -20,7 +25,11 @@ export async function GET(
   }
 
   const user = await getAnySessionUserFromRequest(request);
-  if (!user || !canAccessRestaurant(user, restaurant.id)) {
+  const guestToken = new URL(request.url).searchParams.get("guestToken");
+  const tokenGuestSession = guestToken ? decodePayloadCookieValue<ClientGuestSession>(guestToken) : null;
+  const guestSession = user ? null : tokenGuestSession ?? (await getClientGuestSessionFromRequest(request));
+  const canAccess = Boolean(user && canAccessRestaurant(user, restaurant.id)) || Boolean(guestSession && guestSession.restaurantId === restaurant.id);
+  if (!canAccess) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

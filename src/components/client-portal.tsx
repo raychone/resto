@@ -28,6 +28,7 @@ type Props = {
   focusCart?: boolean;
   orderFlowEnabled: boolean;
   theme?: "dark" | "food";
+  guestSessionToken?: string | null;
 };
 
 type ClientTab = "menu" | "cart" | "tracking" | "split" | "profile";
@@ -76,6 +77,7 @@ export function ClientPortal({
   focusCart = false,
   orderFlowEnabled,
   theme = "dark",
+  guestSessionToken = null,
 }: Props) {
   const isFoodTheme = theme === "food";
   const [isMounted, setIsMounted] = useState(false);
@@ -110,6 +112,15 @@ export function ClientPortal({
     window.requestAnimationFrame(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  }
+
+  function withGuestToken(pathname: string) {
+    if (!guestSessionToken) {
+      return pathname;
+    }
+
+    const separator = pathname.includes("?") ? "&" : "?";
+    return `${pathname}${separator}guestToken=${encodeURIComponent(guestSessionToken)}`;
   }
 
   const activeOrderLabel =
@@ -196,7 +207,7 @@ export function ClientPortal({
 
   const refreshLiveOrder = useCallback(async () => {
     try {
-      const response = await fetch(`/api/restaurants/${restaurant.slug}/client-orders`, {
+      const response = await fetch(withGuestToken(`/api/restaurants/${restaurant.slug}/client-orders`), {
         cache: "no-store",
       });
       if (!response.ok) return;
@@ -232,7 +243,7 @@ export function ClientPortal({
     } catch {
       // silent polling fallback
     }
-  }, [restaurant.name, restaurant.slug]);
+  }, [guestSessionToken, restaurant.name, restaurant.slug]);
 
   useEffect(() => {
     if (!orderFlowEnabled) return;
@@ -278,6 +289,7 @@ export function ClientPortal({
   useRestaurantRealtime({
     restaurantSlug: restaurant.slug,
     enabled: orderFlowEnabled,
+    guestSessionToken,
     onEvent: () => {
       void refreshLiveOrder();
     },
@@ -297,7 +309,7 @@ export function ClientPortal({
     setSendingCart(true);
     setCartNotice(null);
 
-    const response = await fetch(`/api/restaurants/${restaurant.slug}/client-orders`, {
+    const response = await fetch(withGuestToken(`/api/restaurants/${restaurant.slug}/client-orders`), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -332,7 +344,7 @@ export function ClientPortal({
   async function callServer() {
     setCallingWaiter(true);
     try {
-      const response = await fetch(`/api/restaurants/${restaurant.slug}/messages`, {
+      const response = await fetch(withGuestToken(`/api/restaurants/${restaurant.slug}/messages`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

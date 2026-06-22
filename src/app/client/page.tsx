@@ -3,6 +3,7 @@ import { DashboardLogin } from "@/components/dashboard-login";
 import { DashboardLogoutButton } from "@/components/dashboard-logout-button";
 import { ClientPortal } from "@/components/client-portal";
 import {
+  encodePayloadCookieValue,
   getClientGuestSession,
   getClientSessionUser,
   isClientAuthenticated,
@@ -43,6 +44,7 @@ export default async function ClientPage({
     if (guestSession) {
       const guestRestaurant = await getRestaurantById(guestSession.restaurantId);
       if (guestRestaurant && guestRestaurant.slug === requestedRestaurantSlug) {
+        const guestSessionToken = encodePayloadCookieValue(guestSession);
         const customer = await getOrCreateAnonymousCustomerForRestaurant(
           guestRestaurant.id,
           guestSession.id,
@@ -108,6 +110,7 @@ export default async function ClientPage({
               focusCart={resolvedSearchParams?.focus === "cart"}
               orderFlowEnabled={guestRestaurant.features.orderFlowEnabled}
               theme={guestRestaurant.slug === "food-1" ? "food" : "dark"}
+              guestSessionToken={guestSessionToken}
             />
           </main>
         );

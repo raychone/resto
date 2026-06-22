@@ -8095,5 +8095,101 @@
     "details": "Lucaciu Anca · 2026-06-01 14:00",
     "id": "audit-arbb81vi",
     "createdAt": "2026-06-19T20:41:33.707Z"
+  },
+  {
+    "restaurantSlug": "food-1",
+    "restaurantId": "food-1-restaurant",
+    "actorRole": "client",
+    "actorName": "Food Client",
+    "action": "client_order_requested",
+    "targetType": "order",
+    "targetId": "food-1-restaurant-table-1-order",
+    "details": "items=2 · table=food-1-restaurant-table-1",
+    "id": "audit-isxxpo7n",
+    "createdAt": "2026-06-22T09:45:09.374Z"
+  },
+  {
+    "restaurantSlug": "food-1",
+    "restaurantId": "food-1-restaurant",
+    "actorRole": "client",
+    "actorName": "Invité",
+    "action": "client_order_requested",
+    "targetType": "order",
+    "targetId": "order-y98jmawe",
+    "details": "items=1 · table=food-1-restaurant-table-6",
+    "id": "audit-onwrlcgs",
+    "createdAt": "2026-06-22T09:56:36.624Z"
+  },
+  {
+    "restaurantSlug": "food-1",
+    "restaurantId": "food-1-restaurant",
+    "actorRole": "staff",
+    "actorName": "Food Staff",
+    "action": "order_status_changed",
+    "targetType": "order",
+    "targetId": "order-y98jmawe",
+    "details": "status=sent_to_kitchen",
+    "id": "audit-8u2f6g0a",
+    "createdAt": "2026-06-22T09:57:07.608Z"
+  },
+  {
+    "restaurantSlug": "food-1",
+    "restaurantId": "food-1-restaurant",
+    "actorRole": "staff",
+    "actorName": "Food Staff",
+    "action": "order_status_changed",
+    "targetType": "order",
+    "targetId": "order-y98jmawe",
+    "details": "status=preparing",
+    "id": "audit-rex3o8ln",
+    "createdAt": "2026-06-22T09:57:31.412Z"
+  },
+  {
+    "restaurantSlug": "food-1",
+    "restaurantId": "food-1-restaurant",
+    "actorRole": "manager",
+    "actorName": "System",
+    "action": "order_ready_notification",
+    "targetType": "order",
+    "targetId": "order-y98jmawe",
+    "details": "provider=android; sent=no",
+    "id": "audit-9hsr5zz5",
+    "createdAt": "2026-06-22T09:57:44.772Z"
+  },
+  {
+    "restaurantSlug": "food-1",
+    "restaurantId": "food-1-restaurant",
+    "actorRole": "staff",
+    "actorName": "Food Staff",
+    "action": "order_status_changed",
+    "targetType": "order",
+    "targetId": "order-y98jmawe",
+    "details": "status=ready",
+    "id": "audit-h2khy2h3",
+    "createdAt": "2026-06-22T09:57:46.406Z"
+  },
+  {
+    "restaurantSlug": "food-1",
+    "restaurantId": "food-1-restaurant",
+    "actorRole": "manager",
+    "actorName": "System",
+    "action": "order_served_notification",
+    "targetType": "order",
+    "targetId": "order-y98jmawe",
+    "details": "provider=android; sent=no",
+    "id": "audit-2jhbgp9h",
+    "createdAt": "2026-06-22T09:57:56.673Z"
+  },
+  {
+    "restaurantSlug": "food-1",
+    "restaurantId": "food-1-restaurant",
+    "actorRole": "staff",
+    "actorName": "Food Staff",
+    "action": "order_status_changed",
+    "targetType": "order",
+    "targetId": "order-y98jmawe",
+    "details": "status=served",
+    "id": "audit-iz3x3sf6",
+    "createdAt": "2026-06-22T09:57:57.979Z"
   }
 ]
