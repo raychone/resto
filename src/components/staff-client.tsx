@@ -1561,6 +1561,104 @@ export function StaffClient({
       ) : null}
 
       {orderFlowEnabled ? (
+        <section className="mt-3 grid gap-3 lg:grid-cols-2">
+          <article className="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-3 text-amber-950 shadow-[0_8px_24px_rgba(217,119,6,0.08)] sm:p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.28em] text-amber-700 sm:text-[11px]">Commandes QR</p>
+                <p className="mt-1 text-sm font-medium text-amber-950">Commandes anonymes en attente de validation.</p>
+              </div>
+              <span className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-800">
+                {alertSummary.qrOrders}
+              </span>
+            </div>
+            <div className="mt-3 space-y-2">
+              {pendingClientOrders.slice(0, 4).length === 0 ? (
+                <p className="rounded-2xl border border-amber-200 bg-white/80 px-3 py-3 text-sm text-amber-800/70">
+                  Aucune commande QR en attente.
+                </p>
+              ) : (
+                pendingClientOrders.slice(0, 4).map((order) => {
+                  const tableName = currentTables.find((table) => table.id === order.tableId)?.name ?? "Table";
+                  return (
+                    <button
+                      key={order.id}
+                      type="button"
+                      onClick={() => {
+                        if (order.tableId) {
+                          setSelectedTarget(order.tableId);
+                          navigateStaff("tables", "staff-bon", "alerts");
+                        }
+                      }}
+                      className="w-full rounded-[1.1rem] border border-amber-200 bg-white px-3 py-3 text-left text-amber-950 transition hover:bg-amber-100"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold">{tableName}</p>
+                          <p className="mt-1 text-xs text-amber-800/70">
+                            {order.items.length} article{order.items.length > 1 ? "s" : ""} · {formatMoney(orderTotal(order), restaurant.currency)}
+                          </p>
+                        </div>
+                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-700">
+                          Ouvrir
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </article>
+
+          <article className="rounded-[1.5rem] border border-rose-200 bg-rose-50 p-3 text-rose-950 shadow-[0_8px_24px_rgba(244,63,94,0.08)] sm:p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.28em] text-rose-700 sm:text-[11px]">Appels serveur</p>
+                <p className="mt-1 text-sm font-medium text-rose-950">Demandes client à traiter rapidement.</p>
+              </div>
+              <span className="rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-semibold text-rose-800">
+                {alertSummary.waiterCalls}
+              </span>
+            </div>
+            <div className="mt-3 space-y-2">
+              {messages.filter((message) => message.status === "new").slice(0, 4).length === 0 ? (
+                <p className="rounded-2xl border border-rose-200 bg-white/80 px-3 py-3 text-sm text-rose-800/70">
+                  Aucun appel serveur en attente.
+                </p>
+              ) : (
+                messages
+                  .filter((message) => message.status === "new")
+                  .slice(0, 4)
+                  .map((message) => (
+                    <button
+                      key={message.id}
+                      type="button"
+                      onClick={() => {
+                        if (message.tableId) {
+                          setSelectedTarget(message.tableId);
+                          navigateStaff("tables", "staff-bon", "alerts");
+                        }
+                      }}
+                      className="w-full rounded-[1.1rem] border border-rose-200 bg-white px-3 py-3 text-left text-rose-950 transition hover:bg-rose-100"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold">{message.tableLabel ?? "Table"}</p>
+                          <p className="mt-1 text-xs text-rose-800/70">{message.name}</p>
+                        </div>
+                        <span className="rounded-full border border-rose-200 bg-rose-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-700">
+                          Ouvrir
+                        </span>
+                      </div>
+                    </button>
+                  ))
+              )}
+            </div>
+          </article>
+        </section>
+      ) : null}
+
+      {orderFlowEnabled ? (
         <div
           className={`fixed bottom-3 left-1/2 z-30 w-[calc(100%-1.5rem)] max-w-[46rem] -translate-x-1/2 rounded-[1.75rem] border px-2 py-2 shadow-[0_16px_45px_rgba(0,0,0,0.38)] backdrop-blur ${
             isFoodTheme

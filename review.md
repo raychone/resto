@@ -1,484 +1,247 @@
-# Review sincer al aplicației
-
-## Context
-Acest review este bazat pe:
-- structura repo-ului
-- implementările principale din `src/app` și `src/components`
-- README-ul de produs și fluxurile documentate
-- suprafața de funcționalități și testele E2E existente
-
-Nu este un review de brand sau marketing. Este un review de produs, UI/UX, funcționalitate și execuție tehnică.
-
----
+# Review actualizat al aplicației
 
 ## Verdict scurt
-Aplicația este mult peste un simplu demo de meniu QR. Are deja forma unui produs operațional pentru restaurante/baruri, cu separare bună pe roluri, flux de comandă cap-coadă, rezervări, audit și owner dashboard.
+Aplicația a depășit clar nivelul de demo și arată deja ca un produs vertical pentru HoReCa. Are fluxuri reale pentru public, client, staff, kitchen, manager și owner, plus două demo-uri distincte (`Noir 1` și `Food 1`) care îl fac ușor de prezentat comercial.
 
-În același timp, produsul încă suferă din trei probleme structurale:
-- densitate mare de UI și multe stări pe același ecran
-- consistență vizuală incompletă între roluri și între demo-uri
-- complexitate logică ridicată în câteva componente centrale, mai ales `staff`, `client` și `dashboard`
+Punctul slab principal nu mai este „lipsa de funcționalitate”, ci **densitatea UX** și **complexitatea de execuție** în câteva ecrane centrale. Produsul funcționează, dar unele ecrane încă par admin panels cu prea multe informații pe un singur view.
 
-Concluzia mea: aplicația este **puternică funcțional**, **promițătoare comercial**, dar încă are nevoie de **polish serios pe UX și simplificare de execuție** ca să pară produs matur și nu platformă în lucru.
-
----
-
-## Scor general
-
-### Produs
-- **8/10**
-
-### UI
-- **6.5/10**
-
-### UX operațional
-- **7/10**
-
-### Arhitectură / execuție tehnică
-- **7/10**
-
-### Pregătire demo / vânzare
-- **8/10**
-
-### Pregătire pentru producție reală
-- **6/10**
+Pe scurt:
+- **funcțional**: foarte bun
+- **comercial**: bun și credibil
+- **UX**: bun în unele zone, încă prea dens în altele
+- **pregătire pentru producție reală**: bună ca MVP avansat, nu încă suficientă pentru rollout fără rafinare
 
 ---
 
-## Ce este foarte bun
+## Scoruri
+- **Produs**: 8.5/10
+- **UI**: 6.8/10
+- **UX operațional**: 7.2/10
+- **Arhitectură / execuție**: 7/10
+- **Prezentare comercială**: 8/10
+- **Pregătire producție reală**: 6.5/10
 
-### 1. Produsul are substanță reală
-Aici nu mai vorbim de un landing și un meniu. Există:
+---
+
+## Ce merge bine
+
+### 1. Structura de produs este corectă
+Ai deja o platformă care acoperă întregul flux restaurant:
 - public menu
 - QR
-- client ordering
-- validare staff
+- comandă client
+- validare de ospătar
 - kitchen queue
-- live status către client
+- status live
 - rezervări
 - loyalty
 - split de notă
 - audit
-- owner billing / modules / planuri
+- owner billing / modules / settings
 
-Asta înseamnă că produsul are deja profunzime de platformă verticală pentru HoReCa.
+Asta este rar și valoros. Nu mai este doar „un meniu digital”, ci un sistem operațional complet.
 
-### 2. Separarea pe roluri este bine gândită
-Structura pe:
+### 2. Separarea pe roluri este una dintre cele mai bune părți
+Fluxurile separate pentru:
 - client
 - staff
 - kitchen
 - manager
 - owner
 
-este corectă și comercial are sens. Nu este doar o separare de UI; există și logică diferită pe flux.
+sunt o decizie bună și comercială. Fiecare rol are altă nevoie și altă densitate de informații.
 
-Asta este unul dintre cele mai puternice puncte ale aplicației.
+### 3. Demo-urile `Noir 1` și `Food 1` cresc mult valoarea de vânzare
+Asta ajută la:
+- prezentări diferite pentru restaurante diferite
+- un discurs comercial mai clar
+- demonstrarea flexibilității
+- evitarea senzației de „templatizare”
 
-### 3. Demo-urile separate `Noir 1` și `Food 1` sunt o decizie foarte bună
-Asta ajută mult la:
-- claritate comercială
-- prezentare
-- demonstrarea flexibilității produsului
-- evitarea senzației de „un singur template”
+`Noir 1` și `Food 1` sunt un avantaj real de produs.
 
-`Noir 1` și `Food 1` spun bine povestea că aplicația poate servi concepte diferite.
+### 4. Fluxul operațional principal este bun
+Lanțul:
+- client comandă
+- staff validează
+- kitchen procesează
+- staff predă / încasează
+- client vede statusul
 
-### 4. Fluxul client → staff → kitchen → client este corect ca model
-Acesta este nucleul aplicației. Faptul că există:
-- comandă din QR
-- validare de către ospătar
-- trecere în bucătărie
-- ready / served
-- status live pentru client
+este bine modelat. Aici este nucleul de valoare al produsului.
 
-este exact ce trebuie pentru un produs de operațiuni restaurant.
-
-### 5. Testarea E2E este peste media unui proiect de acest tip
-Faptul că există Playwright pentru:
-- flux integral
-- sync multi-browser
-- Food 1
-- rezervări / mesaje / orders sync
-
-este foarte bine. Asta ridică mult încrederea în produs.
+### 5. Testarea automată există și contează
+Prezența testelor E2E și a sync-ului cross-browser ridică credibilitatea produsului. Pentru un produs HoReCa, asta e un avantaj foarte mare față de un demo obișnuit.
 
 ---
 
-## Ce este slab sau riscant
+## Ce merge rău sau rămâne riscant
 
-### 1. Prea multă informație pe același ecran
-Asta este problema principală de UX.
+### 1. Unele ecrane sunt încă prea dense
+Problema principală de UX este densitatea.
 
-În special pe:
+Apare mai ales în:
 - `staff`
 - `client`
 - `dashboard`
 - `owner`
 
-există tendința de a pune multe blocuri, multe badge-uri, multe CTA-uri și multe stări vizibile simultan.
+Acolo există multe carduri, badge-uri, taburi, sub-taburi, modale și acțiuni simultan. Pe mobil se simte mai tare, dar și pe desktop poate părea încărcat.
 
-Rezultatul:
-- utilizatorul vede mult, dar înțelege mai greu ce e prioritar
-- ierarhia vizuală se pierde
-- ecranele par „dense” și în unele locuri obositoare
-
-Produsul are multe funcții, dar nu toate trebuie să fie egale vizual.
-
-### 2. `staff` este cea mai importantă pagină și încă e cea mai fragilă
-Ai investit mult în ea și se vede. Dar tot acolo este și cea mai mare complexitate:
-- tabs
-- subnav
-- modal de masă
+### 2. `staff` este foarte puternic, dar tot el este zona cea mai fragilă
+Aici se întâlnesc:
+- mese
 - bon
-- menu mode
+- meniu
+- rezervări
 - alerts
-- QR
-- calls
-- payment state
-- multi-order per table
+- kitchen flow
+- payment
+- multi-order table handling
 
-Funcțional este puternică. Dar ergonomic încă poate fi confuză dacă nu cunoști fluxul.
+Funcțional este corect. UX-ul încă poate deveni prea greu de urmărit pentru un ospătar care trebuie să acționeze rapid.
 
-Aici produsul trebuie să fie foarte strict: ospătarul nu are timp să interpreteze UI.
+### 3. Unele zone par încă „admin”, nu „restaurant app”
+Mai ales:
+- manager dashboard
+- owner dashboard
+- settings
+- audit
 
-### 3. Inconsistență vizuală între zone
-`Food 1` a mers în direcția bună cu light theme, dar încă există urme de inconsistență în repo:
-- unele ecrane încă păstrează convenții vizuale din tema dark
-- unele CTA-uri și badge-uri au logică cromatică incomplet separată
-- unele pagini par „product admin”, altele „restaurant app”, altele „demo shell”
+Acestea trebuie să comunice mai puțin „sistem intern” și mai mult „câteva lucruri importante care contează azi”.
 
-Trebuie o decizie mai fermă de design system.
+### 4. Persistența și modelul local limitează credibilitatea de producție
+Pentru demo, modelul actual este suficient. Pentru producție reală cu mai mulți clienți simultan, trebuie un backend mai robust, tranzacții mai clare și sursă de adevăr centrală.
 
-### 4. Componente mari, cu multă logică internă
-Fișiere precum:
-- `src/components/staff-client.tsx`
-- `src/components/client-portal.tsx`
-- `src/components/dashboard-client.tsx`
-- `src/components/owner-client.tsx`
+Aici este cel mai mare gap între „funcționează bine acum” și „este pregătit de vânzare în condiții reale de trafic”.
 
-sunt centre de putere, dar și puncte de risc.
+### 5. Consistența vizuală încă nu este complet închisă
+`Food 1` a mers în direcția bună, dar aplicația încă are:
+- variații de densitate
+- variații de ton vizual
+- unele ecrane prea tehnice
+- unele ecrane prea text-heavy
 
-Problema nu este doar lungimea. Problema este amestecul dintre:
-- state complex
-- logică de business
-- UI
-- routing UI
-- modale
-- realtime refresh
-
-Asta încetinește iterația și crește riscul de regresii.
-
-### 5. Persistența locală și store-urile locale limitează credibilitatea de producție
-Pentru demo este ok. Pentru produs real, nu.
-
-Atât timp cât mare parte din date sunt operate prin store local / fișiere / seed-uri, produsul rămâne:
-- foarte bun pentru demo
-- insuficient pentru rollout serios multi-tenant
-
-Acesta este probabil cel mai mare gap între „produs demonstrabil” și „produs deployabil comercial”.
+Trebuie împins mai clar un singur design system.
 
 ---
 
-## Review UI/UX pe zone
+## Ce lipsește încă
 
-## Landing page
-### Ce este bine
-- acum este mai clar decât înainte
-- focusul pe `Noir 1` și `Food 1` este corect
-- flow-ul `Client → Waiter → Kitchen → Client` explică bine produsul
+### 1. Claritate maximă în dashboard-ul managerului
+Managerul trebuie să vadă imediat:
+- comenzi azi
+- rezervări azi
+- mese ocupate
+- valoare estimată
+- top produse
+- următoarele rezervări
 
-### Ce este slab
-- încă poate fi rafinat ca ierarhie și spacing
-- rolurile în dropdown sunt utile, dar experiența poate fi și mai directă
-- brandingul general încă pare mai degrabă „template util” decât „produs premium horeca”
+Acum există multe dintre acestea, dar trebuie rafinat ca să pară „centrul de pilotaj”, nu „panou intern”.
 
-### Verdict
-Landing-ul este acum bun pentru demo. Nu este încă memorabil sau premium.
+### 2. Layout mai strict pentru rezervări și settings
+Aceste zone sunt funcționale, dar încă cer:
+- mai puține informații simultan
+- ierarhie mai clară
+- mai puțină redundanță
+- modale mai bine delimitate
 
----
+### 3. O structură mai explicită pentru comenzi anonime și mese comune
+Aceasta este o zonă importantă pentru restaurante reale:
+- client fără cont
+- masa aleasă explicit
+- mai mulți clienți la aceeași masă
+- total pe masă și pe persoană
+- fără loyalty pentru anonimi
 
-## Public menu
-### Ce este bine
-- două demo-uri distincte
-- `Food 1` are direcția corectă: mai editorial, mai aerisit, mai food-first
-- QR → menu este clar
-- modalul de produs este corect pentru mobile
+Este o direcție corectă pentru valoare comercială, dar trebuie tratată cu grijă.
 
-### Ce este slab
-- `Noir 1` și `Food 1` încă par uneori două ramuri stilistice diferite, nu două teme din același sistem
-- zona de navigare publică poate fi mai bine standardizată
-- CTA-urile pot fi mai strict prioritizate
-
-### Verdict
-Public menu-ul este convingător. Este una dintre zonele care pot vinde produsul cel mai ușor.
-
----
-
-## Client portal
-### Ce este bine
-- are logică utilă: meniu, coș, status, loyalty, split
-- fluxul cu `focus=cart` este bun
-- faptul că vede status live este foarte valoros
-
-### Ce este slab
-- este încă prea încărcat pentru un client real dacă toate blocurile sunt vizibile simultan
-- trebuie mai clar delimitat ce e „acțiune acum” versus „informație auxiliară”
-- dacă produsul merge în restaurant real, clientul trebuie să înțeleagă totul în 3-5 secunde
-
-### Verdict
-Funcțional puternic, UX încă trebuie simplificat.
+### 4. Backend mai „production-grade”
+Pentru produs vândabil pe scară mai mare, lipsesc încă:
+- tranzacții mai clare
+- locking concurent mai sigur
+- storage mai solid decât fișiere locale
+- trail de audit complet și stabil
 
 ---
 
-## Staff
-### Ce este bine
-- logic, aceasta este zona cu cea mai multă valoare operațională
-- modalul de table este decizia corectă
-- separarea dintre alegerea mesei și gestionarea bonului este bună
-- flow-ul de confirmare către kitchen are sens
-- payment în modal este direcția bună
+## Ce crește valoarea cel mai mult
 
-### Ce este slab
-- încă există prea multe stări și entry points
-- partea de alerts / queue / tables / bon trebuie și mai clar stratificată
-- pe mobil, fiecare pixel contează; orice badge sau text redundant costă
-- `staff-client.tsx` pare să fie deja la limita rezonabilă de complexitate
+### 1. Simplificarea UX pe roluri
+Dacă trebuie ales un singur lucru care crește valoarea percepută, este acesta.
 
-### Verdict
-Este zona cea mai importantă și trebuie tratată ca produs separat. Aici aș investi cel mai mult UX și refactor tehnic.
+Câteva exemple:
+- manager vede doar ce contează azi
+- staff vede doar masa, bonul și acțiunile
+- client vede doar ce comandă și ce plătește
+- kitchen vede doar coada și starea
 
----
+Mai puțin zgomot = produs mai matur.
 
-## Kitchen
-### Ce este bine
-- modelul de stări este simplu și corect
-- queue-ul este clar ca intenție
-- relația cu staff/client există
+### 2. Manager dashboard ca ecran comercial, nu tehnic
+Asta vinde produsul foarte bine.
+Patronul vrea să vadă:
+- ce intră azi
+- ce trebuie rezolvat
+- ce se întâmplă pe scurt
+- ce produse se mișcă
 
-### Ce este slab
-- dacă apar mai multe bonuri pe aceeași masă sau mai multe runde, prezentarea trebuie să fie impecabilă
-- bucătăria nu trebuie să interpreteze „ce e nou” și „ce e continuare”; asta trebuie modelat foarte explicit
+Nu vrea să vadă un back-office încărcat.
 
-### Verdict
-Solid, dar are nevoie de claritate excelentă pe grupare și pe repetarea comenzilor la aceeași masă.
+### 3. Audit umanizat
+Este foarte bun că ai făcut asta. Valoarea e mare pentru că face produsul mai ușor de folosit de patroni și manageri.
 
----
+### 4. Demo-urile multiple
+`Noir 1` + `Food 1` cresc valoarea de prezentare și potențialul de vânzare.
 
-## Manager dashboard
-### Ce este bine
-- aria funcțională este mare și utilă
-- există audit, users, menu editing, branding, modules
-- comercial are sens
-
-### Ce este slab
-- riscul aici este să devină prea mult „form over form over form”
-- dacă produsul rămâne așa, managerul poate obosi repede
-- ar avea nevoie de o structură de informație mai modulară și de priorități mai clare
-
-### Verdict
-Foarte util, dar încă prea „admin-heavy”.
+### 5. Sync realtime stabil
+Asta este un diferențiator puternic. Dacă un restaurant vede că schimbările apar instant între browser-e și roluri, produsul pare serios.
 
 ---
 
-## Owner dashboard
-### Ce este bine
-- bun pentru control comercial
-- planuri, facturi, modules, audit global, onboarding notificări — toate au logică de business bună
+## Sugestii concrete
 
-### Ce este slab
-- această pagină riscă să devină un conglomerat de features
-- e nevoie de disciplină mare la navigație și secțiuni
-- owner-ul trebuie să simtă control, nu aglomerație
+### Prioritatea 1: claritate vizuală
+- un singur scop pe ecran
+- mai puține blocuri simultane
+- mai puține duplicate de nav sau titluri
+- mai mult spațiu alb util
 
-### Verdict
-Funcțional foarte bun. UX încă trebuie rafinat pentru claritate executivă.
+### Prioritatea 2: rolurile trebuie să pară produse diferite ale aceluiași sistem
+- `Manager` = pilotaj
+- `Staff` = operare
+- `Kitchen` = productie
+- `Client` = comanda și status
+- `Owner` = control de portofoliu
 
----
+### Prioritatea 3: siguranța datelor
+- fără dublare accidentală
+- fără overwrite accidental
+- fără pierdere de bonuri
+- fără confuzii între mese și persoane
 
-## Funcționalitate
+### Prioritatea 4: backend real pentru vânzare serioasă
+- source of truth unic
+- tranzacții reale
+- event log stabil
+- audit și orders sincronizate corect
 
-## Ce este deja convingător
-- multi-restaurant
-- multi-role
-- QR → order flow
-- rezervări cu statusuri
-- kitchen workflow
-- loyalty și split
-- owner/admin modules
-- notificări browser / fallback providers
-- SEO / metadata / PDF / QR
-
-## Ce încă este vulnerabil
-- cazurile complexe pe aceeași masă:
-  - mai multe bonuri
-  - multiple rounds
-  - modificări după trimitere în kitchen
-  - sincronizare perfectă între roluri
-- claritatea plăților și a stărilor de bon
-- tranzițiile dintre „informare”, „confirmare”, „servire”, „încasare”
-
-Aici produsul merge în direcția bună, dar exact acestea sunt cazurile care lovesc în real life.
+### Prioritatea 5: curățenie de produs
+- naming coerent în franceză
+- CTA-uri consistente
+- aceleași reguli vizuale pentru toate rolurile
+- mai puține excepții de stil între `Noir 1` și `Food 1`
 
 ---
 
-## Arhitectură și cod
+## Concluzie
+Aplicația este deja bună pentru demo comercial și suficient de funcțională încât să arate cum ar arăta un produs real pentru restaurante.
 
-## Ce este bine
-- separare rezonabilă pe app routes și componente
-- suprafață API clară pentru restaurante / orders / reservations / messages / availability
-- există preocupare reală pentru testare
-- realtime via SSE este o decizie pragmatică bună pentru cazul de față
+Ce îi lipsește acum nu este „încă o funcție majoră”, ci:
+- rafinare de UX
+- simplificare
+- consistență
+- siguranță operațională
+- o bază backend mai solidă pentru producție reală
 
-## Ce este slab
-- componente prea mari
-- logică de business încă prea aproape de UI
-- multe condiții tematice (`food` vs `dark`) în componente mari
-- multe fluxuri sensibile depind de stări locale și convenții UI
-
-## Recomandare tehnică
-Aș împărți în următoarele straturi:
-- `view components`
-- `role workflows`
-- `order state helpers`
-- `reservation state helpers`
-- `theme tokens / design primitives`
-
-Mai direct:
-- `staff-client.tsx` trebuie spart
-- `client-portal.tsx` trebuie spart
-- `dashboard-client.tsx` trebuie spart
-
-Nu doar pentru estetică de cod, ci pentru a reduce costul de schimbare.
-
----
-
-## Performanță
-
-## Ce este bine
-- alegerea SSE + refresh fallback este pragmatică
-- există grijă pentru sync cross-role
-- testarea pe mai multe browsere este un plus mare
-
-## Ce este slab
-- produsul are multe reîncărcări și multe suprafețe care pot deveni grele
-- componentele mari fac rerender-urile mai dificil de controlat
-- dacă volumul de date crește, vei simți costul în `staff`, `owner` și `dashboard`
-
-## Verdict
-Performanța este suficientă pentru demo și staging. Pentru producție serioasă, trebuie optimizare de granularitate a state-ului și UI rendering.
-
----
-
-## Testare și încredere
-
-Aici aplicația stă bine.
-
-### Puncte forte
-- Playwright multi-browser
-- flow integral
-- realtime sync
-- demo-specific coverage pentru Food 1
-
-### Limite
-- testele validează mult comportament, dar nu înlocuiesc simplificarea UX
-- cu cât componentele devin mai mari, cu atât costul de mentenanță al testelor va crește
-
-### Verdict
-Foarte bine pentru stadiul actual.
-
----
-
-## Ce aș păstra neapărat
-- separarea pe roluri
-- cele două demo-uri distincte
-- modelul QR → waiter validation → kitchen → served
-- realtime sync
-- dashboard owner/manager separate
-- disponibilitate rezervări prin API dedicat
-- testarea E2E multi-browser
-
----
-
-## Ce aș schimba prioritar
-
-### Prioritate 1 — UX operațional staff
-- simplificare vizuală severă
-- claritate pe stări și acțiuni
-- ierarhie strictă pe mobil
-- grupare impecabilă pentru bonuri multiple pe aceeași masă
-
-### Prioritate 2 — un design system real
-- același limbaj vizual pentru:
-  - landing
-  - public
-  - client
-  - staff
-  - kitchen
-  - dashboard
-- `Noir 1` și `Food 1` trebuie să fie teme, nu universuri separate
-
-### Prioritate 3 — refactor componente mari
-- spargere `staff-client.tsx`
-- spargere `client-portal.tsx`
-- spargere `dashboard-client.tsx`
-- extragere logică de business în helpers/hooks
-
-### Prioritate 4 — model mai solid pentru bonuri și rounds
-- round-uri separate pe aceeași masă
-- statusuri clare per round
-- confirmare obligatorie pe round nou după ce primul a fost deja trimis
-- prezentare clară în kitchen și staff
-
-### Prioritate 5 — infrastructură de date mai serioasă
-- dacă produsul merge mai departe comercial, trebuie trecut de la modelul local/demo la storage real și concurență reală
-
----
-
-## Plusuri
-- produs cu profunzime reală
-- demo-uri utile și credibile
-- separare bună pe roluri
-- flux operațional logic
-- E2E foarte bune pentru nivelul proiectului
-- owner/manager au valoare comercială reală
-- produsul poate fi prezentat unui client din horeca fără rușine
-
-## Minusuri
-- UI încă prea dens în zonele cheie
-- inconsistențe vizuale persistente
-- componente prea mari și greu de întreținut
-- fluxurile complexe pe aceeași masă sunt încă sensibile
-- produsul pare uneori „foarte mult într-un singur ecran”
-- fundația de date încă nu este la nivel de producție serioasă
-
----
-
-## Concluzie finală
-Dacă judec aplicația ca demo tehnic și produs exploratoriu, este puternică.
-
-Dacă judec aplicația ca produs care mâine intră în 10 restaurante reale, încă nu.
-
-Ce există acum este foarte valoros:
-- direcția de produs este corectă
-- funcționalitatea este mult peste medie
-- produsul are deja argumente comerciale reale
-
-Ce lipsește este maturitatea de execuție în trei locuri:
-- UX operațional
-- consistență vizuală
-- disciplină arhitecturală
-
-Pe scurt:
-- **viziunea produsului este bună**
-- **execuția funcțională este bună**
-- **execuția UX și structurarea codului încă trebuie ridicate un nivel**
-
-Dacă aș prioritiza brutal, aș investi următoarele iterații în:
-1. `staff`
-2. `client`
-3. consistență design system
-4. modelul de bonuri multiple / rounds
-5. refactor de componente mari
-
-Acolo este diferența dintre „demo foarte bun” și „produs foarte bun”.
+Dacă aceste lucruri sunt abordate, produsul poate deveni credibil și vandabil. Dacă nu, va rămâne un demo foarte bun, dar încă vizibil ca produs în construcție.

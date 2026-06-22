@@ -9,18 +9,9 @@
     "estimatedTotal": 12,
     "paidTotal": 0,
     "note": "Session démo pour Camille Martin",
-    "participants": [
-      {
-        "id": "634de57b-737e-47e8-acc0-48a0e6aa3a73-table-1-participant",
-        "customerId": "client-root-customer",
-        "name": "Camille Martin",
-        "sharePercent": 100,
-        "settledAmount": 0,
-        "note": "Client connecté"
-      }
-    ],
-    "createdAt": "2026-06-18T03:42:11.681Z",
-    "updatedAt": "2026-06-18T03:42:36.015Z",
+    "participants": [],
+    "createdAt": "2026-06-18T23:21:54.641Z",
+    "updatedAt": "2026-06-19T20:42:09.166Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -44,8 +35,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:11.681Z",
-    "updatedAt": "2026-06-18T03:42:36.015Z",
+    "createdAt": "2026-06-18T23:21:54.641Z",
+    "updatedAt": "2026-06-19T20:42:09.167Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -69,8 +60,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:11.681Z",
-    "updatedAt": "2026-06-18T03:42:36.015Z",
+    "createdAt": "2026-06-18T23:21:54.641Z",
+    "updatedAt": "2026-06-19T20:42:09.167Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -94,8 +85,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:11.681Z",
-    "updatedAt": "2026-06-18T03:42:36.015Z",
+    "createdAt": "2026-06-18T23:21:54.641Z",
+    "updatedAt": "2026-06-19T20:42:09.168Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -119,8 +110,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:11.681Z",
-    "updatedAt": "2026-06-18T03:42:36.016Z",
+    "createdAt": "2026-06-18T23:21:54.641Z",
+    "updatedAt": "2026-06-19T20:42:09.167Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -144,8 +135,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:11.681Z",
-    "updatedAt": "2026-06-18T03:42:36.016Z",
+    "createdAt": "2026-06-18T23:21:54.641Z",
+    "updatedAt": "2026-06-19T20:42:09.168Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -169,8 +160,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:11.681Z",
-    "updatedAt": "2026-06-18T03:42:36.016Z",
+    "createdAt": "2026-06-18T23:21:54.641Z",
+    "updatedAt": "2026-06-19T20:42:09.168Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -194,8 +185,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:11.681Z",
-    "updatedAt": "2026-06-18T03:42:36.016Z",
+    "createdAt": "2026-06-18T23:21:54.641Z",
+    "updatedAt": "2026-06-19T20:42:09.168Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -219,8 +210,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:11.681Z",
-    "updatedAt": "2026-06-18T03:42:36.016Z",
+    "createdAt": "2026-06-18T23:21:54.641Z",
+    "updatedAt": "2026-06-19T20:42:09.169Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -244,8 +235,8 @@
         "note": "Client connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:11.681Z",
-    "updatedAt": "2026-06-18T03:42:36.017Z",
+    "createdAt": "2026-06-18T23:21:54.641Z",
+    "updatedAt": "2026-06-19T20:42:09.169Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -269,8 +260,8 @@
         "note": "Client Food 1 connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:12.260Z",
-    "updatedAt": "2026-06-18T03:42:36.017Z",
+    "createdAt": "2026-06-18T23:21:55.162Z",
+    "updatedAt": "2026-06-19T20:42:09.170Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -294,8 +285,8 @@
         "note": "Client Food 1 connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:12.260Z",
-    "updatedAt": "2026-06-18T03:42:36.017Z",
+    "createdAt": "2026-06-18T23:21:55.162Z",
+    "updatedAt": "2026-06-19T20:42:09.170Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -319,8 +310,8 @@
         "note": "Client Food 1 connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:12.260Z",
-    "updatedAt": "2026-06-18T03:42:36.017Z",
+    "createdAt": "2026-06-18T23:21:55.162Z",
+    "updatedAt": "2026-06-19T20:42:09.170Z",
     "closedAt": null,
     "deletedAt": null
   },
@@ -344,8 +335,8 @@
         "note": "Client Food 1 connecté"
       }
     ],
-    "createdAt": "2026-06-18T03:42:12.260Z",
-    "updatedAt": "2026-06-18T03:42:36.017Z",
+    "createdAt": "2026-06-18T23:21:55.162Z",
+    "updatedAt": "2026-06-19T20:42:09.171Z",
     "closedAt": null,
     "deletedAt": null
   }
