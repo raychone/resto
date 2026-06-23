@@ -559,8 +559,13 @@ export async function getUserById(userId: string) {
 }
 
 export async function getUserByUsername(username: string) {
+  const normalizedUsername = username.trim().toLowerCase();
   const users = await listUsers();
-  return users.find((user) => user.username === username && !user.deletedAt) ?? null;
+  return (
+    users.find((user) => user.username === username && !user.deletedAt) ??
+    users.find((user) => user.username.trim().toLowerCase() === normalizedUsername && !user.deletedAt) ??
+    null
+  );
 }
 
 export async function listUsersForRestaurant(restaurantId: string) {
