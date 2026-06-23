@@ -9,7 +9,8 @@
     "lint": "eslint",
     "seed:noir1": "node scripts/seed-noir1-demo.mjs",
     "seed:food1": "node scripts/seed-food1-demo.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "supabase:seed": "node scripts/export-supabase-seed.mjs"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",

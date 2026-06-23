@@ -29,7 +29,24 @@
       }
     ],
     "createdAt": "2026-06-22T11:24:05.953Z",
-    "updatedAt": "2026-06-22T12:01:56.688Z",
+    "updatedAt": "2026-06-22T12:45:52.271Z",
+    "deletedAt": null
+  },
+  {
+    "restaurantId": "food-1-restaurant",
+    "tableId": "food-1-restaurant-table-11",
+    "tableSessionId": null,
+    "staffUserId": "food1-staff-root",
+    "source": "table",
+    "status": "open",
+    "openedAt": "2026-06-22T12:44:13.339Z",
+    "closedAt": null,
+    "archivedAt": null,
+    "note": "",
+    "id": "order-zijqxx62",
+    "items": [],
+    "createdAt": "2026-06-22T12:44:16.328Z",
+    "updatedAt": "2026-06-22T12:45:52.271Z",
     "deletedAt": null
   }
 ]

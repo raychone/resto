@@ -106,5 +106,17 @@
     "details": "Table 6 · 3.9 EUR externe · réglé",
     "id": "audit-5w4wikze",
     "createdAt": "2026-06-22T11:31:01.191Z"
+  },
+  {
+    "restaurantSlug": "food-1",
+    "restaurantId": "food-1-restaurant",
+    "actorRole": "staff",
+    "actorName": "Food Staff",
+    "action": "order_opened",
+    "targetType": "order",
+    "targetId": "order-zijqxx62",
+    "details": "table · table=Table 11",
+    "id": "audit-g474zijg",
+    "createdAt": "2026-06-22T12:44:22.050Z"
   }
 ]
