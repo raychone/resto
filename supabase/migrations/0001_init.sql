@@ -49,7 +49,8 @@ create table if not exists public.users (
   created_at timestamptz not null,
   updated_at timestamptz not null,
   deleted_at timestamptz,
-  pin_enabled boolean not null default false
+  pin_enabled boolean not null default false,
+  pin_hash text
 );
 
 create index if not exists users_restaurant_id_idx on public.users (restaurant_id, role, deleted_at);

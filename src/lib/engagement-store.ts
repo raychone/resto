@@ -6,12 +6,135 @@ import {
 } from "@/lib/booking";
 import { recordAuditEntry, type AuditActorRole } from "@/lib/audit-store";
 import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
+import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 import { createId, type Locale, type Reservation, type Restaurant, type RestaurantMessage } from "@/lib/types";
 
 const dataDir = path.join(process.cwd(), "data");
 const reservationsFile = path.join(dataDir, "reservations.json");
 const messagesFile = path.join(dataDir, "messages.json");
-const canPersistDataFiles = process.env.VERCEL !== "1";
+const canPersistDataFiles = process.env.VERCEL !== "1" && !hasSupabaseConfig();
+
+type ReservationRow = {
+  id: string;
+  restaurant_slug: string;
+  restaurant_id: string | null;
+  locale: Locale;
+  first_name: string;
+  last_name: string;
+  name: string;
+  phone: string;
+  email: string;
+  note: string;
+  date: string;
+  time: string;
+  guest_count: number;
+  tables_needed: number;
+  status: Reservation["status"];
+  created_at: string;
+  confirmed_at: string | null;
+  confirmed_message: string | null;
+  deleted_at: string | null;
+};
+
+type MessageRow = {
+  id: string;
+  restaurant_slug: string;
+  restaurant_id: string | null;
+  table_id: string | null;
+  table_label: string | null;
+  locale: Locale;
+  name: string;
+  phone: string;
+  email: string;
+  message: string;
+  status: RestaurantMessage["status"];
+  created_at: string;
+  deleted_at: string | null;
+};
+
+function reservationRowToDomain(row: ReservationRow): Reservation {
+  return normalizeReservation({
+    id: row.id,
+    restaurantSlug: row.restaurant_slug,
+    restaurantId: row.restaurant_id ?? undefined,
+    locale: row.locale,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    name: row.name,
+    phone: row.phone,
+    email: row.email,
+    note: row.note,
+    date: row.date,
+    time: row.time,
+    guestCount: Number(row.guest_count ?? 1),
+    tablesNeeded: Number(row.tables_needed ?? 1),
+    status: row.status,
+    createdAt: row.created_at,
+    confirmedAt: row.confirmed_at ?? undefined,
+    confirmedMessage: row.confirmed_message ?? undefined,
+    deletedAt: row.deleted_at ?? null,
+  });
+}
+
+function reservationDomainToRow(reservation: Reservation): ReservationRow {
+  return {
+    id: reservation.id,
+    restaurant_slug: reservation.restaurantSlug,
+    restaurant_id: reservation.restaurantId ?? null,
+    locale: reservation.locale,
+    first_name: reservation.firstName.trim(),
+    last_name: reservation.lastName.trim(),
+    name: reservation.name.trim(),
+    phone: reservation.phone.trim(),
+    email: reservation.email.trim(),
+    note: reservation.note.trim(),
+    date: reservation.date,
+    time: reservation.time,
+    guest_count: reservation.guestCount,
+    tables_needed: reservation.tablesNeeded,
+    status: reservation.status,
+    created_at: reservation.createdAt,
+    confirmed_at: reservation.confirmedAt ?? null,
+    confirmed_message: reservation.confirmedMessage ?? null,
+    deleted_at: reservation.deletedAt ?? null,
+  };
+}
+
+function messageRowToDomain(row: MessageRow): RestaurantMessage {
+  return {
+    id: row.id,
+    restaurantSlug: row.restaurant_slug,
+    restaurantId: row.restaurant_id ?? undefined,
+    tableId: row.table_id ?? null,
+    tableLabel: row.table_label ?? null,
+    locale: row.locale,
+    name: row.name,
+    phone: row.phone,
+    email: row.email,
+    message: row.message,
+    status: row.status,
+    createdAt: row.created_at,
+    deletedAt: row.deleted_at ?? null,
+  };
+}
+
+function messageDomainToRow(message: RestaurantMessage): MessageRow {
+  return {
+    id: message.id,
+    restaurant_slug: message.restaurantSlug,
+    restaurant_id: message.restaurantId ?? null,
+    table_id: message.tableId ?? null,
+    table_label: message.tableLabel ?? null,
+    locale: message.locale,
+    name: message.name.trim(),
+    phone: message.phone.trim(),
+    email: message.email.trim(),
+    message: message.message.trim(),
+    status: message.status,
+    created_at: message.createdAt,
+    deleted_at: message.deletedAt ?? null,
+  };
+}
 
 async function readJsonFile<T>(file: string, fallback: T): Promise<T> {
   try {
@@ -49,11 +172,41 @@ function normalizeReservation(reservation: Reservation): Reservation {
 }
 
 export async function listReservations() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("reservations")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+      if (error) {
+        throw error;
+      }
+      return (data ?? []).map((row) => reservationRowToDomain(row as ReservationRow));
+    }
+  }
+
   const reservations = await readJsonFile<Reservation[]>(reservationsFile, []);
   return reservations.map(normalizeReservation);
 }
 
 export async function listMessages() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+      if (error) {
+        throw error;
+      }
+      return (data ?? []).map((row) => messageRowToDomain(row as MessageRow));
+    }
+  }
+
   return readJsonFile<RestaurantMessage[]>(messagesFile, []);
 }
 
@@ -121,8 +274,18 @@ export async function createReservation(
     guestCount: input.guestCount,
   };
 
-  const nextReservations = [...reservations, reservation];
-  await writeJsonFile(reservationsFile, nextReservations);
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { error } = await supabase.from("reservations").insert(reservationDomainToRow(reservation));
+      if (error) {
+        throw error;
+      }
+    }
+  } else {
+    const nextReservations = [...reservations, reservation];
+    await writeJsonFile(reservationsFile, nextReservations);
+  }
   publishRestaurantRealtimeEvent({
     type: "reservations",
     restaurantId: restaurant.id,
@@ -167,9 +330,27 @@ export async function updateReservationStatus(
     confirmedAt: status === "confirmed" ? new Date().toISOString() : current.confirmedAt,
   };
 
-  const nextReservations = [...reservations];
-  nextReservations[index] = nextReservation;
-  await writeJsonFile(reservationsFile, nextReservations);
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const patch: Partial<ReservationRow> = {
+        status,
+        confirmed_at: nextReservation.confirmedAt ?? null,
+      };
+      const { error } = await supabase
+        .from("reservations")
+        .update(patch)
+        .eq("restaurant_slug", restaurantSlug)
+        .eq("id", reservationId);
+      if (error) {
+        throw error;
+      }
+    }
+  } else {
+    const nextReservations = [...reservations];
+    nextReservations[index] = nextReservation;
+    await writeJsonFile(reservationsFile, nextReservations);
+  }
   publishRestaurantRealtimeEvent({
     type: "reservations",
     restaurantId: current.restaurantId ?? "",
@@ -203,8 +384,22 @@ export async function deleteReservation(
     return null;
   }
 
-  const nextReservations = reservations.filter((entry) => entry.id !== reservationId);
-  await writeJsonFile(reservationsFile, nextReservations);
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { error } = await supabase
+        .from("reservations")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("restaurant_slug", restaurantSlug)
+        .eq("id", reservationId);
+      if (error) {
+        throw error;
+      }
+    }
+  } else {
+    const nextReservations = reservations.filter((entry) => entry.id !== reservationId);
+    await writeJsonFile(reservationsFile, nextReservations);
+  }
   publishRestaurantRealtimeEvent({
     type: "reservations",
     restaurantId: reservation.restaurantId ?? "",
@@ -265,8 +460,18 @@ export async function createMessage(
     locale: input.locale,
   };
 
-  const nextMessages = [...messages, message];
-  await writeJsonFile(messagesFile, nextMessages);
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { error } = await supabase.from("messages").insert(messageDomainToRow(message));
+      if (error) {
+        throw error;
+      }
+    }
+  } else {
+    const nextMessages = [...messages, message];
+    await writeJsonFile(messagesFile, nextMessages);
+  }
   publishRestaurantRealtimeEvent({
     type: "messages",
     restaurantId: restaurant.id,
@@ -312,7 +517,33 @@ export async function updateMessageStatus(
     };
   });
 
-  await writeJsonFile(messagesFile, nextMessages);
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      for (const message of nextMessages) {
+        if (message.restaurantSlug !== restaurantSlug) {
+          continue;
+        }
+
+        const matchesId = options.ids?.includes(message.id);
+        const matchesTable = options.tableId ? message.tableId === options.tableId : false;
+        if (!matchesId && !matchesTable) {
+          continue;
+        }
+
+        const { error } = await supabase
+          .from("messages")
+          .update({ status: options.status })
+          .eq("id", message.id)
+          .eq("restaurant_slug", restaurantSlug);
+        if (error) {
+          throw error;
+        }
+      }
+    }
+  } else {
+    await writeJsonFile(messagesFile, nextMessages);
+  }
   if (matchedMessage) {
     publishRestaurantRealtimeEvent({
       type: "messages",

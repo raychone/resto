@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
+import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 import {
   createBlankRestaurant,
   createDefaultWeeklyHours,
@@ -12,7 +13,110 @@ import {
 
 const dataDir = path.join(process.cwd(), "data");
 const dataFile = path.join(dataDir, "restaurants.json");
-const canPersistDataFiles = process.env.VERCEL !== "1";
+const canPersistDataFiles = process.env.VERCEL !== "1" && !hasSupabaseConfig();
+
+type RestaurantRow = {
+  id: string;
+  slug: string;
+  name: string;
+  status: Restaurant["status"];
+  plan: Restaurant["plan"];
+  tagline: string;
+  description: string;
+  accent: string;
+  logo_url: string;
+  hero_image: string;
+  address: string;
+  phone: string;
+  whatsapp_number: string;
+  uber_eats_url: string;
+  trip_advisor_url: string;
+  google_rating: number;
+  google_reviews_count: number;
+  google_reviews_url: string;
+  opening_hours: string;
+  table_count: number;
+  seats_per_table: number;
+  weekly_hours: Restaurant["weeklyHours"];
+  happy_hour_schedule: Restaurant["happyHourSchedule"] | null;
+  features: Restaurant["features"];
+  currency: string;
+  categories: Restaurant["categories"];
+  translations: Restaurant["translations"];
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+function restaurantRowToDomain(row: RestaurantRow) {
+  return normalizeRestaurant({
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    status: row.status,
+    plan: row.plan,
+    tagline: row.tagline,
+    description: row.description,
+    accent: row.accent,
+    logoUrl: row.logo_url,
+    heroImage: row.hero_image,
+    address: row.address,
+    phone: row.phone,
+    whatsappNumber: row.whatsapp_number,
+    uberEatsUrl: row.uber_eats_url,
+    tripAdvisorUrl: row.trip_advisor_url,
+    googleRating: row.google_rating,
+    googleReviewsCount: row.google_reviews_count,
+    googleReviewsUrl: row.google_reviews_url,
+    openingHours: row.opening_hours,
+    tableCount: row.table_count,
+    seatsPerTable: row.seats_per_table,
+    weeklyHours: row.weekly_hours,
+    happyHourSchedule: row.happy_hour_schedule ?? undefined,
+    features: row.features,
+    currency: row.currency,
+    categories: row.categories,
+    translations: row.translations,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
+  });
+}
+
+function restaurantDomainToRow(restaurant: Restaurant): RestaurantRow {
+  return {
+    id: restaurant.id,
+    slug: restaurant.slug,
+    name: restaurant.name,
+    status: restaurant.status,
+    plan: restaurant.plan,
+    tagline: restaurant.tagline,
+    description: restaurant.description,
+    accent: restaurant.accent,
+    logo_url: restaurant.logoUrl,
+    hero_image: restaurant.heroImage,
+    address: restaurant.address,
+    phone: restaurant.phone,
+    whatsapp_number: restaurant.whatsappNumber ?? "",
+    uber_eats_url: restaurant.uberEatsUrl ?? "",
+    trip_advisor_url: restaurant.tripAdvisorUrl ?? "",
+    google_rating: restaurant.googleRating ?? 0,
+    google_reviews_count: restaurant.googleReviewsCount ?? 0,
+    google_reviews_url: restaurant.googleReviewsUrl ?? "",
+    opening_hours: restaurant.openingHours,
+    table_count: restaurant.tableCount ?? 0,
+    seats_per_table: restaurant.seatsPerTable ?? 0,
+    weekly_hours: restaurant.weeklyHours,
+    happy_hour_schedule: restaurant.happyHourSchedule ?? null,
+    features: restaurant.features,
+    currency: restaurant.currency ?? "EUR",
+    categories: restaurant.categories,
+    translations: restaurant.translations,
+    created_at: restaurant.createdAt,
+    updated_at: restaurant.updatedAt,
+    deleted_at: restaurant.deletedAt ?? null,
+  };
+}
 
 const seedRestaurants: Restaurant[] = [
   {
@@ -1844,6 +1948,21 @@ async function ensureStore() {
 }
 
 async function readRestaurantsFile() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("restaurants")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (!error && Array.isArray(data)) {
+        return data.map((row) => restaurantRowToDomain(row as RestaurantRow));
+      }
+    }
+  }
+
   await ensureStore();
   const raw = await fs.readFile(dataFile, "utf8");
   let parsed: Restaurant[] = [];
@@ -1903,6 +2022,32 @@ export async function saveRestaurant(input: Restaurant) {
     ...input,
     updatedAt: new Date().toISOString(),
   });
+
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("restaurants")
+        .upsert(restaurantDomainToRow(restaurant), { onConflict: "id" })
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const savedRestaurant = restaurantRowToDomain(data as RestaurantRow);
+      publishRestaurantRealtimeEvent({
+        type: "restaurants",
+        restaurantId: savedRestaurant.id,
+        restaurantSlug: savedRestaurant.slug,
+        entityId: savedRestaurant.id,
+        action: "saved",
+      });
+      return savedRestaurant;
+    }
+  }
+
   const restaurants = await readRestaurantsFile();
   const index = restaurants.findIndex((entry) => entry.slug === restaurant.slug);
 
@@ -1930,6 +2075,33 @@ export async function updateRestaurant(slug: string, input: Restaurant) {
     slug: input.slug || slug,
     updatedAt: new Date().toISOString(),
   });
+
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("restaurants")
+        .update(restaurantDomainToRow(restaurant))
+        .eq("slug", slug)
+        .select("*")
+        .single();
+
+      if (error) {
+        return null;
+      }
+
+      const nextRestaurant = restaurantRowToDomain(data as RestaurantRow);
+      publishRestaurantRealtimeEvent({
+        type: "restaurants",
+        restaurantId: nextRestaurant.id,
+        restaurantSlug: nextRestaurant.slug,
+        entityId: nextRestaurant.id,
+        action: "updated",
+      });
+      return nextRestaurant;
+    }
+  }
+
   const index = restaurants.findIndex((entry) => entry.slug === slug);
 
   if (index === -1) {
@@ -1960,6 +2132,31 @@ export async function createRestaurant(input?: Partial<Restaurant>) {
     updatedAt: new Date().toISOString(),
   });
 
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("restaurants")
+        .insert(restaurantDomainToRow(restaurant))
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const createdRestaurant = restaurantRowToDomain(data as RestaurantRow);
+      publishRestaurantRealtimeEvent({
+        type: "restaurants",
+        restaurantId: createdRestaurant.id,
+        restaurantSlug: createdRestaurant.slug,
+        entityId: createdRestaurant.id,
+        action: "created",
+      });
+      return createdRestaurant;
+    }
+  }
+
   const restaurants = await readRestaurantsFile();
   const nextRestaurants = [...restaurants, restaurant];
   await writeRestaurantsFile(nextRestaurants);
@@ -1974,6 +2171,32 @@ export async function createRestaurant(input?: Partial<Restaurant>) {
 }
 
 export async function deleteRestaurant(slug: string) {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const restaurant = await getRestaurantBySlug(slug);
+      const { error } = await supabase
+        .from("restaurants")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("slug", slug);
+
+      if (error) {
+        throw error;
+      }
+
+      if (restaurant) {
+        publishRestaurantRealtimeEvent({
+          type: "restaurants",
+          restaurantId: restaurant.id,
+          restaurantSlug: restaurant.slug,
+          entityId: restaurant.id,
+          action: "deleted",
+        });
+      }
+      return;
+    }
+  }
+
   const restaurants = await readRestaurantsFile();
   const nextRestaurants = restaurants.filter((entry) => entry.slug !== slug);
   await writeRestaurantsFile(nextRestaurants);

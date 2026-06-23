@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { createId, type Restaurant } from "@/lib/types";
+import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 
 export type InvoiceKind = "setup" | "maintenance";
 export type InvoiceStatus = "draft" | "sent" | "paid" | "cancelled";
@@ -30,7 +31,68 @@ type InvoiceInput = Omit<Invoice, "id" | "createdAt" | "updatedAt" | "status"> &
 
 const dataDir = path.join(process.cwd(), "data");
 const filePath = path.join(dataDir, "invoices.json");
-const canPersistDataFiles = process.env.VERCEL !== "1";
+const canPersistDataFiles = process.env.VERCEL !== "1" && !hasSupabaseConfig();
+
+type InvoiceRow = {
+  id: string;
+  restaurant_slug: string;
+  restaurant_name: string;
+  kind: InvoiceKind;
+  period_label: string;
+  amount: number | string;
+  currency: string;
+  include_domain: boolean;
+  include_database: boolean;
+  include_qr_menu: boolean;
+  include_booking: boolean;
+  include_sms: boolean;
+  notes: string;
+  status: InvoiceStatus;
+  created_at: string;
+  updated_at: string;
+};
+
+function invoiceRowToDomain(row: InvoiceRow): Invoice {
+  return normalizeInvoice({
+    id: row.id,
+    restaurantSlug: row.restaurant_slug,
+    restaurantName: row.restaurant_name,
+    kind: row.kind,
+    periodLabel: row.period_label,
+    amount: Number(row.amount),
+    currency: row.currency,
+    includeDomain: row.include_domain,
+    includeDatabase: row.include_database,
+    includeQrMenu: row.include_qr_menu,
+    includeBooking: row.include_booking,
+    includeSms: row.include_sms,
+    notes: row.notes,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  });
+}
+
+function invoiceDomainToRow(invoice: Invoice): InvoiceRow {
+  return {
+    id: invoice.id,
+    restaurant_slug: invoice.restaurantSlug,
+    restaurant_name: invoice.restaurantName,
+    kind: invoice.kind,
+    period_label: invoice.periodLabel,
+    amount: invoice.amount,
+    currency: invoice.currency,
+    include_domain: invoice.includeDomain,
+    include_database: invoice.includeDatabase,
+    include_qr_menu: invoice.includeQrMenu,
+    include_booking: invoice.includeBooking,
+    include_sms: invoice.includeSms,
+    notes: invoice.notes,
+    status: invoice.status,
+    created_at: invoice.createdAt,
+    updated_at: invoice.updatedAt,
+  };
+}
 
 async function readJsonFile<T>(fallback: T): Promise<T> {
   try {
@@ -75,6 +137,17 @@ function normalizeInvoice(invoice: Invoice): Invoice {
 }
 
 export async function listInvoices() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase.from("invoices").select("*").order("created_at", { ascending: true });
+      if (error) {
+        throw error;
+      }
+      return (data ?? []).map((row) => invoiceRowToDomain(row as InvoiceRow));
+    }
+  }
+
   const invoices = await readJsonFile<Invoice[]>([]);
   return invoices.map(normalizeInvoice);
 }
@@ -106,6 +179,17 @@ export async function createInvoice(input: InvoiceInput) {
     updatedAt: now,
   });
 
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { error } = await supabase.from("invoices").insert(invoiceDomainToRow(invoice));
+      if (error) {
+        throw error;
+      }
+      return invoice;
+    }
+  }
+
   await writeJsonFile([...invoices, invoice]);
   return invoice;
 }
@@ -127,6 +211,26 @@ export async function updateInvoice(
     updatedAt: new Date().toISOString(),
   });
 
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { error } = await supabase
+        .from("invoices")
+        .update({
+          status: nextInvoice.status,
+          notes: nextInvoice.notes,
+          amount: nextInvoice.amount,
+          period_label: nextInvoice.periodLabel,
+          updated_at: nextInvoice.updatedAt,
+        })
+        .eq("id", invoiceId);
+      if (error) {
+        throw error;
+      }
+      return nextInvoice;
+    }
+  }
+
   const nextInvoices = [...invoices];
   nextInvoices[index] = nextInvoice;
   await writeJsonFile(nextInvoices);
@@ -139,6 +243,17 @@ export async function deleteInvoice(invoiceId: string) {
 
   if (!invoice) {
     return null;
+  }
+
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { error } = await supabase.from("invoices").delete().eq("id", invoiceId);
+      if (error) {
+        throw error;
+      }
+      return invoice;
+    }
   }
 
   await writeJsonFile(invoices.filter((entry) => entry.id !== invoiceId));

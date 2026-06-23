@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 
 export type AuditActorRole = "manager" | "staff" | "kitchen" | "client";
 
@@ -24,7 +25,50 @@ export type HumanizedAuditEntry = {
 
 const dataDir = path.join(process.cwd(), "data");
 const auditFile = path.join(dataDir, "audit.json");
-const canPersistDataFiles = process.env.VERCEL !== "1";
+const canPersistDataFiles = process.env.VERCEL !== "1" && !hasSupabaseConfig();
+
+type AuditRow = {
+  id: string;
+  restaurant_slug: string;
+  restaurant_id: string | null;
+  actor_role: AuditActorRole;
+  actor_name: string;
+  action: string;
+  target_type: string | null;
+  target_id: string | null;
+  details: string;
+  created_at: string;
+};
+
+function auditRowToDomain(row: AuditRow): AuditEntry {
+  return {
+    id: row.id,
+    restaurantSlug: row.restaurant_slug,
+    restaurantId: row.restaurant_id ?? undefined,
+    actorRole: row.actor_role,
+    actorName: row.actor_name,
+    action: row.action,
+    targetType: row.target_type ?? "",
+    targetId: row.target_id ?? "",
+    details: row.details,
+    createdAt: row.created_at,
+  };
+}
+
+function auditDomainToRow(entry: Omit<AuditEntry, "id" | "createdAt"> & { id: string; createdAt: string }): AuditRow {
+  return {
+    id: entry.id,
+    restaurant_slug: entry.restaurantSlug,
+    restaurant_id: entry.restaurantId ?? null,
+    actor_role: entry.actorRole,
+    actor_name: entry.actorName,
+    action: entry.action,
+    target_type: entry.targetType,
+    target_id: entry.targetId,
+    details: entry.details ?? "",
+    created_at: entry.createdAt,
+  };
+}
 
 async function readJsonFile<T>(file: string, fallback: T): Promise<T> {
   try {
@@ -49,6 +93,17 @@ function createId(prefix: string) {
 }
 
 export async function listAuditEntries() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase.from("audit").select("*").order("created_at", { ascending: true });
+      if (error) {
+        throw error;
+      }
+      return (data ?? []).map((row) => auditRowToDomain(row as AuditRow));
+    }
+  }
+
   return readJsonFile<AuditEntry[]>(auditFile, []);
 }
 
@@ -68,6 +123,18 @@ export async function recordAuditEntry(
     id: createId("audit"),
     createdAt: new Date().toISOString(),
   };
+
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { error } = await supabase.from("audit").insert(auditDomainToRow(auditEntry));
+      if (error) {
+        throw error;
+      }
+      return auditEntry;
+    }
+  }
+
   await writeJsonFile(auditFile, [...entries, auditEntry]);
   return auditEntry;
 }

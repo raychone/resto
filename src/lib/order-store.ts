@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { listRestaurants } from "@/lib/restaurant-store";
 import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
+import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 import { createId, type Order, type OrderItem, type Payment } from "@/lib/types";
 import { summarizeTaxBreakdown, taxRateForCategory } from "@/lib/tax";
 import { listTablesForRestaurant } from "@/lib/table-store";
@@ -11,7 +12,108 @@ const ordersFile = path.join(dataDir, "orders.json");
 const paymentsFile = path.join(dataDir, "payments.json");
 const ordersLockFile = path.join(dataDir, "orders.lock");
 const paymentsLockFile = path.join(dataDir, "payments.lock");
-const canPersistDataFiles = process.env.VERCEL !== "1";
+const canPersistDataFiles = process.env.VERCEL !== "1" && !hasSupabaseConfig();
+
+type OrderRow = {
+  id: string;
+  restaurant_id: string;
+  table_id: string | null;
+  table_session_id: string | null;
+  staff_user_id: string | null;
+  source: Order["source"];
+  status: Order["status"];
+  opened_at: string;
+  closed_at: string | null;
+  archived_at: string | null;
+  note: string;
+  items: OrderItem[] | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+type PaymentRow = {
+  id: string;
+  order_id: string;
+  restaurant_id: string;
+  amount: number;
+  method: Payment["method"];
+  status: Payment["status"];
+  note: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+function orderRowToDomain(row: OrderRow): Order {
+  return normalizeOrder({
+    id: row.id,
+    restaurantId: row.restaurant_id,
+    tableId: row.table_id,
+    tableSessionId: row.table_session_id,
+    staffUserId: row.staff_user_id,
+    source: row.source,
+    status: row.status,
+    openedAt: row.opened_at,
+    closedAt: row.closed_at,
+    archivedAt: row.archived_at,
+    note: row.note,
+    items: row.items ?? [],
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
+  });
+}
+
+function orderDomainToRow(order: Order): OrderRow {
+  return {
+    id: order.id,
+    restaurant_id: order.restaurantId,
+    table_id: order.tableId ?? null,
+    table_session_id: order.tableSessionId ?? null,
+    staff_user_id: order.staffUserId ?? null,
+    source: order.source,
+    status: order.status,
+    opened_at: order.openedAt,
+    closed_at: order.closedAt ?? null,
+    archived_at: order.archivedAt ?? null,
+    note: order.note,
+    items: order.items,
+    created_at: order.createdAt,
+    updated_at: order.updatedAt,
+    deleted_at: order.deletedAt ?? null,
+  };
+}
+
+function paymentRowToDomain(row: PaymentRow): Payment {
+  return normalizePayment({
+    id: row.id,
+    orderId: row.order_id,
+    restaurantId: row.restaurant_id,
+    amount: row.amount,
+    method: row.method,
+    status: row.status,
+    note: row.note,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
+  });
+}
+
+function paymentDomainToRow(payment: Payment): PaymentRow {
+  return {
+    id: payment.id,
+    order_id: payment.orderId,
+    restaurant_id: payment.restaurantId,
+    amount: payment.amount,
+    method: payment.method,
+    status: payment.status,
+    note: payment.note,
+    created_at: payment.createdAt,
+    updated_at: payment.updatedAt,
+    deleted_at: payment.deletedAt ?? null,
+  };
+}
 
 function normalizeOrder(order: Order): Order {
   const now = new Date().toISOString();
@@ -161,6 +263,21 @@ async function ensureStore(filePath: string) {
 }
 
 async function readOrdersFile() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (!error && Array.isArray(data)) {
+        return (data as OrderRow[]).map(orderRowToDomain);
+      }
+    }
+  }
+
   await ensureStore(ordersFile);
   const raw = await fs.readFile(ordersFile, "utf8");
   let parsed: Order[] = [];
@@ -184,6 +301,21 @@ async function readOrdersFile() {
 }
 
 async function readPaymentsFile() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("payments")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (!error && Array.isArray(data)) {
+        return (data as PaymentRow[]).map(paymentRowToDomain);
+      }
+    }
+  }
+
   await ensureStore(paymentsFile);
   const raw = await fs.readFile(paymentsFile, "utf8");
   let parsed: Payment[] = [];
@@ -269,6 +401,49 @@ export async function createOrder(
   },
 ) {
   return withFileLock(ordersLockFile, async () => {
+    if (hasSupabaseConfig()) {
+      const supabase = getSupabaseAdminClient();
+      if (supabase) {
+        const orders = await listOrders();
+        if (!options?.allowDuplicateOpen) {
+          const duplicateExisting = orders.find(
+            (order) =>
+              order.restaurantId === input.restaurantId &&
+              !order.deletedAt &&
+              order.status === "open" &&
+              order.source === (input.source ?? (input.tableId ? "table" : "takeaway")) &&
+              (input.tableId ? order.tableId === input.tableId : !order.tableId),
+          );
+          if (duplicateExisting) {
+            return duplicateExisting;
+          }
+        }
+
+        const now = new Date().toISOString();
+        const order = await normalizeOrderForRestaurant({
+          ...input,
+          id: createId("order"),
+          items: input.items ?? [],
+          createdAt: now,
+          updatedAt: now,
+        });
+
+        const { data, error } = await supabase
+          .from("orders")
+          .insert(orderDomainToRow(order))
+          .select("*")
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        const saved = orderRowToDomain(data as OrderRow);
+        publishOrderEvent(saved, "created");
+        return saved;
+      }
+    }
+
     const orders = await listOrders();
     if (!options?.allowDuplicateOpen) {
       const duplicateExisting = orders.find(
@@ -302,6 +477,35 @@ export async function createOrder(
 
 export async function updateOrder(orderId: string, patch: Partial<Omit<Order, "id" | "createdAt">>) {
   return withFileLock(ordersLockFile, async () => {
+    if (hasSupabaseConfig()) {
+      const currentOrder = await getOrderById(orderId);
+      if (currentOrder) {
+        const supabase = getSupabaseAdminClient();
+        if (supabase) {
+          const nextOrder = await normalizeOrderForRestaurant({
+            ...currentOrder,
+            ...patch,
+            updatedAt: new Date().toISOString(),
+          });
+
+          const { data, error } = await supabase
+            .from("orders")
+            .update(orderDomainToRow(nextOrder))
+            .eq("id", orderId)
+            .select("*")
+            .single();
+
+          if (error) {
+            return null;
+          }
+
+          const saved = orderRowToDomain(data as OrderRow);
+          publishOrderEvent(saved, "updated");
+          return saved;
+        }
+      }
+    }
+
     const orders = await listOrders();
     const index = orders.findIndex((order) => order.id === orderId);
     if (index === -1) return null;
@@ -325,6 +529,42 @@ export async function addOrderItem(
   input: Omit<OrderItem, "id" | "orderId" | "createdAt" | "deletedAt">,
 ) {
   return withFileLock(ordersLockFile, async () => {
+    if (hasSupabaseConfig()) {
+      const currentOrder = await getOrderById(orderId);
+      if (currentOrder) {
+        const supabase = getSupabaseAdminClient();
+        if (supabase) {
+          const item: OrderItem = normalizeOrderItem({
+            ...input,
+            id: createId("order-item"),
+            orderId,
+            createdAt: new Date().toISOString(),
+            deletedAt: null,
+          });
+          const nextOrder = await normalizeOrderForRestaurant({
+            ...currentOrder,
+            items: [...currentOrder.items, item],
+            updatedAt: new Date().toISOString(),
+          });
+
+          const { data, error } = await supabase
+            .from("orders")
+            .update(orderDomainToRow(nextOrder))
+            .eq("id", orderId)
+            .select("*")
+            .single();
+
+          if (error) {
+            return null;
+          }
+
+          const saved = orderRowToDomain(data as OrderRow);
+          publishOrderEvent(saved, "item_added");
+          return saved;
+        }
+      }
+    }
+
     const orders = await listOrders();
     const index = orders.findIndex((order) => order.id === orderId);
     if (index === -1) return null;
@@ -360,6 +600,48 @@ export async function updateOrderItem(
   >,
 ) {
   return withFileLock(ordersLockFile, async () => {
+    if (hasSupabaseConfig()) {
+      const currentOrder = await getOrderById(orderId);
+      if (currentOrder) {
+        const supabase = getSupabaseAdminClient();
+        if (supabase) {
+          const itemIndex = currentOrder.items.findIndex((item) => item.id === itemId);
+          if (itemIndex === -1) return null;
+
+          const nextItems = [...currentOrder.items];
+          nextItems[itemIndex] = normalizeOrderItem({
+            ...nextItems[itemIndex],
+            ...patch,
+            quantity:
+              typeof patch.quantity === "number" && patch.quantity > 0
+                ? Math.floor(patch.quantity)
+                : nextItems[itemIndex].quantity,
+          });
+
+          const nextOrder = await normalizeOrderForRestaurant({
+            ...currentOrder,
+            items: nextItems,
+            updatedAt: new Date().toISOString(),
+          });
+
+          const { data, error } = await supabase
+            .from("orders")
+            .update(orderDomainToRow(nextOrder))
+            .eq("id", orderId)
+            .select("*")
+            .single();
+
+          if (error) {
+            return null;
+          }
+
+          const saved = orderRowToDomain(data as OrderRow);
+          publishOrderEvent(saved, "item_updated");
+          return saved;
+        }
+      }
+    }
+
     const orders = await listOrders();
     const index = orders.findIndex((order) => order.id === orderId);
     if (index === -1) return null;
@@ -394,6 +676,36 @@ export async function updateOrderItem(
 
 export async function removeOrderItem(orderId: string, itemId: string) {
   return withFileLock(ordersLockFile, async () => {
+    if (hasSupabaseConfig()) {
+      const currentOrder = await getOrderById(orderId);
+      if (currentOrder) {
+        const supabase = getSupabaseAdminClient();
+        if (supabase) {
+          const nextItems = currentOrder.items.filter((item) => item.id !== itemId);
+          const nextOrder = await normalizeOrderForRestaurant({
+            ...currentOrder,
+            items: nextItems,
+            updatedAt: new Date().toISOString(),
+          });
+
+          const { data, error } = await supabase
+            .from("orders")
+            .update(orderDomainToRow(nextOrder))
+            .eq("id", orderId)
+            .select("*")
+            .single();
+
+          if (error) {
+            return null;
+          }
+
+          const saved = orderRowToDomain(data as OrderRow);
+          publishOrderEvent(saved, "item_removed");
+          return saved;
+        }
+      }
+    }
+
     const orders = await listOrders();
     const index = orders.findIndex((order) => order.id === orderId);
     if (index === -1) return null;
@@ -429,6 +741,61 @@ export async function updateOrderItemQuantity(
 
 export async function createPayment(input: Omit<Payment, "id" | "createdAt" | "updatedAt">) {
   return withFileLock(paymentsLockFile, async () => {
+    if (hasSupabaseConfig()) {
+      const supabase = getSupabaseAdminClient();
+      if (supabase) {
+        const order = await getOrderById(input.orderId);
+        if (!order) return null;
+
+        const existingPayments = await listPaymentsForOrder(input.orderId);
+        const payment = normalizePayment({
+          ...input,
+          id: createId("payment"),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        const { data, error } = await supabase
+          .from("payments")
+          .insert(paymentDomainToRow(payment))
+          .select("*")
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        const savedPayment = paymentRowToDomain(data as PaymentRow);
+        const nextPaidTotal = [...existingPayments, savedPayment].reduce((sum, entry) => sum + entry.amount, 0);
+        const total = orderTotal(order);
+        const isFullyPaid = nextPaidTotal >= total;
+        const nextOrder = await normalizeOrderForRestaurant({
+          ...order,
+          status: isFullyPaid ? "paid" : order.status,
+          closedAt: isFullyPaid ? new Date().toISOString() : order.closedAt,
+          updatedAt: new Date().toISOString(),
+        });
+
+        const orderResult = await supabase
+          .from("orders")
+          .update(orderDomainToRow(nextOrder))
+          .eq("id", order.id)
+          .select("*")
+          .single();
+
+        if (!orderResult.error && orderResult.data) {
+          const savedOrder = orderRowToDomain(orderResult.data as OrderRow);
+          publishPaymentEvent(savedPayment, "payment_created");
+          publishOrderEvent(savedOrder, "payment_created");
+          return savedPayment;
+        }
+
+        publishPaymentEvent(savedPayment, "payment_created");
+        publishOrderEvent(nextOrder, "payment_created");
+        return savedPayment;
+      }
+    }
+
     const payments = await readPaymentsFile();
     const orders = await listOrders();
     const orderIndex = orders.findIndex((order) => order.id === input.orderId);

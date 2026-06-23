@@ -1,11 +1,52 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { listRestaurants } from "@/lib/restaurant-store";
+import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 import { createId, type Restaurant, type Table, type TableZone } from "@/lib/types";
 
 const dataDir = path.join(process.cwd(), "data");
 const dataFile = path.join(dataDir, "tables.json");
-const canPersistDataFiles = process.env.VERCEL !== "1";
+const canPersistDataFiles = process.env.VERCEL !== "1" && !hasSupabaseConfig();
+
+type TableRow = {
+  id: string;
+  restaurant_id: string;
+  name: string;
+  zone: TableZone;
+  seats: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+function tableRowToDomain(row: TableRow): Table {
+  return normalizeTable({
+    id: row.id,
+    restaurantId: row.restaurant_id,
+    name: row.name,
+    zone: row.zone,
+    seats: row.seats,
+    active: row.active,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
+  });
+}
+
+function tableDomainToRow(table: Table): TableRow {
+  return {
+    id: table.id,
+    restaurant_id: table.restaurantId,
+    name: table.name,
+    zone: table.zone,
+    seats: table.seats,
+    active: table.active,
+    created_at: table.createdAt,
+    updated_at: table.updatedAt,
+    deleted_at: table.deletedAt ?? null,
+  };
+}
 
 function normalizeZone(zone: string | undefined): TableZone {
   if (zone === "terrasse" || zone === "bar" || zone === "private") {
@@ -32,6 +73,10 @@ function normalizeTable(table: Table): Table {
 }
 
 async function ensureStore() {
+  if (hasSupabaseConfig()) {
+    return;
+  }
+
   try {
     await fs.access(dataFile);
   } catch {
@@ -58,6 +103,21 @@ function createTablesForRestaurant(restaurant: Restaurant) {
 }
 
 async function readTablesFile() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("restaurant_tables")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (!error && Array.isArray(data)) {
+        return (data as TableRow[]).map(tableRowToDomain);
+      }
+    }
+  }
+
   await ensureStore();
   const raw = await fs.readFile(dataFile, "utf8");
   let parsed: Table[] = [];
@@ -151,6 +211,33 @@ export async function getTableById(tableId: string) {
 }
 
 export async function updateTable(tableId: string, patch: Partial<Omit<Table, "id" | "createdAt">>) {
+  if (hasSupabaseConfig()) {
+    const currentTable = await getTableById(tableId);
+    if (currentTable) {
+      const supabase = getSupabaseAdminClient();
+      if (supabase) {
+        const nextTable = normalizeTable({
+          ...currentTable,
+          ...patch,
+          updatedAt: new Date().toISOString(),
+        });
+
+        const { data, error } = await supabase
+          .from("restaurant_tables")
+          .update(tableDomainToRow(nextTable))
+          .eq("id", tableId)
+          .select("*")
+          .single();
+
+        if (error) {
+          return null;
+        }
+
+        return tableRowToDomain(data as TableRow);
+      }
+    }
+  }
+
   const tables = await listTables();
   const index = tables.findIndex((table) => table.id === tableId);
   if (index === -1) return null;
@@ -168,6 +255,59 @@ export async function updateTable(tableId: string, patch: Partial<Omit<Table, "i
 }
 
 export async function ensureRestaurantTableSeed(restaurant: Restaurant) {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("restaurant_tables")
+        .select("*")
+        .eq("restaurant_id", restaurant.id)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (!error && Array.isArray(data)) {
+        const existing = data as TableRow[];
+        if (existing.length >= restaurant.tableCount) {
+          return existing.map(tableRowToDomain);
+        }
+
+        const missingTables = Array.from(
+          { length: restaurant.tableCount - existing.length },
+          (_, offset) => {
+            const index = existing.length + offset + 1;
+            const now = new Date().toISOString();
+            return tableDomainToRow({
+              id: `${restaurant.id}-table-${index}`,
+              restaurantId: restaurant.id,
+              name: `Table ${index}`,
+              zone: "salle",
+              seats: restaurant.seatsPerTable,
+              active: true,
+              createdAt: now,
+              updatedAt: now,
+              deletedAt: null,
+            });
+          },
+        );
+
+        if (missingTables.length > 0) {
+          await supabase.from("restaurant_tables").upsert(missingTables, { onConflict: "id" });
+        }
+
+        const refreshed = await supabase
+          .from("restaurant_tables")
+          .select("*")
+          .eq("restaurant_id", restaurant.id)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: true });
+
+        if (!refreshed.error && Array.isArray(refreshed.data)) {
+          return (refreshed.data as TableRow[]).map(tableRowToDomain);
+        }
+      }
+    }
+  }
+
   const tables = await listTables();
   const restaurantTables = tables.filter((table) => table.restaurantId === restaurant.id && !table.deletedAt);
   if (restaurantTables.length >= restaurant.tableCount) {

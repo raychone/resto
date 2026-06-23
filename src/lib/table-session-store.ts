@@ -4,11 +4,76 @@ import { createId, type Customer, type TableSession, type TableSessionParticipan
 import { listRestaurants } from "@/lib/restaurant-store";
 import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
 import { listTablesForRestaurant } from "@/lib/table-store";
+import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 
 const dataDir = path.join(process.cwd(), "data");
 const tableSessionsFile = path.join(dataDir, "table-sessions.json");
 const tableSessionsLockFile = path.join(dataDir, "table-sessions.lock");
-const canPersistDataFiles = process.env.VERCEL !== "1";
+const canPersistDataFiles = process.env.VERCEL !== "1" && !hasSupabaseConfig();
+
+type TableSessionRow = {
+  id: string;
+  restaurant_id: string;
+  table_id: string | null;
+  order_id: string | null;
+  status: TableSession["status"];
+  guest_count: number;
+  estimated_total: number;
+  paid_total: number;
+  note: string;
+  participants: TableSessionParticipant[] | null;
+  last_payment_method: TableSession["lastPaymentMethod"] | null;
+  last_payment_amount: number | null;
+  last_payment_at: string | null;
+  created_at: string;
+  updated_at: string;
+  closed_at: string | null;
+  deleted_at: string | null;
+};
+
+function tableSessionRowToDomain(row: TableSessionRow): TableSession {
+  return normalizeTableSession({
+    id: row.id,
+    restaurantId: row.restaurant_id,
+    tableId: row.table_id,
+    orderId: row.order_id,
+    status: row.status,
+    guestCount: row.guest_count,
+    estimatedTotal: row.estimated_total,
+    paidTotal: row.paid_total,
+    note: row.note,
+    participants: row.participants ?? [],
+    lastPaymentMethod: row.last_payment_method ?? null,
+    lastPaymentAmount: row.last_payment_amount ?? 0,
+    lastPaymentAt: row.last_payment_at ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    closedAt: row.closed_at ?? null,
+    deletedAt: row.deleted_at ?? null,
+  });
+}
+
+function tableSessionDomainToRow(session: TableSession): TableSessionRow {
+  return {
+    id: session.id,
+    restaurant_id: session.restaurantId,
+    table_id: session.tableId,
+    order_id: session.orderId,
+    status: session.status,
+    guest_count: session.guestCount,
+    estimated_total: session.estimatedTotal,
+    paid_total: session.paidTotal,
+    note: session.note,
+    participants: session.participants,
+    last_payment_method: session.lastPaymentMethod ?? null,
+    last_payment_amount: session.lastPaymentAmount ?? 0,
+    last_payment_at: session.lastPaymentAt ?? null,
+    created_at: session.createdAt,
+    updated_at: session.updatedAt,
+    closed_at: session.closedAt ?? null,
+    deleted_at: session.deletedAt ?? null,
+  };
+}
 
 function normalizeParticipant(participant: TableSessionParticipant): TableSessionParticipant {
   return {
@@ -177,6 +242,10 @@ async function createSeedSessions(): Promise<TableSession[]> {
 }
 
 async function ensureStore() {
+  if (hasSupabaseConfig()) {
+    return;
+  }
+
   try {
     await fs.access(tableSessionsFile);
   } catch {
@@ -186,6 +255,21 @@ async function ensureStore() {
 }
 
 async function readTableSessionsFile() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("table_sessions")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (!error && Array.isArray(data)) {
+        return (data as TableSessionRow[]).map(tableSessionRowToDomain);
+      }
+    }
+  }
+
   await ensureStore();
   const raw = await fs.readFile(tableSessionsFile, "utf8");
   let parsed: TableSession[] = [];
@@ -234,6 +318,162 @@ export async function getOrCreateTableSessionForCustomer(
   tableId?: string | null,
 ) {
   return withFileLock(tableSessionsLockFile, async () => {
+    if (hasSupabaseConfig()) {
+      const supabase = getSupabaseAdminClient();
+      if (supabase) {
+        const { data: existingRows } = await supabase
+          .from("table_sessions")
+          .select("*")
+          .eq("restaurant_id", restaurantId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: true });
+
+        const sessions = Array.isArray(existingRows)
+          ? (existingRows as TableSessionRow[]).map(tableSessionRowToDomain)
+          : [];
+        const customerSession = sessions.find(
+          (session) =>
+            session.restaurantId === restaurantId &&
+            !session.deletedAt &&
+            session.participants.some((participant) => participant.customerId === customer.id),
+        );
+
+        if (customerSession) {
+          const normalized = await normalizeTableSessionForRestaurant(customerSession);
+          const desiredTableId = tableId?.trim() || null;
+          if (desiredTableId && normalized.tableId !== desiredTableId) {
+            const nextSession = normalizeTableSession({
+              ...normalized,
+              tableId: desiredTableId,
+              updatedAt: new Date().toISOString(),
+            });
+            const { data, error } = await supabase
+              .from("table_sessions")
+              .update(tableSessionDomainToRow(nextSession))
+              .eq("id", nextSession.id)
+              .select("*")
+              .single();
+
+            if (!error && data) {
+              return tableSessionRowToDomain(data as TableSessionRow);
+            }
+          }
+
+          if (
+            normalized.tableId !== customerSession.tableId ||
+            JSON.stringify(normalized.participants) !== JSON.stringify(customerSession.participants)
+          ) {
+            const { data, error } = await supabase
+              .from("table_sessions")
+              .update(tableSessionDomainToRow(normalized))
+              .eq("id", normalized.id)
+              .select("*")
+              .single();
+
+            if (!error && data) {
+              return tableSessionRowToDomain(data as TableSessionRow);
+            }
+          }
+
+          return customerSession;
+        }
+
+        if (tableId) {
+          const selectedSession = sessions.find(
+            (session) =>
+              session.restaurantId === restaurantId &&
+              session.status === "open" &&
+              !session.deletedAt &&
+              session.tableId === tableId,
+          );
+
+          if (selectedSession) {
+            const hasCustomer = selectedSession.participants.some((participant) => participant.customerId === customer.id);
+            const nextParticipants = hasCustomer
+              ? selectedSession.participants
+              : [
+                  ...selectedSession.participants,
+                  {
+                    id: createId("participant"),
+                    customerId: customer.id,
+                    name: customer.name,
+                    sharePercent: selectedSession.participants.length > 0
+                      ? Math.max(1, Math.floor(100 / (selectedSession.participants.length + 1)))
+                      : 100,
+                    settledAmount: 0,
+                    note: "Client connecté",
+                  },
+                ];
+
+            const nextSession = normalizeTableSession({
+              ...selectedSession,
+              guestCount: Math.max(selectedSession.guestCount, nextParticipants.length),
+              participants: nextParticipants,
+            });
+
+            const { data, error } = await supabase
+              .from("table_sessions")
+              .update(tableSessionDomainToRow(nextSession))
+              .eq("id", nextSession.id)
+              .select("*")
+              .single();
+
+            if (!error && data) {
+              return tableSessionRowToDomain(data as TableSessionRow);
+            }
+            return nextSession;
+          }
+        }
+
+        const tables = await listTablesForRestaurant(restaurantId);
+        const fallbackTableId = tableId ?? tables[0]?.id ?? null;
+        const session = normalizeTableSession({
+          id: createId("table-session"),
+          restaurantId,
+          tableId: fallbackTableId,
+          orderId: null,
+          status: "open",
+          guestCount: 1,
+          estimatedTotal: 0,
+          paidTotal: 0,
+          note: "Session client liée au portail.",
+          participants: [
+            {
+              id: createId("participant"),
+              customerId: customer.id,
+              name: customer.name,
+              sharePercent: 100,
+              settledAmount: 0,
+              note: "Client connecté",
+            },
+          ],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          closedAt: null,
+          deletedAt: null,
+        });
+
+        const { data, error } = await supabase
+          .from("table_sessions")
+          .insert(tableSessionDomainToRow(session))
+          .select("*")
+          .single();
+
+        if (!error && data) {
+          const created = tableSessionRowToDomain(data as TableSessionRow);
+          publishRestaurantRealtimeEvent({
+            type: "table_sessions",
+            restaurantId,
+            entityId: created.id,
+            action: "created",
+          });
+          return created;
+        }
+
+        return session;
+      }
+    }
+
     const sessions = await listTableSessions();
     const customerSession = sessions.find(
       (session) =>
@@ -366,6 +606,57 @@ export async function getOrCreateTableSessionForCustomer(
 
 export async function updateTableSession(sessionId: string, patch: Partial<TableSession>) {
   return withFileLock(tableSessionsLockFile, async () => {
+    if (hasSupabaseConfig()) {
+      const currentSession = (await listTableSessions()).find((session) => session.id === sessionId);
+      if (currentSession) {
+        const supabase = getSupabaseAdminClient();
+        if (supabase) {
+          const nextSession = normalizeTableSession({
+            ...currentSession,
+            ...patch,
+            restaurantId: patch.restaurantId ?? currentSession.restaurantId,
+            tableId: patch.tableId !== undefined ? patch.tableId : currentSession.tableId,
+            orderId: patch.orderId !== undefined ? patch.orderId : currentSession.orderId,
+            status: patch.status ?? currentSession.status,
+            guestCount:
+              patch.guestCount !== undefined ? patch.guestCount : currentSession.guestCount,
+            estimatedTotal:
+              patch.estimatedTotal !== undefined ? patch.estimatedTotal : currentSession.estimatedTotal,
+            paidTotal: patch.paidTotal !== undefined ? patch.paidTotal : currentSession.paidTotal,
+            note: patch.note !== undefined ? patch.note : currentSession.note,
+            participants: patch.participants ?? currentSession.participants,
+            lastPaymentMethod:
+              patch.lastPaymentMethod !== undefined ? patch.lastPaymentMethod : currentSession.lastPaymentMethod,
+            lastPaymentAmount:
+              patch.lastPaymentAmount !== undefined ? patch.lastPaymentAmount : currentSession.lastPaymentAmount,
+            lastPaymentAt: patch.lastPaymentAt !== undefined ? patch.lastPaymentAt : currentSession.lastPaymentAt,
+            createdAt: patch.createdAt ?? currentSession.createdAt,
+            updatedAt: new Date().toISOString(),
+            closedAt: patch.closedAt !== undefined ? patch.closedAt : currentSession.closedAt,
+            deletedAt: patch.deletedAt !== undefined ? patch.deletedAt : currentSession.deletedAt,
+          });
+
+          const { data, error } = await supabase
+            .from("table_sessions")
+            .update(tableSessionDomainToRow(nextSession))
+            .eq("id", sessionId)
+            .select("*")
+            .single();
+
+          if (!error && data) {
+            const saved = tableSessionRowToDomain(data as TableSessionRow);
+            publishRestaurantRealtimeEvent({
+              type: "table_sessions",
+              restaurantId: saved.restaurantId,
+              entityId: saved.id,
+              action: "updated",
+            });
+            return saved;
+          }
+        }
+      }
+    }
+
     const sessions = await listTableSessions();
     const index = sessions.findIndex((session) => session.id === sessionId);
     if (index === -1) {

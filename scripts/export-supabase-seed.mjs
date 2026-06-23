@@ -60,6 +60,7 @@ const tableConfigs = [
       "updatedAt",
       "deletedAt",
       "pinEnabled",
+      "pinHash",
     ],
   },
   {

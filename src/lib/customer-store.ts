@@ -4,10 +4,72 @@ import { createId, type Customer, type User } from "@/lib/types";
 import { getLoyaltySummary } from "@/lib/loyalty";
 import { listRestaurants } from "@/lib/restaurant-store";
 import { listUsers } from "@/lib/user-store";
+import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 
 const dataDir = path.join(process.cwd(), "data");
 const customersFile = path.join(dataDir, "customers.json");
-const canPersistDataFiles = process.env.VERCEL !== "1";
+const canPersistDataFiles = process.env.VERCEL !== "1" && !hasSupabaseConfig();
+
+type CustomerRow = {
+  id: string;
+  restaurant_id: string;
+  user_id: string | null;
+  is_guest: boolean;
+  first_name: string;
+  last_name: string;
+  name: string;
+  email: string;
+  phone: string;
+  current_points: number;
+  lifetime_points: number;
+  tier: Customer["tier"];
+  status: Customer["status"];
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+function customerRowToDomain(row: CustomerRow): Customer {
+  return normalizeCustomer({
+    id: row.id,
+    restaurantId: row.restaurant_id,
+    userId: row.user_id,
+    isGuest: row.is_guest,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    currentPoints: row.current_points,
+    lifetimePoints: row.lifetime_points,
+    tier: row.tier,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
+  });
+}
+
+function customerDomainToRow(customer: Customer): CustomerRow {
+  return {
+    id: customer.id,
+    restaurant_id: customer.restaurantId,
+    user_id: customer.userId ?? null,
+    is_guest: Boolean(customer.isGuest),
+    first_name: customer.firstName,
+    last_name: customer.lastName,
+    name: customer.name,
+    email: customer.email,
+    phone: customer.phone,
+    current_points: customer.currentPoints,
+    lifetime_points: customer.lifetimePoints,
+    tier: customer.tier,
+    status: customer.status,
+    created_at: customer.createdAt,
+    updated_at: customer.updatedAt,
+    deleted_at: customer.deletedAt ?? null,
+  };
+}
 
 function normalizeCustomer(customer: Customer): Customer {
   const now = new Date().toISOString();
@@ -118,6 +180,21 @@ async function ensureStore() {
 }
 
 async function readCustomersFile() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("customers")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (!error && Array.isArray(data)) {
+        return (data as CustomerRow[]).map(customerRowToDomain);
+      }
+    }
+  }
+
   await ensureStore();
   const raw = await fs.readFile(customersFile, "utf8");
   let parsed: Customer[] = [];
@@ -189,6 +266,23 @@ export async function getOrCreateCustomerForUser(user: User, restaurantId: strin
   });
 
   const customers = await listCustomers();
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("customers")
+        .insert(customerDomainToRow(customer))
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return customerRowToDomain(data as CustomerRow);
+    }
+  }
+
   if (canPersistDataFiles) {
     await writeCustomersFile([...customers, customer]);
   }
@@ -210,6 +304,24 @@ export async function updateCustomer(customerId: string, patch: Partial<Customer
 
   const nextCustomers = [...customers];
   nextCustomers[index] = nextCustomer;
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("customers")
+        .update(customerDomainToRow(nextCustomer))
+        .eq("id", customerId)
+        .select("*")
+        .single();
+
+      if (error) {
+        return null;
+      }
+
+      return customerRowToDomain(data as CustomerRow);
+    }
+  }
+
   if (canPersistDataFiles) {
     await writeCustomersFile(nextCustomers);
   }
@@ -251,6 +363,23 @@ export async function getOrCreateAnonymousCustomerForRestaurant(
 
   const customers = await listCustomers();
   const nextCustomers = [...customers.filter((entry) => entry.id !== guestId), customer];
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("customers")
+        .upsert(customerDomainToRow(customer), { onConflict: "id" })
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return customerRowToDomain(data as CustomerRow);
+    }
+  }
+
   if (canPersistDataFiles) {
     await writeCustomersFile(nextCustomers);
   }

@@ -3,6 +3,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { listRestaurants } from "@/lib/restaurant-store";
 import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
+import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 import {
   createId,
   type User,
@@ -11,7 +12,62 @@ import {
 
 const dataDir = path.join(process.cwd(), "data");
 const dataFile = path.join(dataDir, "users.json");
-const canPersistDataFiles = process.env.VERCEL !== "1";
+const canPersistDataFiles = process.env.VERCEL !== "1" && !hasSupabaseConfig();
+
+type UserRow = {
+  id: string;
+  restaurant_id: string | null;
+  role: UserRole;
+  name: string;
+  username: string;
+  password_hash: string;
+  temporary_password: string | null;
+  must_change_password: boolean;
+  status: "active" | "disabled";
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  pin_enabled: boolean;
+  pin_hash: string | null;
+};
+
+function userRowToDomain(row: UserRow): User {
+  return normalizeUser({
+    id: row.id,
+    restaurantId: row.restaurant_id,
+    role: row.role,
+    name: row.name,
+    username: row.username,
+    passwordHash: row.password_hash,
+    temporaryPassword: row.temporary_password ?? undefined,
+    mustChangePassword: row.must_change_password,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
+    pinEnabled: row.pin_enabled,
+    pinHash: row.pin_hash ?? undefined,
+  });
+}
+
+function userDomainToRow(user: User): UserRow {
+  return {
+    id: user.id,
+    restaurant_id: user.restaurantId,
+    role: user.role,
+    name: user.name,
+    username: user.username,
+    password_hash: user.passwordHash,
+    temporary_password: user.temporaryPassword ?? null,
+    must_change_password: user.mustChangePassword,
+    status: user.status,
+    created_at: user.createdAt,
+    updated_at: user.updatedAt,
+    deleted_at: user.deletedAt ?? null,
+    pin_enabled: Boolean(user.pinEnabled),
+    pin_hash: user.pinHash ?? null,
+  };
+}
 
 function hashPassword(value: string) {
   return createHash("sha256").update(value).digest("hex");
@@ -292,70 +348,7 @@ function resolveValidRestaurantId(restaurantId: string | null, validRestaurantId
   return fallbackRestaurantId;
 }
 
-async function ensureStore() {
-  try {
-    await fs.access(dataFile);
-  } catch {
-    const restaurants = await listRestaurants();
-    const demoRestaurantId = getDemoRestaurantId(restaurants);
-    const foodRestaurantId = restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null;
-    await fs.mkdir(dataDir, { recursive: true });
-    await fs.writeFile(
-      dataFile,
-      JSON.stringify(createSeedUsers(demoRestaurantId, foodRestaurantId), null, 2),
-      "utf8",
-    );
-  }
-}
-
-function normalizeUser(user: User): User {
-  const now = new Date().toISOString();
-
-  return {
-    ...user,
-    id: user.id?.trim() || createId("user"),
-    restaurantId: user.restaurantId ?? null,
-    role:
-      user.role === "owner" ||
-      user.role === "manager" ||
-      user.role === "staff" ||
-      user.role === "kitchen" ||
-      user.role === "client"
-        ? user.role
-        : "staff",
-    name: user.name?.trim() || user.username || "Utilisateur",
-    username: user.username?.trim() || `user-${createId("login").slice(-4)}`,
-    passwordHash: user.passwordHash?.trim() || hashPassword(user.temporaryPassword ?? ""),
-    temporaryPassword: user.temporaryPassword?.trim() || undefined,
-    mustChangePassword: Boolean(user.mustChangePassword),
-    status: user.status === "disabled" ? "disabled" : "active",
-    createdAt: user.createdAt ?? now,
-    updatedAt: now,
-    deletedAt: user.deletedAt ?? null,
-    pinEnabled: Boolean(user.pinEnabled),
-    pinHash: user.pinHash?.trim() || undefined,
-  };
-}
-
-async function readUsersFile() {
-  await ensureStore();
-  const raw = await fs.readFile(dataFile, "utf8");
-  let parsed: User[] = [];
-
-  try {
-    parsed = JSON.parse(raw) as User[];
-  } catch {
-    const restaurants = await listRestaurants();
-    const seedUsers = createSeedUsers(
-      getDemoRestaurantId(restaurants),
-      restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null,
-    );
-    if (canPersistDataFiles) {
-      await fs.writeFile(dataFile, JSON.stringify(seedUsers, null, 2), "utf8");
-    }
-    return seedUsers;
-  }
-
+async function normalizeUsersSnapshot(parsed: User[], persist: boolean) {
   const restaurants = await listRestaurants();
   const validRestaurantIds = new Set(restaurants.map((restaurant) => restaurant.id));
   const fallbackRestaurantId = getDemoRestaurantId(restaurants);
@@ -388,14 +381,10 @@ async function readUsersFile() {
   ]);
 
   if (!Array.isArray(parsed) || parsed.length === 0) {
-    const seedUsers = createSeedUsers(
+    return createSeedUsers(
       restaurants[0]?.id ?? null,
       restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null,
     );
-    if (canPersistDataFiles) {
-      await fs.writeFile(dataFile, JSON.stringify(seedUsers, null, 2), "utf8");
-    }
-    return seedUsers;
   }
 
   const normalized: User[] = parsed.map((user): User => {
@@ -456,11 +445,95 @@ async function readUsersFile() {
   const withDemoUsers = demoUsers.length > 0 ? [...normalized, ...demoUsers] : normalized;
   const finalDirty = dirty || demoUsers.length > 0;
 
-  if (finalDirty && canPersistDataFiles) {
-    await fs.writeFile(dataFile, JSON.stringify(withDemoUsers, null, 2), "utf8");
+  if (finalDirty && persist && canPersistDataFiles) {
+    await writeUsersFile(withDemoUsers);
   }
 
   return withDemoUsers;
+}
+
+async function ensureStore() {
+  try {
+    await fs.access(dataFile);
+  } catch {
+    const restaurants = await listRestaurants();
+    const demoRestaurantId = getDemoRestaurantId(restaurants);
+    const foodRestaurantId = restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null;
+    await fs.mkdir(dataDir, { recursive: true });
+    await fs.writeFile(
+      dataFile,
+      JSON.stringify(createSeedUsers(demoRestaurantId, foodRestaurantId), null, 2),
+      "utf8",
+    );
+  }
+}
+
+function normalizeUser(user: User): User {
+  const now = new Date().toISOString();
+
+  return {
+    ...user,
+    id: user.id?.trim() || createId("user"),
+    restaurantId: user.restaurantId ?? null,
+    role:
+      user.role === "owner" ||
+      user.role === "manager" ||
+      user.role === "staff" ||
+      user.role === "kitchen" ||
+      user.role === "client"
+        ? user.role
+        : "staff",
+    name: user.name?.trim() || user.username || "Utilisateur",
+    username: user.username?.trim() || `user-${createId("login").slice(-4)}`,
+    passwordHash: user.passwordHash?.trim() || hashPassword(user.temporaryPassword ?? ""),
+    temporaryPassword: user.temporaryPassword?.trim() || undefined,
+    mustChangePassword: Boolean(user.mustChangePassword),
+    status: user.status === "disabled" ? "disabled" : "active",
+    createdAt: user.createdAt ?? now,
+    updatedAt: now,
+    deletedAt: user.deletedAt ?? null,
+    pinEnabled: Boolean(user.pinEnabled),
+    pinHash: user.pinHash?.trim() || undefined,
+  };
+}
+
+async function readUsersFile() {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (!error && Array.isArray(data)) {
+        const rows = data as UserRow[];
+        const mapped = rows.map(userRowToDomain);
+        return normalizeUsersSnapshot(mapped, false);
+      }
+    }
+  }
+
+  await ensureStore();
+  const raw = await fs.readFile(dataFile, "utf8");
+  let parsed: User[] = [];
+
+  try {
+    parsed = JSON.parse(raw) as User[];
+  } catch {
+    const restaurants = await listRestaurants();
+    const seedUsers = createSeedUsers(
+      getDemoRestaurantId(restaurants),
+      restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null,
+    );
+    if (canPersistDataFiles) {
+      await fs.writeFile(dataFile, JSON.stringify(seedUsers, null, 2), "utf8");
+    }
+    return seedUsers;
+  }
+
+  return normalizeUsersSnapshot(parsed, canPersistDataFiles);
 }
 
 async function writeUsersFile(users: User[]) {
@@ -496,7 +569,6 @@ export async function listUsersForRestaurant(restaurantId: string) {
 }
 
 export async function createUser(input: Omit<User, "id" | "createdAt" | "updatedAt">) {
-  const users = await listUsers();
   const now = new Date().toISOString();
   const user: User = normalizeUser({
     ...input,
@@ -505,6 +577,40 @@ export async function createUser(input: Omit<User, "id" | "createdAt" | "updated
     updatedAt: now,
   });
 
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("users")
+        .insert(userDomainToRow(user))
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      const createdUser = userRowToDomain(data as UserRow);
+      if (createdUser.restaurantId) {
+        publishRestaurantRealtimeEvent({
+          type: "users",
+          restaurantId: createdUser.restaurantId,
+          entityId: createdUser.id,
+          action: "created",
+        });
+      } else {
+        publishRestaurantRealtimeEvent({
+          type: "users",
+          restaurantId: "",
+          entityId: createdUser.id,
+          action: "created",
+        });
+      }
+      return createdUser;
+    }
+  }
+
+  const users = await listUsers();
   const nextUsers = [...users, user];
   if (canPersistDataFiles) {
     await writeUsersFile(nextUsers);
@@ -531,6 +637,41 @@ export async function updateUser(
   userId: string,
   patch: Partial<Omit<User, "id" | "createdAt">>,
 ) {
+  if (hasSupabaseConfig()) {
+    const currentUser = await getUserById(userId);
+    if (currentUser) {
+      const supabase = getSupabaseAdminClient();
+      if (supabase) {
+        const nextUser = normalizeUser({
+          ...currentUser,
+          ...patch,
+          updatedAt: new Date().toISOString(),
+        });
+        const { data, error } = await supabase
+          .from("users")
+          .update(userDomainToRow(nextUser))
+          .eq("id", userId)
+          .select("*")
+          .single();
+
+        if (error) {
+          return null;
+        }
+
+        const savedUser = userRowToDomain(data as UserRow);
+        if (savedUser.restaurantId) {
+          publishRestaurantRealtimeEvent({
+            type: "users",
+            restaurantId: savedUser.restaurantId,
+            entityId: savedUser.id,
+            action: "updated",
+          });
+        }
+        return savedUser;
+      }
+    }
+  }
+
   const users = await listUsers();
   const index = users.findIndex((entry) => entry.id === userId);
 
