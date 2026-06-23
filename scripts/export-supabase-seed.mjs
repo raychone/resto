@@ -4,6 +4,7 @@ import path from "node:path";
 const rootDir = process.cwd();
 const dataDir = path.join(rootDir, "data");
 const outputFile = path.join(rootDir, "supabase", "seed.sql");
+const chunksDir = path.join(rootDir, "supabase", "seed-chunks");
 
 const tableConfigs = [
   {
@@ -319,7 +320,25 @@ async function main() {
   statements.push("commit;");
   await fs.mkdir(path.dirname(outputFile), { recursive: true });
   await fs.writeFile(outputFile, `${statements.join("\n")}\n`, "utf8");
+
+  await fs.mkdir(chunksDir, { recursive: true });
+  const content = `${statements.join("\n")}\n`;
+  const chunks = content
+    .split(/\n(?=insert into public\.)/g)
+    .filter((chunk) => chunk.trim().length > 0);
+
+  for (const existing of await fs.readdir(chunksDir).catch(() => [])) {
+    await fs.unlink(path.join(chunksDir, existing)).catch(() => {});
+  }
+
+  for (const [index, chunk] of chunks.entries()) {
+    const chunkName = String(index + 1).padStart(2, "0");
+    const chunkPath = path.join(chunksDir, `${chunkName}.sql`);
+    await fs.writeFile(chunkPath, chunk.endsWith("\n") ? chunk : `${chunk}\n`, "utf8");
+  }
+
   console.log(`Wrote ${path.relative(rootDir, outputFile)}`);
+  console.log(`Wrote ${chunks.length} chunk files in ${path.relative(rootDir, chunksDir)}`);
 }
 
 main().catch((error) => {

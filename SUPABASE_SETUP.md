@@ -91,9 +91,29 @@ npm run supabase:seed
 
 Then:
 
-1. Open `supabase/seed.sql`
-2. Paste it into Supabase SQL Editor
-3. Run it after `supabase/migrations/0001_init.sql`
+1. Open `supabase/migrations/0001_init.sql` and run it first.
+2. If the full `supabase/seed.sql` is too large for the editor, do not use the SQL editor.
+3. Use a direct database connection with `psql` from your terminal.
+
+Example with `psql`:
+
+```bash
+psql "$SUPABASE_DB_URL" -f supabase/migrations/0001_init.sql
+psql "$SUPABASE_DB_URL" -f supabase/seed.sql
+```
+
+Chunked import:
+
+```bash
+cat supabase/seed-chunks/*.sql > /tmp/supabase-seed.sql
+psql "$SUPABASE_DB_URL" -f /tmp/supabase-seed.sql
+```
+
+If you prefer a single file, you can also run:
+
+```bash
+psql "$SUPABASE_DB_URL" -f supabase/seed.sql
+```
 
 ## What you should do now
 

@@ -1,0 +1,2 @@
+insert into public.invoices (id, restaurant_slug, restaurant_name, kind, period_label, amount, currency, include_domain, include_database, include_qr_menu, include_booking, include_sms, notes, status, created_at, updated_at) values
+  ('invoice-hy26x9dw', 'terra-fresh', 'Terra Fresh Kitchen', 'setup', 'Installation initiale', 990, 'EUR', true, true, true, true, false, '', 'draft', '2026-06-10T22:53:47.732Z', '2026-06-10T22:53:47.732Z');
