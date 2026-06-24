@@ -16,9 +16,82 @@ import { getRestaurantById, getRestaurantBySlug } from "@/lib/restaurant-store";
 import { listOrdersForRestaurant } from "@/lib/order-store";
 import { getOrCreateTableSessionForCustomer } from "@/lib/table-session-store";
 import { listTablesForRestaurant } from "@/lib/table-store";
-import type { User } from "@/lib/types";
+import { createId, type Customer, type Table, type TableSession, type User } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+function createFallbackTables(restaurantId: string, tableCount: number, seatsPerTable: number): Table[] {
+  const now = new Date().toISOString();
+  const count = Math.max(1, Math.floor(tableCount || 1));
+  const seats = Math.max(1, Math.floor(seatsPerTable || 4));
+
+  return Array.from({ length: count }, (_, index) => ({
+    id: `${restaurantId}-table-${index + 1}`,
+    restaurantId,
+    name: `Table ${index + 1}`,
+    zone: "salle",
+    seats,
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+  }));
+}
+
+function createFallbackCustomer(user: User, restaurantId: string): Customer {
+  const now = new Date().toISOString();
+  const nameParts = user.name.split(" ");
+  return {
+    id: createId("customer"),
+    restaurantId,
+    userId: user.id,
+    isGuest: false,
+    firstName: nameParts[0] || user.name || "Client",
+    lastName: nameParts.slice(1).join(" "),
+    name: user.name || "Client",
+    email: `${user.username}@demo.local`,
+    phone: "+33 6 00 00 00 00",
+    currentPoints: 0,
+    lifetimePoints: 0,
+    tier: "bronze",
+    status: "active",
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+  };
+}
+
+function createFallbackTableSession(restaurantId: string, customer: Customer, tableId: string | null): TableSession {
+  const now = new Date().toISOString();
+  return {
+    id: createId("table-session"),
+    restaurantId,
+    tableId,
+    orderId: null,
+    status: "open",
+    guestCount: 1,
+    estimatedTotal: 0,
+    paidTotal: 0,
+    note: "Session client liée au portail.",
+    participants: [
+      {
+        id: createId("participant"),
+        customerId: customer.id,
+        name: customer.name,
+        sharePercent: 100,
+        settledAmount: 0,
+        note: "Client connecté",
+      },
+    ],
+    lastPaymentMethod: null,
+    lastPaymentAmount: 0,
+    lastPaymentAt: null,
+    createdAt: now,
+    updatedAt: now,
+    closedAt: null,
+    deletedAt: null,
+  };
+}
 
 export const metadata: Metadata = {
   title: "Client",
@@ -37,13 +110,18 @@ export default async function ClientPage({
     const clientUser = authenticated ? await getClientSessionUser() : null;
     const sessionRestaurant = clientUser?.restaurantId ? await getRestaurantById(clientUser.restaurantId) : null;
     const requestedTableId = resolvedSearchParams?.tableId?.trim() || null;
+    const isFoodDemoClient = clientUser?.username?.trim().toLowerCase().startsWith("foodclient") ?? false;
     const requestedRestaurantSlug =
       resolvedSearchParams?.restaurantSlug?.trim() ||
       sessionRestaurant?.slug ||
       guestSession?.restaurantSlug ||
-      (clientUser?.username?.trim().toLowerCase().startsWith("foodclient") ? "food-1" : "bar-1");
-    const requestedRestaurant = await getRestaurantBySlug(requestedRestaurantSlug);
-    const requestedTables = requestedRestaurant ? await listTablesForRestaurant(requestedRestaurant.id) : [];
+      (isFoodDemoClient ? "food-1" : "bar-1");
+    const requestedRestaurant =
+      (await getRestaurantBySlug(requestedRestaurantSlug)) ||
+      (await getRestaurantBySlug(isFoodDemoClient ? "food-1" : "bar-1"));
+    const requestedTables = requestedRestaurant
+      ? ((await listTablesForRestaurant(requestedRestaurant.id).catch(() => [])) || [])
+      : [];
 
     if (!authenticated) {
     if (guestSession) {
@@ -253,10 +331,15 @@ export default async function ClientPage({
       );
     }
 
-    const customer = await getOrCreateCustomerForUser(clientUser, restaurant.id);
-    const tableSession = await getOrCreateTableSessionForCustomer(restaurant.id, customer, requestedTableId);
-    const tables = await listTablesForRestaurant(restaurant.id);
-    const orders = await listOrdersForRestaurant(restaurant.id);
+    const fallbackTables = createFallbackTables(restaurant.id, restaurant.tableCount, restaurant.seatsPerTable);
+    const tables = await listTablesForRestaurant(restaurant.id).catch(() => fallbackTables);
+    const customer =
+      (await getOrCreateCustomerForUser(clientUser, restaurant.id).catch(() => null)) ??
+      createFallbackCustomer(clientUser, restaurant.id);
+    const tableSession =
+      (await getOrCreateTableSessionForCustomer(restaurant.id, customer, requestedTableId).catch(() => null)) ??
+      createFallbackTableSession(restaurant.id, customer, requestedTableId || (tables[0]?.id ?? null));
+    const orders = await listOrdersForRestaurant(restaurant.id).catch(() => []);
     const displayLogo = restaurant.logoUrl || (restaurant.slug === "bar-1" ? "/logoNoirBar.png" : "/logoFood.png");
     const activeOrder =
       (tableSession.orderId ? orders.find((order) => order.id === tableSession.orderId) : null) ??
