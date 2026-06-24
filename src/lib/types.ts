@@ -754,29 +754,37 @@ export function normalizeRestaurant(restaurant: Restaurant): Restaurant {
     createdAt: restaurant.createdAt ?? now,
     updatedAt: restaurant.updatedAt ?? restaurant.createdAt ?? now,
     deletedAt: restaurant.deletedAt ?? null,
-    categories: restaurant.categories.map((category) => ({
-      ...category,
-      id: category.id || createId("category"),
-      name: category.name.trim() || "Catégorie",
-      description: category.description.trim(),
-      items: category.items.map((item) => ({
-        ...item,
-        id: item.id || createId("item"),
-        name: item.name.trim() || "Plat",
-        description: item.description.trim(),
-        recipe: item.recipe.trim(),
-        ingredients: item.ingredients.map((ingredient) => ingredient.trim()).filter(Boolean),
-        allergens: item.allergens.map((allergen) => allergen.trim()).filter(Boolean),
-        price: Number.isFinite(item.price) ? item.price : 0,
-        happyHourEnabled: Boolean(item.happyHourEnabled),
-        happyHourPrice:
-          Number.isFinite(item.happyHourPrice) && Number(item.happyHourPrice) > 0
-            ? Number(item.happyHourPrice)
-            : null,
-        imageUrl: item.imageUrl.trim(),
-        isSignature: Boolean(item.isSignature),
-      })),
-    })),
+    categories: Array.isArray(restaurant.categories)
+      ? restaurant.categories.map((category) => ({
+          ...category,
+          id: category.id || createId("category"),
+          name: category.name?.trim() || "Catégorie",
+          description: category.description?.trim() || "",
+          items: Array.isArray(category.items)
+            ? category.items.map((item) => ({
+                ...item,
+                id: item.id || createId("item"),
+                name: item.name?.trim() || "Plat",
+                description: item.description?.trim() || "",
+                recipe: item.recipe?.trim() || "",
+                ingredients: Array.isArray(item.ingredients)
+                  ? item.ingredients.map((ingredient) => ingredient.trim()).filter(Boolean)
+                  : [],
+                allergens: Array.isArray(item.allergens)
+                  ? item.allergens.map((allergen) => allergen.trim()).filter(Boolean)
+                  : [],
+                price: Number.isFinite(item.price) ? item.price : 0,
+                happyHourEnabled: Boolean(item.happyHourEnabled),
+                happyHourPrice:
+                  Number.isFinite(item.happyHourPrice) && Number(item.happyHourPrice) > 0
+                    ? Number(item.happyHourPrice)
+                    : null,
+                imageUrl: item.imageUrl?.trim() || "",
+                isSignature: Boolean(item.isSignature),
+              }))
+            : [],
+        }))
+      : [],
     translations: restaurant.translations ?? {},
   };
 }
@@ -801,36 +809,40 @@ export function translateRestaurant(
     tagline: mergeLocalizedString(restaurant.tagline, translations?.tagline),
     description: mergeLocalizedString(restaurant.description, translations?.description),
     address: mergeLocalizedString(restaurant.address, translations?.address),
-    categories: restaurant.categories.map((category) => {
-      const categoryTranslations = translations?.categories?.[category.id];
-
-      return {
-        ...category,
-        name: mergeLocalizedString(category.name, categoryTranslations?.name),
-        description: mergeLocalizedString(
-          category.description,
-          categoryTranslations?.description,
-        ),
-        items: category.items.map((item) => {
-          const itemTranslations = categoryTranslations?.items?.[item.id];
+    categories: Array.isArray(restaurant.categories)
+      ? restaurant.categories.map((category) => {
+          const categoryTranslations = translations?.categories?.[category.id];
 
           return {
-            ...item,
-            name: mergeLocalizedString(item.name, itemTranslations?.name),
+            ...category,
+            name: mergeLocalizedString(category.name, categoryTranslations?.name),
             description: mergeLocalizedString(
-              item.description,
-              itemTranslations?.description,
+              category.description,
+              categoryTranslations?.description,
             ),
-            recipe: mergeLocalizedString(item.recipe, itemTranslations?.recipe),
-            ingredients: itemTranslations?.ingredients?.length
-              ? itemTranslations.ingredients
-              : item.ingredients,
-            allergens: itemTranslations?.allergens?.length
-              ? itemTranslations.allergens
-              : item.allergens,
+            items: Array.isArray(category.items)
+              ? category.items.map((item) => {
+                  const itemTranslations = categoryTranslations?.items?.[item.id];
+
+                  return {
+                    ...item,
+                    name: mergeLocalizedString(item.name, itemTranslations?.name),
+                    description: mergeLocalizedString(
+                      item.description,
+                      itemTranslations?.description,
+                    ),
+                    recipe: mergeLocalizedString(item.recipe, itemTranslations?.recipe),
+                    ingredients: itemTranslations?.ingredients?.length
+                      ? itemTranslations.ingredients
+                      : item.ingredients,
+                    allergens: itemTranslations?.allergens?.length
+                      ? itemTranslations.allergens
+                      : item.allergens,
+                  };
+                })
+              : [],
           };
-        }),
-      };
-    }),
+        })
+      : [],
   };
 }
