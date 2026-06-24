@@ -1,6 +1,5 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { randomUUID } from "node:crypto";
 import { publishRestaurantRealtimeEvent } from "@/lib/realtime";
 import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 import {
@@ -120,7 +119,7 @@ function restaurantDomainToRow(restaurant: Restaurant): RestaurantRow {
 
 const seedRestaurants: Restaurant[] = [
   {
-    id: randomUUID(),
+    id: "terra-fresh",
     slug: "terra-fresh",
     name: "Terra Fresh Kitchen",
     status: "active",
@@ -334,7 +333,7 @@ const seedRestaurants: Restaurant[] = [
     },
   },
   {
-    id: randomUUID(),
+    id: "brasa-uno",
     slug: "brasa-uno",
     name: "Brasa Uno",
     status: "active",
@@ -461,7 +460,7 @@ const seedRestaurants: Restaurant[] = [
     },
   },
   {
-  "id": randomUUID(),
+  "id": "bar-1",
   "slug": "bar-1",
   "name": "Noir 1",
   "status": "trial",
