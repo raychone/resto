@@ -2078,6 +2078,10 @@ function needsDemoRestaurantBootstrap(existing: Restaurant | null | undefined, s
     return true;
   }
 
+  if (existing.id !== seed.id || existing.slug !== seed.slug) {
+    return true;
+  }
+
   if (!Array.isArray(existing.categories) || existing.categories.length === 0) {
     return true;
   }
@@ -2105,10 +2109,6 @@ function ensureRequiredDemoRestaurants(restaurants: Restaurant[]) {
   const bySlug = new Map(restaurants.map((restaurant) => [restaurant.slug, normalizeRestaurant(restaurant)] as const));
 
   for (const slug of requiredDemoRestaurantSlugs) {
-    if (bySlug.has(slug)) {
-      continue;
-    }
-
     const seed = seedRestaurants.find((restaurant) => restaurant.slug === slug);
     if (seed) {
       bySlug.set(slug, normalizeRestaurant(seed));
