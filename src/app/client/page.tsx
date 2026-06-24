@@ -38,7 +38,10 @@ export default async function ClientPage({
     const sessionRestaurant = clientUser?.restaurantId ? await getRestaurantById(clientUser.restaurantId) : null;
     const requestedTableId = resolvedSearchParams?.tableId?.trim() || null;
     const requestedRestaurantSlug =
-      resolvedSearchParams?.restaurantSlug?.trim() || sessionRestaurant?.slug || guestSession?.restaurantSlug || "bar-1";
+      resolvedSearchParams?.restaurantSlug?.trim() ||
+      sessionRestaurant?.slug ||
+      guestSession?.restaurantSlug ||
+      (clientUser?.username?.trim().toLowerCase().startsWith("foodclient") ? "food-1" : "bar-1");
     const requestedRestaurant = await getRestaurantBySlug(requestedRestaurantSlug);
     const requestedTables = requestedRestaurant ? await listTablesForRestaurant(requestedRestaurant.id) : [];
 

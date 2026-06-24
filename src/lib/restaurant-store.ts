@@ -2639,6 +2639,11 @@ function ensureRequiredDemoRestaurants(restaurants: Restaurant[]) {
   return [...bySlug.values()];
 }
 
+function getCanonicalDemoRestaurantBySlug(slug: string) {
+  const canonical = seedRestaurants.find((restaurant) => restaurant.slug === slug);
+  return canonical ? normalizeRestaurant(canonical) : null;
+}
+
 async function ensureRequiredDemoRestaurantsInSupabase(supabase: NonNullable<ReturnType<typeof getSupabaseAdminClient>>) {
   const { data, error } = await supabase.from("restaurants").select("*").is("deleted_at", null);
   if (error || !Array.isArray(data)) {
@@ -2739,12 +2744,23 @@ export async function listRestaurants() {
 
 export async function getRestaurantBySlug(slug: string) {
   const restaurants = await readRestaurantsFile();
-  return restaurants.find((restaurant) => restaurant.slug === slug) ?? null;
+  const found = restaurants.find((restaurant) => restaurant.slug === slug) ?? null;
+  if (found) {
+    return found;
+  }
+
+  return getCanonicalDemoRestaurantBySlug(slug);
 }
 
 export async function getRestaurantById(id: string) {
   const restaurants = await readRestaurantsFile();
-  return restaurants.find((restaurant) => restaurant.id === id) ?? null;
+  const found = restaurants.find((restaurant) => restaurant.id === id) ?? null;
+  if (found) {
+    return found;
+  }
+
+  const canonical = seedRestaurants.find((restaurant) => restaurant.id === id);
+  return canonical ? normalizeRestaurant(canonical) : null;
 }
 
 export async function saveRestaurant(input: Restaurant) {

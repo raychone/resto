@@ -7,6 +7,7 @@ type UseRestaurantRealtimeOptions = {
   restaurantSlug: string;
   enabled: boolean;
   guestSessionToken?: string | null;
+  onUnauthorized?: () => void;
   onEvent: (event: RestaurantRealtimeEvent) => void;
 };
 
@@ -14,6 +15,7 @@ export function useRestaurantRealtime({
   restaurantSlug,
   enabled,
   guestSessionToken = null,
+  onUnauthorized,
   onEvent,
 }: UseRestaurantRealtimeOptions) {
   const onEventRef = useRef(onEvent);
@@ -61,9 +63,7 @@ export function useRestaurantRealtime({
       source.onerror = () => {
         source?.close();
         source = null;
-        if (!cancelled) {
-          reconnectTimer = window.setTimeout(connect, 1500);
-        }
+        onUnauthorized?.();
       };
     };
 
