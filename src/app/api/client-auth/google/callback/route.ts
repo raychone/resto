@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { clientDashboardCookieName } from "@/lib/auth";
+import { clientDashboardCookieName, encodePayloadCookieValue } from "@/lib/auth";
 import { getOrCreateCustomerForUser } from "@/lib/customer-store";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
 import { createUser, getUserByUsername, hashUserPassword, updateUser } from "@/lib/user-store";
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
   }
 
   const response = NextResponse.redirect(new URL(returnToCookie, request.url));
-  response.cookies.set(clientDashboardCookieName, user.id, {
+  response.cookies.set(clientDashboardCookieName, encodePayloadCookieValue(user), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

@@ -4,6 +4,7 @@ import {
   getUserByUsername,
   isUserActive,
   isUserRole,
+  resolveDemoUserByCredentials,
   verifyPassword,
 } from "@/lib/user-store";
 import type { User, UserRole } from "@/lib/types";
@@ -34,6 +35,10 @@ export function decodePayloadCookieValue<T>(value: string): T | null {
 export async function getValidUserByCredentials(username: string, password: string) {
   const user = await getUserByUsername(username);
   if (!user || !isUserActive(user) || !verifyPassword(password, user.passwordHash)) {
+    const demoUser = await resolveDemoUserByCredentials(username, password);
+    if (demoUser && isUserActive(demoUser)) {
+      return demoUser;
+    }
     return null;
   }
 

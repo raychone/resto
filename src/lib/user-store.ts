@@ -94,6 +94,11 @@ type DemoRestaurantUserSet = {
   clients: DemoUserSpec[];
 };
 
+type DemoCredentialSpec = {
+  spec: DemoUserSpec;
+  restaurantSlug: string | null;
+};
+
 const demoManagerUser: DemoUserSpec = {
   id: "manager-root",
   role: "manager",
@@ -249,6 +254,17 @@ const foodDemoUsers: DemoRestaurantUserSet = {
     },
   ],
 };
+
+const demoCredentialSpecs: DemoCredentialSpec[] = [
+  { spec: demoManagerUser, restaurantSlug: null },
+  ...demoStaffUsers.map((spec) => ({ spec, restaurantSlug: null })),
+  { spec: demoKitchenUser, restaurantSlug: null },
+  ...demoClientUsers.map((spec) => ({ spec, restaurantSlug: null })),
+  { spec: foodDemoUsers.manager, restaurantSlug: "food-1" },
+  ...foodDemoUsers.staff.map((spec) => ({ spec, restaurantSlug: "food-1" })),
+  { spec: foodDemoUsers.kitchen, restaurantSlug: "food-1" },
+  ...foodDemoUsers.clients.map((spec) => ({ spec, restaurantSlug: "food-1" })),
+];
 
 function createDemoUser(spec: DemoUserSpec, restaurantId: string | null, now: string): User {
   return {
@@ -566,6 +582,34 @@ export async function getUserByUsername(username: string) {
     users.find((user) => user.username.trim().toLowerCase() === normalizedUsername && !user.deletedAt) ??
     null
   );
+}
+
+export async function resolveDemoUserByCredentials(username: string, password: string) {
+  const normalizedUsername = username.trim().toLowerCase();
+  const restaurants = await listRestaurants();
+  const demoRestaurantId = getDemoRestaurantId(restaurants);
+  const foodRestaurantId = restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null;
+
+  for (const entry of demoCredentialSpecs) {
+    if (entry.spec.username.trim().toLowerCase() !== normalizedUsername || entry.spec.password !== password) {
+      continue;
+    }
+
+    const restaurantId =
+      entry.restaurantSlug === "food-1"
+        ? foodRestaurantId
+        : entry.restaurantSlug
+          ? restaurants.find((restaurant) => restaurant.slug === entry.restaurantSlug && !restaurant.deletedAt)?.id ?? null
+          : demoRestaurantId;
+
+    if (entry.spec.role !== "owner" && !restaurantId) {
+      continue;
+    }
+
+    return normalizeUser(createDemoUser(entry.spec, restaurantId, new Date().toISOString()));
+  }
+
+  return null;
 }
 
 export async function listUsersForRestaurant(restaurantId: string) {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import {
+  encodePayloadCookieValue,
   getValidUserByCredentials,
   managerDashboardCookieName,
 } from "@/lib/auth";
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
   }
 
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(managerDashboardCookieName, user.id, {
+  response.cookies.set(managerDashboardCookieName, encodePayloadCookieValue(user), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

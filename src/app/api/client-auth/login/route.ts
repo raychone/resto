@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { clientDashboardCookieName, clientGuestSessionCookieName, getValidUserByCredentials } from "@/lib/auth";
+import {
+  clientDashboardCookieName,
+  clientGuestSessionCookieName,
+  encodePayloadCookieValue,
+  getValidUserByCredentials,
+} from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +21,7 @@ export async function POST(request: Request) {
   }
 
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(clientDashboardCookieName, user.id, {
+  response.cookies.set(clientDashboardCookieName, encodePayloadCookieValue(user), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

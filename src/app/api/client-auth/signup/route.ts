@@ -50,23 +50,13 @@ export async function POST(request: Request) {
   await getOrCreateCustomerForUser(user, restaurant.id);
 
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(clientDashboardCookieName, user.id, {
+  response.cookies.set(clientDashboardCookieName, encodeSessionPayload(user), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });
-
-  if (process.env.VERCEL === "1") {
-    response.cookies.set(clientDashboardCookieName, encodeSessionPayload(user), {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: true,
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
-  }
   response.cookies.set(clientGuestSessionCookieName, "", {
     httpOnly: true,
     sameSite: "lax",
