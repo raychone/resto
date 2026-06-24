@@ -5,7 +5,7 @@ Aplicație Next.js pentru meniuri digitale, QR, rezertvări, staff, manager și 
 ## Ce este implementat acum
 
 - meniu public per restaurant, cu limbi `fr / en / it / es`
-- landing page principală la `/` cu rolurile, scopul aplicației și butoane directe de test
+- landing apage principală la `/` cu rolurile, scopul aplicației și butoane directe de test
 - al doilea demo separat `Food 1`, cu temă light, meniu food-only și flow complet de comandă / rezervare
 - categoriile din meniu sunt afișate ca acordeon/listă, închise by default, fără număr de produse și fără etichetă duplicată
 - preparatele se deschid într-un modal scrollabil cu imagine, recipe, ingredients și allergens, iar signature apare pe imagine
