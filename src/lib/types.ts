@@ -661,7 +661,7 @@ export function normalizeRestaurant(restaurant: Restaurant): Restaurant {
     ...restaurant,
     id: restaurant.id?.trim() || generateUuid(),
     slug,
-    name: restaurant.name.trim() || "Restaurant",
+    name: restaurant.name?.trim() || "Restaurant",
     status:
       restaurant.status === "lead" ||
       restaurant.status === "trial" ||
@@ -676,13 +676,13 @@ export function normalizeRestaurant(restaurant: Restaurant): Restaurant {
       restaurant.plan === "premium"
         ? restaurant.plan
         : "starter",
-    tagline: restaurant.tagline.trim(),
-    description: restaurant.description.trim(),
+    tagline: restaurant.tagline?.trim() || "",
+    description: restaurant.description?.trim() || "",
     accent: restaurant.accent || "#8B5CF6",
     logoUrl: (restaurant.logoUrl ?? "").trim(),
-    heroImage: restaurant.heroImage.trim(),
-    address: restaurant.address.trim(),
-    phone: restaurant.phone.trim(),
+    heroImage: (restaurant.heroImage ?? "").trim(),
+    address: (restaurant.address ?? "").trim(),
+    phone: (restaurant.phone ?? "").trim(),
     whatsappNumber: (restaurant.whatsappNumber ?? restaurant.phone ?? "").trim(),
     uberEatsUrl: (restaurant.uberEatsUrl ?? "").trim(),
     tripAdvisorUrl: (restaurant.tripAdvisorUrl ?? "").trim(),
@@ -695,7 +695,7 @@ export function normalizeRestaurant(restaurant: Restaurant): Restaurant {
         ? Math.floor(restaurant.googleReviewsCount)
         : 0,
     googleReviewsUrl: (restaurant.googleReviewsUrl ?? "").trim(),
-    openingHours: restaurant.openingHours.trim(),
+    openingHours: (restaurant.openingHours ?? "").trim(),
     tableCount: Number.isFinite(restaurant.tableCount) && restaurant.tableCount > 0
       ? Math.floor(restaurant.tableCount)
       : 12,
