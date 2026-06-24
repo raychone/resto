@@ -460,7 +460,7 @@ const seedRestaurants: Restaurant[] = [
       },
     },
   },
-{
+  {
   "id": randomUUID(),
   "slug": "bar-1",
   "name": "Noir 1",
@@ -1936,7 +1936,160 @@ const seedRestaurants: Restaurant[] = [
     }
   ]
 },
+{
+  id: "food-1-restaurant",
+  slug: "food-1",
+  name: "Food 1",
+  status: "trial",
+  plan: "starter",
+  tagline: "Italian casual food, light theme, family friendly.",
+  description:
+    "A modern Italian casual restaurant focused on fresh pasta, pizza, salads and generous food offers.",
+  accent: "#c41e1e",
+  logoUrl: "/food-1-logo.svg",
+  heroImage:
+    "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format&fit=crop&w=1600&q=80",
+  address: "19 Via Roma, Milan",
+  phone: "+39 02 00 00 00 01",
+  whatsappNumber: "+39 02 00 00 00 01",
+  uberEatsUrl: "",
+  tripAdvisorUrl: "",
+  googleRating: 4.8,
+  googleReviewsCount: 176,
+  googleReviewsUrl: "",
+  openingHours: "Lunedì - Domenica, 11:30 - 22:30",
+  tableCount: 14,
+  seatsPerTable: 4,
+  weeklyHours: createDefaultWeeklyHours(),
+  happyHourSchedule: null,
+  features: {
+    orderFlowEnabled: true,
+    clientLoginEnabled: true,
+    waiterValidationEnabled: true,
+    kitchenWorkflowEnabled: true,
+    servedConfirmationEnabled: true,
+    bookingEnabled: true,
+    qrMode: "menu",
+    notificationProvider: "android",
+    whatsappAlertsEnabled: true,
+    smsAlertsEnabled: true,
+    googleReviewsEnabled: true,
+  },
+  currency: "EUR",
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  deletedAt: null,
+  categories: [
+    {
+      id: "food1-antipasti",
+      name: "Antipasti",
+      description: "Warm starters, breads and shareable plates.",
+      items: [
+        {
+          id: "food1-antipasti-burrata",
+          name: "Burrata & Focaccia",
+          description: "Creamy burrata with rosemary focaccia, cherry tomatoes and basil oil.",
+          recipe: "Serve burrata slightly chilled over warm focaccia.",
+          ingredients: ["burrata", "focaccia", "tomatoes", "basil"],
+          allergens: ["lait", "gluten"],
+          price: 14,
+          imageUrl:
+            "https://images.unsplash.com/photo-1498575207490-8c0f2b0f8f8d?auto=format&fit=crop&w=1200&q=80",
+          isSignature: true,
+        },
+        {
+          id: "food1-antipasti-zucchini",
+          name: "Zucchini Fritti",
+          description: "Crispy zucchini with lemon aioli and parmesan snow.",
+          recipe: "Flash fry and season with sea salt and lemon zest.",
+          ingredients: ["zucchini", "parmesan", "lemon", "aioli"],
+          allergens: ["lait", "œuf"],
+          price: 12,
+          imageUrl:
+            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
+          isSignature: false,
+        },
+      ],
+    },
+    {
+      id: "food1-pasta",
+      name: "Pasta",
+      description: "Fresh pasta dishes with rich sauces.",
+      items: [
+        {
+          id: "food1-pasta-carbonara",
+          name: "Tagliatelle Carbonara",
+          description: "Egg yolk cream, guanciale and aged pecorino.",
+          recipe: "Toss pasta off heat for a glossy carbonara sauce.",
+          ingredients: ["tagliatelle", "guanciale", "egg", "pecorino"],
+          allergens: ["gluten", "œuf", "lait"],
+          price: 18,
+          imageUrl:
+            "https://images.unsplash.com/photo-1521389508051-d7ffb5dc8f93?auto=format&fit=crop&w=1200&q=80",
+          isSignature: true,
+        },
+      ],
+    },
+    {
+      id: "food1-pizza",
+      name: "Pizza",
+      description: "Wood-fired pizzas with crisp edges.",
+      items: [
+        {
+          id: "food1-pizza-margherita",
+          name: "Margherita Classica",
+          description: "Tomato, mozzarella, basil and olive oil.",
+          recipe: "Bake hot and fast for a light, airy crust.",
+          ingredients: ["dough", "tomato", "mozzarella", "basil"],
+          allergens: ["gluten", "lait"],
+          price: 13,
+          imageUrl:
+            "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80",
+          isSignature: true,
+        },
+      ],
+    },
+    {
+      id: "food1-desserts",
+      name: "Desserts",
+      description: "Sweet finishes to the meal.",
+      items: [
+        {
+          id: "food1-desserts-tiramisu",
+          name: "Tiramisu",
+          description: "Mascarpone cream, coffee and cocoa.",
+          recipe: "Layer gently and let it rest before service.",
+          ingredients: ["mascarpone", "coffee", "cocoa", "savoiardi"],
+          allergens: ["gluten", "lait", "œuf"],
+          price: 9,
+          imageUrl:
+            "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=1200&q=80",
+          isSignature: true,
+        },
+      ],
+    },
+  ],
+},
 ];
+
+const requiredDemoRestaurantSlugs = ["bar-1", "food-1"] as const;
+
+function ensureRequiredDemoRestaurants(restaurants: Restaurant[]) {
+  const bySlug = new Map(restaurants.map((restaurant) => [restaurant.slug, normalizeRestaurant(restaurant)] as const));
+
+  for (const slug of requiredDemoRestaurantSlugs) {
+    if (bySlug.has(slug)) {
+      continue;
+    }
+
+    const seed = seedRestaurants.find((restaurant) => restaurant.slug === slug);
+    if (seed) {
+      bySlug.set(slug, normalizeRestaurant(seed));
+    }
+  }
+
+  return [...bySlug.values()];
+}
 
 async function ensureStore() {
   try {
@@ -1959,20 +2112,20 @@ async function readRestaurantsFile() {
 
       if (!error && Array.isArray(data)) {
         if (data.length > 0) {
-          return data.map((row) => restaurantRowToDomain(row as RestaurantRow));
+          return ensureRequiredDemoRestaurants(data.map((row) => restaurantRowToDomain(row as RestaurantRow)));
         }
 
         const seedRows = seedRestaurants.map(restaurantDomainToRow);
         const { error: seedError } = await supabase.from("restaurants").upsert(seedRows, { onConflict: "id" });
         if (!seedError) {
-          return seedRestaurants.map(normalizeRestaurant);
+          return ensureRequiredDemoRestaurants(seedRestaurants.map(normalizeRestaurant));
         }
       }
     }
   }
 
   if (!canPersistDataFiles) {
-    return seedRestaurants.map(normalizeRestaurant);
+    return ensureRequiredDemoRestaurants(seedRestaurants.map(normalizeRestaurant));
   }
 
   await ensureStore();
@@ -1985,7 +2138,7 @@ async function readRestaurantsFile() {
     if (canPersistDataFiles) {
       await fs.writeFile(dataFile, JSON.stringify(seedRestaurants, null, 2), "utf8");
     }
-    return seedRestaurants.map(normalizeRestaurant);
+    return ensureRequiredDemoRestaurants(seedRestaurants.map(normalizeRestaurant));
   }
 
   if (
@@ -1999,7 +2152,7 @@ async function readRestaurantsFile() {
     if (canPersistDataFiles) {
       await writeRestaurantsFile(seedRestaurants);
     }
-    return seedRestaurants;
+    return ensureRequiredDemoRestaurants(seedRestaurants);
   }
 
   const normalized = parsed.map(normalizeRestaurant);
@@ -2007,7 +2160,7 @@ async function readRestaurantsFile() {
     await writeRestaurantsFile(normalized);
   }
 
-  return normalized;
+  return ensureRequiredDemoRestaurants(normalized);
 }
 
 async function writeRestaurantsFile(restaurants: Restaurant[]) {
