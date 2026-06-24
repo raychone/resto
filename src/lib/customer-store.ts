@@ -279,8 +279,8 @@ export async function getOrCreateCustomerForUser(user: User, restaurantId: strin
         .select("*")
         .single();
 
-      if (error) {
-        throw error;
+      if (error || !data) {
+        return customer;
       }
 
       return customerRowToDomain(data as CustomerRow);
@@ -376,8 +376,8 @@ export async function getOrCreateAnonymousCustomerForRestaurant(
         .select("*")
         .single();
 
-      if (error) {
-        throw error;
+      if (error || !data) {
+        return customer;
       }
 
       return customerRowToDomain(data as CustomerRow);

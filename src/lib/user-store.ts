@@ -99,6 +99,11 @@ type DemoCredentialSpec = {
   restaurantSlug: string | null;
 };
 
+const builtInDemoRestaurantIds = {
+  bar: "bar-1",
+  food: "food-1",
+} as const;
+
 const demoManagerUser: DemoUserSpec = {
   id: "manager-root",
   role: "manager",
@@ -632,6 +637,44 @@ export async function resolveDemoUserByCredentials(username: string, password: s
   }
 
   return null;
+}
+
+export function resolveBuiltInDemoUserByCredentials(username: string, password: string) {
+  const normalizedUsername = username.trim().toLowerCase();
+
+  const hardcodedSpecs: DemoCredentialSpec[] = [
+    { spec: demoManagerUser, restaurantSlug: null },
+    ...demoStaffUsers.map((spec) => ({ spec, restaurantSlug: null })),
+    { spec: demoKitchenUser, restaurantSlug: null },
+    ...demoClientUsers.map((spec) => ({ spec, restaurantSlug: null })),
+    { spec: foodDemoUsers.manager, restaurantSlug: "food-1" },
+    ...foodDemoUsers.staff.map((spec) => ({ spec, restaurantSlug: "food-1" })),
+    { spec: foodDemoUsers.kitchen, restaurantSlug: "food-1" },
+    ...foodDemoUsers.clients.map((spec) => ({ spec, restaurantSlug: "food-1" })),
+  ];
+
+  const spec = hardcodedSpecs.find(
+    (entry) => entry.spec.username.trim().toLowerCase() === normalizedUsername && entry.spec.password === password,
+  );
+
+  if (!spec) {
+    return null;
+  }
+
+  const restaurantId =
+    spec.restaurantSlug === "food-1"
+      ? builtInDemoRestaurantIds.food
+      : spec.restaurantSlug
+        ? builtInDemoRestaurantIds.bar
+        : spec.spec.role === "owner"
+          ? null
+          : builtInDemoRestaurantIds.bar;
+
+  if (spec.spec.role !== "owner" && !restaurantId) {
+    return null;
+  }
+
+  return normalizeUser(createDemoUser(spec.spec, restaurantId, new Date().toISOString()));
 }
 
 export async function listUsersForRestaurant(restaurantId: string) {
