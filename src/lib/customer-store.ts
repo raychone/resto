@@ -195,6 +195,10 @@ async function readCustomersFile() {
     }
   }
 
+  if (!canPersistDataFiles) {
+    return createSeedCustomers().then((customers) => customers.map(normalizeCustomer));
+  }
+
   await ensureStore();
   const raw = await fs.readFile(customersFile, "utf8");
   let parsed: Customer[] = [];

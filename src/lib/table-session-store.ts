@@ -270,6 +270,10 @@ async function readTableSessionsFile() {
     }
   }
 
+  if (!canPersistDataFiles) {
+    return createSeedSessions();
+  }
+
   await ensureStore();
   const raw = await fs.readFile(tableSessionsFile, "utf8");
   let parsed: TableSession[] = [];

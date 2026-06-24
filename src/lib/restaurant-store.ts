@@ -1971,6 +1971,10 @@ async function readRestaurantsFile() {
     }
   }
 
+  if (!canPersistDataFiles) {
+    return seedRestaurants.map(normalizeRestaurant);
+  }
+
   await ensureStore();
   const raw = await fs.readFile(dataFile, "utf8");
   let parsed: Restaurant[] = [];

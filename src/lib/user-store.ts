@@ -544,6 +544,15 @@ async function readUsersFile() {
     }
   }
 
+  if (!canPersistDataFiles) {
+    const restaurants = await listRestaurants();
+    const seedUsers = createSeedUsers(
+      getDemoRestaurantId(restaurants),
+      restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null,
+    );
+    return normalizeUsersSnapshot(seedUsers, false);
+  }
+
   await ensureStore();
   const raw = await fs.readFile(dataFile, "utf8");
   let parsed: User[] = [];

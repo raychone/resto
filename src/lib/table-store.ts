@@ -118,6 +118,11 @@ async function readTablesFile() {
     }
   }
 
+  if (!canPersistDataFiles) {
+    const restaurants = await listRestaurants();
+    return restaurants.flatMap((restaurant) => createTablesForRestaurant(restaurant)).map(normalizeTable);
+  }
+
   await ensureStore();
   const raw = await fs.readFile(dataFile, "utf8");
   let parsed: Table[] = [];

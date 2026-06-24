@@ -278,6 +278,10 @@ async function readOrdersFile() {
     }
   }
 
+  if (!canPersistDataFiles) {
+    return [];
+  }
+
   await ensureStore(ordersFile);
   const raw = await fs.readFile(ordersFile, "utf8");
   let parsed: Order[] = [];
@@ -314,6 +318,10 @@ async function readPaymentsFile() {
         return (data as PaymentRow[]).map(paymentRowToDomain);
       }
     }
+  }
+
+  if (!canPersistDataFiles) {
+    return [];
   }
 
   await ensureStore(paymentsFile);
