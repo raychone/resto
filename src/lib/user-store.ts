@@ -524,6 +524,19 @@ async function readUsersFile() {
         .order("created_at", { ascending: true });
 
       if (!error && Array.isArray(data)) {
+        if (data.length === 0) {
+          const restaurants = await listRestaurants();
+          const seedUsers = createSeedUsers(
+            getDemoRestaurantId(restaurants),
+            restaurants.find((restaurant) => restaurant.slug === "food-1" && !restaurant.deletedAt)?.id ?? null,
+          );
+          const { error: seedError } = await supabase
+            .from("users")
+            .upsert(seedUsers.map(userDomainToRow), { onConflict: "id" });
+          if (!seedError) {
+            return normalizeUsersSnapshot(seedUsers, false);
+          }
+        }
         const rows = data as UserRow[];
         const mapped = rows.map(userRowToDomain);
         return normalizeUsersSnapshot(mapped, false);

@@ -1958,7 +1958,15 @@ async function readRestaurantsFile() {
         .order("created_at", { ascending: true });
 
       if (!error && Array.isArray(data)) {
-        return data.map((row) => restaurantRowToDomain(row as RestaurantRow));
+        if (data.length > 0) {
+          return data.map((row) => restaurantRowToDomain(row as RestaurantRow));
+        }
+
+        const seedRows = seedRestaurants.map(restaurantDomainToRow);
+        const { error: seedError } = await supabase.from("restaurants").upsert(seedRows, { onConflict: "id" });
+        if (!seedError) {
+          return seedRestaurants.map(normalizeRestaurant);
+        }
       }
     }
   }
