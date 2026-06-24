@@ -212,13 +212,13 @@ export default async function ClientPage({
         />
       </main>
     );
-  }
+    }
 
     if (!clientUser) {
       return <div>Aucun utilisateur client connecté.</div>;
     }
 
-    const restaurant = sessionRestaurant;
+    const restaurant = sessionRestaurant ?? requestedRestaurant;
     if (!restaurant) {
       return <div>Aucun restaurant configuré.</div>;
     }

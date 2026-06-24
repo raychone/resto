@@ -101,7 +101,7 @@ type DemoCredentialSpec = {
 
 const builtInDemoRestaurantIds = {
   bar: "bar-1",
-  food: "food-1",
+  food: "food-1-restaurant",
 } as const;
 
 const demoManagerUser: DemoUserSpec = {
