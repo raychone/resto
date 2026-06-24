@@ -2073,6 +2073,34 @@ const seedRestaurants: Restaurant[] = [
 
 const requiredDemoRestaurantSlugs = ["bar-1", "food-1"] as const;
 
+function needsDemoRestaurantBootstrap(existing: Restaurant | null | undefined, seed: Restaurant) {
+  if (!existing) {
+    return true;
+  }
+
+  if (!Array.isArray(existing.categories) || existing.categories.length === 0) {
+    return true;
+  }
+
+  if (!existing.translations || typeof existing.translations !== "object") {
+    return true;
+  }
+
+  if (!Array.isArray(existing.weeklyHours) || existing.weeklyHours.length === 0) {
+    return true;
+  }
+
+  if (!Array.isArray(seed.categories) || seed.categories.length === 0) {
+    return false;
+  }
+
+  if (existing.tableCount !== seed.tableCount || existing.seatsPerTable !== seed.seatsPerTable) {
+    return true;
+  }
+
+  return false;
+}
+
 function ensureRequiredDemoRestaurants(restaurants: Restaurant[]) {
   const bySlug = new Map(restaurants.map((restaurant) => [restaurant.slug, normalizeRestaurant(restaurant)] as const));
 
@@ -2090,6 +2118,33 @@ function ensureRequiredDemoRestaurants(restaurants: Restaurant[]) {
   return [...bySlug.values()];
 }
 
+async function ensureRequiredDemoRestaurantsInSupabase(supabase: NonNullable<ReturnType<typeof getSupabaseAdminClient>>) {
+  const { data, error } = await supabase.from("restaurants").select("*").is("deleted_at", null);
+  if (error || !Array.isArray(data)) {
+    return;
+  }
+
+  const existingBySlug = new Map(
+    (data as RestaurantRow[]).map((row) => [row.slug, restaurantRowToDomain(row)] as const),
+  );
+  const missingOrStaleSeeds = seedRestaurants.filter((seed) => {
+    if (!requiredDemoRestaurantSlugs.includes(seed.slug as (typeof requiredDemoRestaurantSlugs)[number])) {
+      return false;
+    }
+
+    return needsDemoRestaurantBootstrap(existingBySlug.get(seed.slug), seed);
+  });
+
+  if (missingOrStaleSeeds.length === 0) {
+    return;
+  }
+
+  await supabase.from("restaurants").upsert(
+    missingOrStaleSeeds.map((restaurant) => restaurantDomainToRow(normalizeRestaurant(restaurant))),
+    { onConflict: "id" },
+  );
+}
+
 async function ensureStore() {
   try {
     await fs.access(dataFile);
@@ -2103,6 +2158,8 @@ async function readRestaurantsFile() {
   if (hasSupabaseConfig()) {
     const supabase = getSupabaseAdminClient();
     if (supabase) {
+      await ensureRequiredDemoRestaurantsInSupabase(supabase);
+
       const { data, error } = await supabase
         .from("restaurants")
         .select("*")
@@ -2110,15 +2167,7 @@ async function readRestaurantsFile() {
         .order("created_at", { ascending: true });
 
       if (!error && Array.isArray(data)) {
-        if (data.length > 0) {
-          return ensureRequiredDemoRestaurants(data.map((row) => restaurantRowToDomain(row as RestaurantRow)));
-        }
-
-        const seedRows = seedRestaurants.map(restaurantDomainToRow);
-        const { error: seedError } = await supabase.from("restaurants").upsert(seedRows, { onConflict: "id" });
-        if (!seedError) {
-          return ensureRequiredDemoRestaurants(seedRestaurants.map(normalizeRestaurant));
-        }
+        return ensureRequiredDemoRestaurants(data.map((row) => restaurantRowToDomain(row as RestaurantRow)));
       }
     }
   }

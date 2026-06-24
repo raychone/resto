@@ -102,10 +102,72 @@ function createTablesForRestaurant(restaurant: Restaurant) {
   }));
 }
 
+async function ensureRestaurantTablesInSupabase(
+  supabase: NonNullable<ReturnType<typeof getSupabaseAdminClient>>,
+  restaurant: Restaurant,
+) {
+  const { data, error } = await supabase
+    .from("restaurant_tables")
+    .select("*")
+    .eq("restaurant_id", restaurant.id)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: true });
+
+  if (error || !Array.isArray(data)) {
+    return [];
+  }
+
+  const existing = data as TableRow[];
+  if (existing.length >= restaurant.tableCount) {
+    return existing;
+  }
+
+  const missingTables = Array.from(
+    { length: restaurant.tableCount - existing.length },
+    (_, offset) => {
+      const index = existing.length + offset + 1;
+      const now = new Date().toISOString();
+      return tableDomainToRow({
+        id: `${restaurant.id}-table-${index}`,
+        restaurantId: restaurant.id,
+        name: `Table ${index}`,
+        zone: "salle",
+        seats: restaurant.seatsPerTable,
+        active: true,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: null,
+      });
+    },
+  );
+
+  if (missingTables.length > 0) {
+    await supabase.from("restaurant_tables").upsert(missingTables, { onConflict: "id" });
+  }
+
+  const refreshed = await supabase
+    .from("restaurant_tables")
+    .select("*")
+    .eq("restaurant_id", restaurant.id)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: true });
+
+  if (!refreshed.error && Array.isArray(refreshed.data)) {
+    return refreshed.data as TableRow[];
+  }
+
+  return existing;
+}
+
 async function readTablesFile() {
   if (hasSupabaseConfig()) {
     const supabase = getSupabaseAdminClient();
     if (supabase) {
+      const restaurants = await listRestaurants();
+      for (const restaurant of restaurants) {
+        await ensureRestaurantTablesInSupabase(supabase, restaurant);
+      }
+
       const { data, error } = await supabase
         .from("restaurant_tables")
         .select("*")
@@ -263,52 +325,9 @@ export async function ensureRestaurantTableSeed(restaurant: Restaurant) {
   if (hasSupabaseConfig()) {
     const supabase = getSupabaseAdminClient();
     if (supabase) {
-      const { data, error } = await supabase
-        .from("restaurant_tables")
-        .select("*")
-        .eq("restaurant_id", restaurant.id)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: true });
-
-      if (!error && Array.isArray(data)) {
-        const existing = data as TableRow[];
-        if (existing.length >= restaurant.tableCount) {
-          return existing.map(tableRowToDomain);
-        }
-
-        const missingTables = Array.from(
-          { length: restaurant.tableCount - existing.length },
-          (_, offset) => {
-            const index = existing.length + offset + 1;
-            const now = new Date().toISOString();
-            return tableDomainToRow({
-              id: `${restaurant.id}-table-${index}`,
-              restaurantId: restaurant.id,
-              name: `Table ${index}`,
-              zone: "salle",
-              seats: restaurant.seatsPerTable,
-              active: true,
-              createdAt: now,
-              updatedAt: now,
-              deletedAt: null,
-            });
-          },
-        );
-
-        if (missingTables.length > 0) {
-          await supabase.from("restaurant_tables").upsert(missingTables, { onConflict: "id" });
-        }
-
-        const refreshed = await supabase
-          .from("restaurant_tables")
-          .select("*")
-          .eq("restaurant_id", restaurant.id)
-          .is("deleted_at", null)
-          .order("created_at", { ascending: true });
-
-        if (!refreshed.error && Array.isArray(refreshed.data)) {
-          return (refreshed.data as TableRow[]).map(tableRowToDomain);
-        }
+      const rows = await ensureRestaurantTablesInSupabase(supabase, restaurant);
+      if (rows.length > 0) {
+        return rows.map(tableRowToDomain);
       }
     }
   }
