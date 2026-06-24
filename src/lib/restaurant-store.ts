@@ -1935,140 +1935,661 @@ const seedRestaurants: Restaurant[] = [
     }
   ]
 },
-{
-  id: "food-1-restaurant",
-  slug: "food-1",
-  name: "Food 1",
-  status: "trial",
-  plan: "starter",
-  tagline: "Italian casual food, light theme, family friendly.",
-  description:
-    "A modern Italian casual restaurant focused on fresh pasta, pizza, salads and generous food offers.",
-  accent: "#c41e1e",
-  logoUrl: "/food-1-logo.svg",
-  heroImage:
-    "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format&fit=crop&w=1600&q=80",
-  address: "19 Via Roma, Milan",
-  phone: "+39 02 00 00 00 01",
-  whatsappNumber: "+39 02 00 00 00 01",
-  uberEatsUrl: "",
-  tripAdvisorUrl: "",
-  googleRating: 4.8,
-  googleReviewsCount: 176,
-  googleReviewsUrl: "",
-  openingHours: "Lunedì - Domenica, 11:30 - 22:30",
-  tableCount: 14,
-  seatsPerTable: 4,
-  weeklyHours: createDefaultWeeklyHours(),
-  happyHourSchedule: null,
-  features: {
-    orderFlowEnabled: true,
-    clientLoginEnabled: true,
-    waiterValidationEnabled: true,
-    kitchenWorkflowEnabled: true,
-    servedConfirmationEnabled: true,
-    bookingEnabled: true,
-    qrMode: "menu",
-    notificationProvider: "android",
-    whatsappAlertsEnabled: true,
-    smsAlertsEnabled: true,
-    googleReviewsEnabled: true,
+  {
+    "id": "food-1-restaurant",
+    "slug": "food-1",
+    "name": "Food 1",
+    "status": "trial",
+    "plan": "starter",
+    "tagline": "Italian casual food, light theme, family friendly.",
+    "description": "A modern Italian casual restaurant focused on fresh pasta, pizza, salads and generous food offers.",
+    "accent": "#c41e1e",
+    "logoUrl": "/food-1-logo.svg",
+    "heroImage": "https://images.unsplash.com/photo-1498579809087-ef1e558fd1da?auto=format&fit=crop&w=1600&q=80",
+    "address": "19 Via Roma, Milan",
+    "phone": "+39 02 00 00 00 01",
+    "whatsappNumber": "+39 02 00 00 00 01",
+    "uberEatsUrl": "",
+    "tripAdvisorUrl": "",
+    "googleRating": 4.8,
+    "googleReviewsCount": 176,
+    "googleReviewsUrl": "",
+    "openingHours": "Lunedì - Domenica, 11:30 - 22:30",
+    "tableCount": 14,
+    "seatsPerTable": 4,
+    "weeklyHours": [
+      {
+        "day": "mon",
+        "label": "Lundi",
+        "intervals": [
+          {
+            "start": "11:30",
+            "end": "22:30"
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "tue",
+        "label": "Mardi",
+        "intervals": [
+          {
+            "start": "11:30",
+            "end": "22:30"
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "wed",
+        "label": "Mercredi",
+        "intervals": [
+          {
+            "start": "11:30",
+            "end": "22:30"
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "thu",
+        "label": "Jeudi",
+        "intervals": [
+          {
+            "start": "11:30",
+            "end": "22:30"
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "fri",
+        "label": "Vendredi",
+        "intervals": [
+          {
+            "start": "11:30",
+            "end": "23:00"
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sat",
+        "label": "Samedi",
+        "intervals": [
+          {
+            "start": "11:30",
+            "end": "23:00"
+          }
+        ],
+        "closed": false
+      },
+      {
+        "day": "sun",
+        "label": "Dimanche",
+        "intervals": [
+          {
+            "start": "11:30",
+            "end": "21:30"
+          }
+        ],
+        "closed": false
+      }
+    ],
+    "happyHourSchedule": null,
+    "features": {
+      "orderFlowEnabled": true,
+      "clientLoginEnabled": true,
+      "waiterValidationEnabled": true,
+      "kitchenWorkflowEnabled": true,
+      "servedConfirmationEnabled": true,
+      "bookingEnabled": true,
+      "qrMode": "menu",
+      "notificationProvider": "android",
+      "whatsappAlertsEnabled": true,
+      "smsAlertsEnabled": true,
+      "googleReviewsEnabled": true
+    },
+    "currency": "EUR",
+    "createdAt": "2026-06-17T21:16:13.893Z",
+    "updatedAt": "2026-06-17T21:16:13.893Z",
+    "deletedAt": null,
+    "categories": [
+      {
+        "id": "food1-antipasti",
+        "name": "Antipasti",
+        "description": "Warm starters, breads and shareable plates.",
+        "items": [
+          {
+            "id": "food1-antipasti-burrata",
+            "name": "Burrata & Focaccia",
+            "description": "Creamy burrata with rosemary focaccia, cherry tomatoes and basil oil.",
+            "recipe": "Serve burrata slightly chilled over warm focaccia.",
+            "ingredients": [
+              "burrata",
+              "focaccia",
+              "tomatoes",
+              "basil"
+            ],
+            "allergens": [
+              "lait",
+              "gluten"
+            ],
+            "price": 14,
+            "imageUrl": "https://images.unsplash.com/photo-1498575207490-8c0f2b0f8f8d?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          },
+          {
+            "id": "food1-antipasti-zucchini",
+            "name": "Zucchini Fritti",
+            "description": "Crispy zucchini with lemon aioli and parmesan snow.",
+            "recipe": "Flash fry and season with sea salt and lemon zest.",
+            "ingredients": [
+              "zucchini",
+              "parmesan",
+              "lemon",
+              "aioli"
+            ],
+            "allergens": [
+              "lait",
+              "œuf"
+            ],
+            "price": 12,
+            "imageUrl": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          }
+        ]
+      },
+      {
+        "id": "food1-pasta",
+        "name": "Pasta",
+        "description": "Fresh pasta dishes with rich sauces.",
+        "items": [
+          {
+            "id": "food1-pasta-carbonara",
+            "name": "Tagliatelle Carbonara",
+            "description": "Egg yolk cream, guanciale and aged pecorino.",
+            "recipe": "Toss pasta off heat for a glossy carbonara sauce.",
+            "ingredients": [
+              "tagliatelle",
+              "guanciale",
+              "egg",
+              "pecorino"
+            ],
+            "allergens": [
+              "gluten",
+              "œuf",
+              "lait"
+            ],
+            "price": 18,
+            "imageUrl": "https://images.unsplash.com/photo-1521389508051-d7ffb5dc8f93?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          },
+          {
+            "id": "food1-pasta-pesto",
+            "name": "Trofie al Pesto",
+            "description": "Ligurian pesto, green beans, potatoes and toasted pine nuts.",
+            "recipe": "Blend basil, garlic, pine nuts and olive oil just before service.",
+            "ingredients": [
+              "trofie",
+              "basil",
+              "pine nuts",
+              "potatoes"
+            ],
+            "allergens": [
+              "lait",
+              "fruits à coque"
+            ],
+            "price": 17,
+            "imageUrl": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          }
+        ]
+      },
+      {
+        "id": "food1-pizza",
+        "name": "Pizza",
+        "description": "Thin, crisp, fast-fired pizzas.",
+        "items": [
+          {
+            "id": "food1-pizza-margherita",
+            "name": "Margherita Classica",
+            "description": "San Marzano tomato, mozzarella, basil and olive oil.",
+            "recipe": "Bake at very high heat for a blistered crust.",
+            "ingredients": [
+              "tomato",
+              "mozzarella",
+              "basil",
+              "olive oil"
+            ],
+            "allergens": [
+              "gluten",
+              "lait"
+            ],
+            "price": 13,
+            "imageUrl": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          },
+          {
+            "id": "food1-pizza-diavola",
+            "name": "Diavola Rossa",
+            "description": "Spicy salami, mozzarella, chili and oregano.",
+            "recipe": "Top lightly so the dough remains airy and crisp.",
+            "ingredients": [
+              "tomato",
+              "mozzarella",
+              "salami",
+              "chili"
+            ],
+            "allergens": [
+              "gluten",
+              "lait"
+            ],
+            "price": 15,
+            "imageUrl": "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          }
+        ]
+      },
+      {
+        "id": "food1-risotto",
+        "name": "Risotto",
+        "description": "Creamy rice dishes with seasonal ingredients.",
+        "items": [
+          {
+            "id": "food1-risotto-porcini",
+            "name": "Risotto ai Porcini",
+            "description": "Porcini mushrooms, parsley and parmesan cream.",
+            "recipe": "Add stock gradually and finish with parmesan.",
+            "ingredients": [
+              "arborio rice",
+              "porcini",
+              "parmesan",
+              "parsley"
+            ],
+            "allergens": [
+              "lait"
+            ],
+            "price": 19,
+            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          },
+          {
+            "id": "food1-risotto-lemon",
+            "name": "Risotto al Limone",
+            "description": "Lemon zest, mascarpone and roasted courgettes.",
+            "recipe": "Use warm broth and finish with citrus zest at the end.",
+            "ingredients": [
+              "arborio rice",
+              "lemon",
+              "mascarpone",
+              "courgette"
+            ],
+            "allergens": [
+              "lait"
+            ],
+            "price": 18,
+            "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          }
+        ]
+      },
+      {
+        "id": "food1-gnocchi",
+        "name": "Gnocchi",
+        "description": "Soft potato gnocchi with rich sauces.",
+        "items": [
+          {
+            "id": "food1-gnocchi-pomodoro",
+            "name": "Gnocchi al Pomodoro",
+            "description": "Slow tomato sauce, basil and parmesan.",
+            "recipe": "Fold fresh gnocchi into a bright tomato emulsion.",
+            "ingredients": [
+              "gnocchi",
+              "tomato",
+              "basil",
+              "parmesan"
+            ],
+            "allergens": [
+              "gluten",
+              "lait"
+            ],
+            "price": 16,
+            "imageUrl": "https://images.unsplash.com/photo-1612874742237-6526221588e3?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          },
+          {
+            "id": "food1-gnocchi-gorgonzola",
+            "name": "Gnocchi Gorgonzola",
+            "description": "Creamy gorgonzola, walnuts and black pepper.",
+            "recipe": "Emulsify the sauce gently so it stays silky.",
+            "ingredients": [
+              "gnocchi",
+              "gorgonzola",
+              "walnuts",
+              "pepper"
+            ],
+            "allergens": [
+              "gluten",
+              "lait",
+              "fruits à coque"
+            ],
+            "price": 18,
+            "imageUrl": "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          }
+        ]
+      },
+      {
+        "id": "food1-salads",
+        "name": "Salads",
+        "description": "Fresh, light and colorful plates.",
+        "items": [
+          {
+            "id": "food1-salad-caprese",
+            "name": "Caprese Salad",
+            "description": "Tomatoes, mozzarella, basil pesto and olive oil.",
+            "recipe": "Slice tomatoes thick and season just before serving.",
+            "ingredients": [
+              "tomato",
+              "mozzarella",
+              "basil",
+              "olive oil"
+            ],
+            "allergens": [
+              "lait"
+            ],
+            "price": 11,
+            "imageUrl": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          },
+          {
+            "id": "food1-salad-romana",
+            "name": "Romana Salad",
+            "description": "Roman lettuce, croutons, parmesan and lemon dressing.",
+            "recipe": "Keep the leaves crisp and dress right before service.",
+            "ingredients": [
+              "lettuce",
+              "croutons",
+              "parmesan",
+              "lemon"
+            ],
+            "allergens": [
+              "gluten",
+              "lait"
+            ],
+            "price": 10,
+            "imageUrl": "https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          }
+        ]
+      },
+      {
+        "id": "food1-kids",
+        "name": "Kids Menu",
+        "description": "Smaller portions with the same care.",
+        "items": [
+          {
+            "id": "food1-kids-mini-pasta",
+            "name": "Mini Pasta",
+            "description": "Small pasta with tomato sauce and parmesan.",
+            "recipe": "Simple tomato sauce, fast service, kid friendly.",
+            "ingredients": [
+              "pasta",
+              "tomato",
+              "parmesan"
+            ],
+            "allergens": [
+              "gluten",
+              "lait"
+            ],
+            "price": 8,
+            "imageUrl": "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          },
+          {
+            "id": "food1-kids-mini-pizza",
+            "name": "Mini Pizza",
+            "description": "Small margherita with mozzarella and basil.",
+            "recipe": "Bake in the same oven for the same crisp finish.",
+            "ingredients": [
+              "dough",
+              "tomato",
+              "mozzarella",
+              "basil"
+            ],
+            "allergens": [
+              "gluten",
+              "lait"
+            ],
+            "price": 9,
+            "imageUrl": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          }
+        ]
+      },
+      {
+        "id": "food1-desserts",
+        "name": "Desserts",
+        "description": "Classic Italian sweets.",
+        "items": [
+          {
+            "id": "food1-dessert-tiramisu",
+            "name": "Tiramisu",
+            "description": "Coffee, mascarpone and cocoa powder.",
+            "recipe": "Layer gently and let it rest before service.",
+            "ingredients": [
+              "mascarpone",
+              "coffee",
+              "cocoa",
+              "savoiardi"
+            ],
+            "allergens": [
+              "gluten",
+              "lait",
+              "œuf"
+            ],
+            "price": 9,
+            "imageUrl": "https://images.unsplash.com/photo-1511381939415-c1a1eef5f4d4?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          },
+          {
+            "id": "food1-dessert-pannacotta",
+            "name": "Panna Cotta",
+            "description": "Vanilla cream with berry coulis.",
+            "recipe": "Set the cream gently for a smooth finish.",
+            "ingredients": [
+              "cream",
+              "vanilla",
+              "berries"
+            ],
+            "allergens": [
+              "lait"
+            ],
+            "price": 8,
+            "imageUrl": "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          }
+        ]
+      },
+      {
+        "id": "food1-offers",
+        "name": "Offers",
+        "description": "Food-first sets and seasonal suggestions.",
+        "items": [
+          {
+            "id": "food1-offer-lunch",
+            "name": "Lunch Menu",
+            "description": "Starter + pasta or pizza + water.",
+            "recipe": "Best served at lunch for a quick flow.",
+            "ingredients": [
+              "starter",
+              "pasta or pizza",
+              "water"
+            ],
+            "allergens": [
+              "varies by dish"
+            ],
+            "price": 19,
+            "imageUrl": "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": true
+          },
+          {
+            "id": "food1-offer-family",
+            "name": "Family Offer",
+            "description": "Two pizzas, one salad and two desserts.",
+            "recipe": "Shared offer for easy family ordering.",
+            "ingredients": [
+              "pizza",
+              "salad",
+              "dessert"
+            ],
+            "allergens": [
+              "gluten",
+              "lait"
+            ],
+            "price": 48,
+            "imageUrl": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=80",
+            "isSignature": false
+          }
+        ]
+      }
+    ],
+    "translations": {
+      "en": {
+        "name": "Food 1",
+        "tagline": "Italian casual food, light theme, family friendly.",
+        "description": "A modern Italian casual restaurant focused on fresh pasta, pizza, salads and generous food offers.",
+        "address": "19 Via Roma, Milan",
+        "categories": {
+          "food1-antipasti": {
+            "name": "Antipasti",
+            "description": "Warm starters and shareable plates."
+          },
+          "food1-pasta": {
+            "name": "Pasta",
+            "description": "Fresh pasta dishes with rich sauces."
+          },
+          "food1-pizza": {
+            "name": "Pizza",
+            "description": "Thin, crisp, fast-fired pizzas."
+          },
+          "food1-risotto": {
+            "name": "Risotto",
+            "description": "Creamy rice dishes with seasonal ingredients."
+          },
+          "food1-gnocchi": {
+            "name": "Gnocchi",
+            "description": "Soft potato gnocchi with rich sauces."
+          },
+          "food1-salads": {
+            "name": "Salads",
+            "description": "Fresh, light and colorful plates."
+          },
+          "food1-kids": {
+            "name": "Kids Menu",
+            "description": "Smaller portions with the same care."
+          },
+          "food1-desserts": {
+            "name": "Desserts",
+            "description": "Classic Italian sweets."
+          },
+          "food1-offers": {
+            "name": "Offers",
+            "description": "Food-first sets and seasonal suggestions."
+          }
+        }
+      },
+      "it": {
+        "name": "Food 1",
+        "tagline": "Italian casual food, tema chiaro, adatto alle famiglie.",
+        "description": "Un ristorante casual italiano moderno centrato su pasta fresca, pizza, insalate e offerte generose.",
+        "address": "Via Roma 19, Milano",
+        "categories": {
+          "food1-antipasti": {
+            "name": "Antipasti",
+            "description": "Antipasti caldi e piatti da condividere."
+          },
+          "food1-pasta": {
+            "name": "Pasta",
+            "description": "Pasta fresca con sughi ricchi."
+          },
+          "food1-pizza": {
+            "name": "Pizza",
+            "description": "Pizze sottili, croccanti e veloci."
+          },
+          "food1-risotto": {
+            "name": "Risotto",
+            "description": "Risotti cremosi con ingredienti di stagione."
+          },
+          "food1-gnocchi": {
+            "name": "Gnocchi",
+            "description": "Gnocchi di patate con sughi ricchi."
+          },
+          "food1-salads": {
+            "name": "Insalate",
+            "description": "Piatti freschi, leggeri e colorati."
+          },
+          "food1-kids": {
+            "name": "Menu bambini",
+            "description": "Porzioni piccole con la stessa cura."
+          },
+          "food1-desserts": {
+            "name": "Dolci",
+            "description": "Dolci italiani classici."
+          },
+          "food1-offers": {
+            "name": "Offerte",
+            "description": "Menu food-first e proposte stagionali."
+          }
+        }
+      },
+      "es": {
+        "name": "Food 1",
+        "tagline": "Italian casual food, tema claro, familiar.",
+        "description": "Un restaurante italiano casual moderno centrado en pasta fresca, pizza, ensaladas y ofertas generosas.",
+        "address": "Via Roma 19, Milán",
+        "categories": {
+          "food1-antipasti": {
+            "name": "Antipasti",
+            "description": "Entrantes calientes y platos para compartir."
+          },
+          "food1-pasta": {
+            "name": "Pasta",
+            "description": "Pasta fresca con salsas intensas."
+          },
+          "food1-pizza": {
+            "name": "Pizza",
+            "description": "Pizzas finas, crujientes y rápidas."
+          },
+          "food1-risotto": {
+            "name": "Risotto",
+            "description": "Rissotos cremosos con ingredientes de temporada."
+          },
+          "food1-gnocchi": {
+            "name": "Gnocchi",
+            "description": "Gnocchi de patata con salsas ricas."
+          },
+          "food1-salads": {
+            "name": "Ensaladas",
+            "description": "Platos frescos, ligeros y coloridos."
+          },
+          "food1-kids": {
+            "name": "Menú infantil",
+            "description": "Porciones pequeñas con el mismo cuidado."
+          },
+          "food1-desserts": {
+            "name": "Postres",
+            "description": "Postres italianos clásicos."
+          },
+          "food1-offers": {
+            "name": "Ofertas",
+            "description": "Menús food-first y propuestas de temporada."
+          }
+        }
+      }
+    }
   },
-  currency: "EUR",
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  deletedAt: null,
-  categories: [
-    {
-      id: "food1-antipasti",
-      name: "Antipasti",
-      description: "Warm starters, breads and shareable plates.",
-      items: [
-        {
-          id: "food1-antipasti-burrata",
-          name: "Burrata & Focaccia",
-          description: "Creamy burrata with rosemary focaccia, cherry tomatoes and basil oil.",
-          recipe: "Serve burrata slightly chilled over warm focaccia.",
-          ingredients: ["burrata", "focaccia", "tomatoes", "basil"],
-          allergens: ["lait", "gluten"],
-          price: 14,
-          imageUrl:
-            "https://images.unsplash.com/photo-1498575207490-8c0f2b0f8f8d?auto=format&fit=crop&w=1200&q=80",
-          isSignature: true,
-        },
-        {
-          id: "food1-antipasti-zucchini",
-          name: "Zucchini Fritti",
-          description: "Crispy zucchini with lemon aioli and parmesan snow.",
-          recipe: "Flash fry and season with sea salt and lemon zest.",
-          ingredients: ["zucchini", "parmesan", "lemon", "aioli"],
-          allergens: ["lait", "œuf"],
-          price: 12,
-          imageUrl:
-            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
-          isSignature: false,
-        },
-      ],
-    },
-    {
-      id: "food1-pasta",
-      name: "Pasta",
-      description: "Fresh pasta dishes with rich sauces.",
-      items: [
-        {
-          id: "food1-pasta-carbonara",
-          name: "Tagliatelle Carbonara",
-          description: "Egg yolk cream, guanciale and aged pecorino.",
-          recipe: "Toss pasta off heat for a glossy carbonara sauce.",
-          ingredients: ["tagliatelle", "guanciale", "egg", "pecorino"],
-          allergens: ["gluten", "œuf", "lait"],
-          price: 18,
-          imageUrl:
-            "https://images.unsplash.com/photo-1521389508051-d7ffb5dc8f93?auto=format&fit=crop&w=1200&q=80",
-          isSignature: true,
-        },
-      ],
-    },
-    {
-      id: "food1-pizza",
-      name: "Pizza",
-      description: "Wood-fired pizzas with crisp edges.",
-      items: [
-        {
-          id: "food1-pizza-margherita",
-          name: "Margherita Classica",
-          description: "Tomato, mozzarella, basil and olive oil.",
-          recipe: "Bake hot and fast for a light, airy crust.",
-          ingredients: ["dough", "tomato", "mozzarella", "basil"],
-          allergens: ["gluten", "lait"],
-          price: 13,
-          imageUrl:
-            "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80",
-          isSignature: true,
-        },
-      ],
-    },
-    {
-      id: "food1-desserts",
-      name: "Desserts",
-      description: "Sweet finishes to the meal.",
-      items: [
-        {
-          id: "food1-desserts-tiramisu",
-          name: "Tiramisu",
-          description: "Mascarpone cream, coffee and cocoa.",
-          recipe: "Layer gently and let it rest before service.",
-          ingredients: ["mascarpone", "coffee", "cocoa", "savoiardi"],
-          allergens: ["gluten", "lait", "œuf"],
-          price: 9,
-          imageUrl:
-            "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=1200&q=80",
-          isSignature: true,
-        },
-      ],
-    },
-  ],
-},
 ];
 
 const requiredDemoRestaurantSlugs = ["bar-1", "food-1"] as const;
@@ -2127,13 +2648,9 @@ async function ensureRequiredDemoRestaurantsInSupabase(supabase: NonNullable<Ret
   const existingBySlug = new Map(
     (data as RestaurantRow[]).map((row) => [row.slug, restaurantRowToDomain(row)] as const),
   );
-  const missingOrStaleSeeds = seedRestaurants.filter((seed) => {
-    if (!requiredDemoRestaurantSlugs.includes(seed.slug as (typeof requiredDemoRestaurantSlugs)[number])) {
-      return false;
-    }
-
-    return needsDemoRestaurantBootstrap(existingBySlug.get(seed.slug), seed);
-  });
+  const missingOrStaleSeeds = seedRestaurants.filter((seed) =>
+    requiredDemoRestaurantSlugs.includes(seed.slug as (typeof requiredDemoRestaurantSlugs)[number]),
+  );
 
   if (missingOrStaleSeeds.length === 0) {
     return;
