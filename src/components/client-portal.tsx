@@ -351,8 +351,10 @@ export function ClientPortal({
     restaurantSlug: restaurant.slug,
     enabled: orderFlowEnabled,
     guestSessionToken,
-    onEvent: () => {
-      void refreshLiveOrder();
+    onEvent: (event) => {
+      if (event.type === "orders" || event.type === "table_sessions" || event.type === "messages") {
+        void refreshLiveOrder();
+      }
     },
   });
 

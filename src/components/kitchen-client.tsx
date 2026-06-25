@@ -44,7 +44,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
   const refreshInFlightRef = useRef(false);
   const refreshQueuedRef = useRef(false);
 
-  const loadData = useCallback(async () => {
+  const loadOrders = useCallback(async () => {
     if (refreshInFlightRef.current) {
       refreshQueuedRef.current = true;
       return;
@@ -87,18 +87,18 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
       setLoading(false);
       if (refreshQueuedRef.current) {
         refreshQueuedRef.current = false;
-        void loadData();
+        void loadOrders();
       }
     }
   }, [initializedOrders, restaurant.name, restaurant.slug]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      void loadData();
+      void loadOrders();
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, [loadData]);
+  }, [loadOrders]);
 
   useEffect(() => {
     if (!browserNotificationsSupported()) return;
@@ -113,17 +113,17 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
       ? null
       : window.setInterval(() => {
           if (!document.hidden) {
-            void loadData();
+            void loadOrders();
           }
         }, 500);
 
     const refreshOnFocus = () => {
-      void loadData();
+      void loadOrders();
     };
 
     const refreshOnVisibility = () => {
       if (!document.hidden) {
-        void loadData();
+        void loadOrders();
       }
     };
 
@@ -137,13 +137,15 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
       window.removeEventListener("focus", refreshOnFocus);
       document.removeEventListener("visibilitychange", refreshOnVisibility);
     };
-  }, [loadData, orderFlowEnabled]);
+  }, [loadOrders, orderFlowEnabled]);
 
   useRestaurantRealtime({
     restaurantSlug: restaurant.slug,
     enabled: orderFlowEnabled,
-    onEvent: () => {
-      void loadData();
+    onEvent: (event) => {
+      if (event.type === "orders" || event.type === "table_sessions") {
+        void loadOrders();
+      }
     },
   });
 
@@ -198,7 +200,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
             ? "Bon servi à table."
             : "Statut mis à jour.",
     );
-    void loadData();
+    void loadOrders();
   }
 
   const groupedOrders = useMemo(() => {

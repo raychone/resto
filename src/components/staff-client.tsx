@@ -327,6 +327,73 @@ export function StaffClient({
   const refreshInFlightRef = useRef(false);
   const refreshQueuedRef = useRef(false);
 
+  const loadReservations = useCallback(async () => {
+    const response = await fetch(`/api/restaurants/${restaurant.slug}/reservations`, { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = (await response.json()) as { reservations: Reservation[] };
+    setReservations(payload.reservations);
+  }, [restaurant.slug]);
+
+  const loadTables = useCallback(async () => {
+    const response = await fetch(`/api/restaurants/${restaurant.slug}/tables`, { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = (await response.json()) as { tables: Table[] };
+    setTables(payload.tables);
+  }, [restaurant.slug]);
+
+  const loadOrders = useCallback(async () => {
+    const response = await fetch(`/api/restaurants/${restaurant.slug}/orders`, { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = (await response.json()) as { orders: Order[]; payments: Payment[] };
+    if (initializedOrdersRef.current) {
+      const previousOrders = previousOrdersRef.current;
+      const nextOrders = new Map(payload.orders.map((order) => [order.id, order.status] as const));
+      const newOrders = payload.orders.filter((order) => !previousOrders.has(order.id));
+      const updatedOrders = payload.orders.filter((order) => previousOrders.get(order.id) !== order.status);
+
+      if (newOrders.some((order) => order.status === "sent_to_kitchen" || order.status === "open")) {
+        pushToast("Nouvelle commande reçue.");
+        sendBrowserNotification(
+          `${restaurant.name} — nouvelle commande`,
+          "Une nouvelle commande attend la validation du serveur.",
+        );
+      }
+
+      if (updatedOrders.some((order) => order.status === "ready")) {
+        pushToast("Une commande est prête en cuisine.");
+        sendBrowserNotification(`${restaurant.name} — commande prête`, "Une commande est prête pour le service.");
+      }
+
+      previousOrdersRef.current = nextOrders;
+    } else {
+      previousOrdersRef.current = new Map(payload.orders.map((order) => [order.id, order.status] as const));
+      initializedOrdersRef.current = true;
+    }
+    setOrders(payload.orders);
+    setPayments(payload.payments);
+  }, [restaurant.name, restaurant.slug]);
+
+  const loadMessages = useCallback(async () => {
+    const response = await fetch(`/api/restaurants/${restaurant.slug}/messages`, { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = (await response.json()) as { messages: RestaurantMessage[] };
+    setMessages(payload.messages);
+  }, [restaurant.slug]);
+
+  const loadTableSessions = useCallback(async () => {
+    const response = await fetch(`/api/restaurants/${restaurant.slug}/table-sessions`, { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = (await response.json()) as { tableSessions: TableSession[] };
+    setTableSessions(payload.tableSessions);
+  }, [restaurant.slug]);
+
+  const loadTableGroups = useCallback(async () => {
+    const response = await fetch(`/api/restaurants/${restaurant.slug}/table-groups`, { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = (await response.json()) as { tableGroups: TableGroup[] };
+    setTableGroups(payload.tableGroups);
+  }, [restaurant.slug]);
+
   const loadData = useCallback(async () => {
     if (refreshInFlightRef.current) {
       refreshQueuedRef.current = true;
@@ -336,69 +403,14 @@ export function StaffClient({
     refreshInFlightRef.current = true;
     setLoading(true);
     try {
-      const [reservationResponse, tablesResponse, ordersResponse, messagesResponse, tableSessionsResponse, tableGroupsResponse] = await Promise.all([
-        fetch(`/api/restaurants/${restaurant.slug}/reservations`, { cache: "no-store" }),
-        fetch(`/api/restaurants/${restaurant.slug}/tables`, { cache: "no-store" }),
-        fetch(`/api/restaurants/${restaurant.slug}/orders`, { cache: "no-store" }),
-        fetch(`/api/restaurants/${restaurant.slug}/messages`, { cache: "no-store" }),
-        fetch(`/api/restaurants/${restaurant.slug}/table-sessions`, { cache: "no-store" }),
-        fetch(`/api/restaurants/${restaurant.slug}/table-groups`, { cache: "no-store" }),
+      await Promise.all([
+        loadReservations(),
+        loadTables(),
+        loadOrders(),
+        loadMessages(),
+        loadTableSessions(),
+        loadTableGroups(),
       ]);
-
-      if (reservationResponse.ok) {
-        const payload = (await reservationResponse.json()) as { reservations: Reservation[] };
-        setReservations(payload.reservations);
-      }
-
-      if (tablesResponse.ok) {
-        const payload = (await tablesResponse.json()) as { tables: Table[] };
-        setTables(payload.tables);
-      }
-
-      if (ordersResponse.ok) {
-        const payload = (await ordersResponse.json()) as { orders: Order[]; payments: Payment[] };
-        if (initializedOrdersRef.current) {
-          const previousOrders = previousOrdersRef.current;
-          const nextOrders = new Map(payload.orders.map((order) => [order.id, order.status] as const));
-          const newOrders = payload.orders.filter((order) => !previousOrders.has(order.id));
-          const updatedOrders = payload.orders.filter((order) => previousOrders.get(order.id) !== order.status);
-
-          if (newOrders.some((order) => order.status === "sent_to_kitchen" || order.status === "open")) {
-            pushToast("Nouvelle commande reçue.");
-            sendBrowserNotification(
-              `${restaurant.name} — nouvelle commande`,
-              "Une nouvelle commande attend la validation du serveur.",
-            );
-          }
-
-          if (updatedOrders.some((order) => order.status === "ready")) {
-            pushToast("Une commande est prête en cuisine.");
-            sendBrowserNotification(`${restaurant.name} — commande prête`, "Une commande est prête pour le service.");
-          }
-
-          previousOrdersRef.current = nextOrders;
-        } else {
-          previousOrdersRef.current = new Map(payload.orders.map((order) => [order.id, order.status] as const));
-          initializedOrdersRef.current = true;
-        }
-        setOrders(payload.orders);
-        setPayments(payload.payments);
-      }
-
-      if (messagesResponse.ok) {
-        const payload = (await messagesResponse.json()) as { messages: RestaurantMessage[] };
-        setMessages(payload.messages);
-      }
-
-      if (tableSessionsResponse.ok) {
-        const payload = (await tableSessionsResponse.json()) as { tableSessions: TableSession[] };
-        setTableSessions(payload.tableSessions);
-      }
-
-      if (tableGroupsResponse.ok) {
-        const payload = (await tableGroupsResponse.json()) as { tableGroups: TableGroup[] };
-        setTableGroups(payload.tableGroups);
-      }
     } catch {
       setNotice("Synchronisation temporairement indisponible.");
     } finally {
@@ -409,7 +421,7 @@ export function StaffClient({
         void loadData();
       }
     }
-  }, [restaurant.name, restaurant.slug]);
+  }, [loadMessages, loadOrders, loadReservations, loadTableGroups, loadTableSessions, loadTables]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -461,7 +473,32 @@ export function StaffClient({
   useRestaurantRealtime({
     restaurantSlug: restaurant.slug,
     enabled: orderFlowEnabled,
-    onEvent: () => {
+    onEvent: (event) => {
+      if (event.type === "orders") {
+        void Promise.all([loadOrders(), loadTableSessions(), loadTableGroups()]);
+        return;
+      }
+
+      if (event.type === "messages") {
+        void loadMessages();
+        return;
+      }
+
+      if (event.type === "reservations") {
+        void loadReservations();
+        return;
+      }
+
+      if (event.type === "table_sessions") {
+        void Promise.all([loadTableSessions(), loadTableGroups(), loadOrders()]);
+        return;
+      }
+
+      if (event.type === "restaurants" || event.type === "users") {
+        void Promise.all([loadTables(), loadReservations()]);
+        return;
+      }
+
       void loadData();
     },
   });
