@@ -427,23 +427,23 @@ export function PublicMenuCategories({
                       Commande désactivée pour ce restaurant.
                     </div>
                   )}
-                  {cartNotice ? (
-                    <div
-                      className={`fixed bottom-4 left-1/2 z-[90] w-[calc(100vw-1rem)] max-w-md -translate-x-1/2 rounded-[1.25rem] border px-4 py-3 text-center text-sm shadow-[0_20px_50px_rgba(0,0,0,0.18)] transition ${
-                        isFoodTheme
-                          ? "border-[#9fbe9c] bg-[#eef8eb] text-[#1f2b1f]"
-                          : "border-white/10 bg-[#111111] text-white"
-                      }`}
-                      role="status"
-                      aria-live="polite"
-                    >
-                      {cartNotice}
-                    </div>
-                  ) : null}
                 </div>
               </div>
             </section>
           </div>
+        </div>
+      ) : null}
+      {cartNotice ? (
+        <div
+          className={`fixed bottom-4 left-1/2 z-[90] w-[calc(100vw-1rem)] max-w-md -translate-x-1/2 rounded-[1.25rem] border px-4 py-3 text-center text-sm shadow-[0_20px_50px_rgba(0,0,0,0.18)] transition ${
+            isFoodTheme
+              ? "border-[#9fbe9c] bg-[#eef8eb] text-[#1f2b1f]"
+              : "border-white/10 bg-[#111111] text-white"
+          }`}
+          role="status"
+          aria-live="polite"
+        >
+          {cartNotice}
         </div>
       ) : null}
     </>

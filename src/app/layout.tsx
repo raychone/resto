@@ -20,7 +20,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" translate="no" className="h-full antialiased notranslate">
-      <body translate="no" className="min-h-full flex flex-col notranslate">{children}</body>
+      <head>
+        <meta name="google" content="notranslate" />
+        <meta httpEquiv="Content-Language" content="fr" />
+      </head>
+      <body translate="no" className="min-h-full flex flex-col notranslate">
+        {children}
+      </body>
     </html>
   );
 }

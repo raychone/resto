@@ -38,6 +38,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [changingOrderId, setChangingOrderId] = useState<string | null>(null);
   const [notificationPermission, setNotificationPermission] = useState<string>("unsupported");
   const previousOrdersRef = useRef<Map<string, Order["status"]>>(new Map());
   const [initializedOrders, setInitializedOrders] = useState(false);
@@ -166,41 +167,37 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
   );
 
   async function changeStatus(orderId: string, status: Order["status"]) {
-    const previousOrders = orders;
-    setOrders((current) =>
-      current.map((order) =>
-        order.id === orderId
-          ? {
-              ...order,
-              status,
-              updatedAt: new Date().toISOString(),
-            }
-          : order,
-      ),
-    );
-
-    const response = await fetch(`/api/restaurants/${restaurant.slug}/orders/${orderId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, kitchenUserId }),
-    });
-
-    if (!response.ok) {
-      setOrders(previousOrders);
-      setNotice("Impossible de modifier le statut.");
+    if (changingOrderId) {
       return;
     }
+    setChangingOrderId(orderId);
+    try {
+      const response = await fetch(`/api/restaurants/${restaurant.slug}/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, kitchenUserId }),
+      });
 
-    setNotice(
-      status === "preparing"
-        ? "Bon pris en préparation."
-        : status === "ready"
-          ? "Bon prêt pour le service."
-          : status === "served"
-            ? "Bon servi à table."
-            : "Statut mis à jour.",
-    );
-    void loadOrders();
+      if (!response.ok) {
+        setNotice("Impossible de modifier le statut.");
+        return;
+      }
+
+      setNotice(
+        status === "preparing"
+          ? "Bon pris en préparation."
+          : status === "ready"
+            ? "Bon prêt pour le service."
+            : status === "served"
+              ? "Bon servi au serveur."
+              : "Statut mis à jour.",
+      );
+      await loadOrders();
+    } catch {
+      setNotice("Impossible de modifier le statut.");
+    } finally {
+      setChangingOrderId(null);
+    }
   }
 
   const groupedOrders = useMemo(() => {
@@ -444,28 +441,31 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
                         {group.orders.some((order) => order.status === "sent_to_kitchen" || order.status === "open") ? (
                           <button
                             type="button"
+                            disabled={Boolean(changingOrderId)}
                             onClick={() => void changeStatus(group.orders[0].id, "preparing")}
-                            className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-[#f5f1ea]"
+                            className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-[#f5f1ea] disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            Commencer
+                            {changingOrderId === group.orders[0].id ? "..." : "Commencer"}
                           </button>
                         ) : null}
                         {group.orders.some((order) => order.status === "preparing") ? (
                           <button
                             type="button"
+                            disabled={Boolean(changingOrderId)}
                             onClick={() => void changeStatus(group.orders.find((order) => order.status === "preparing")?.id ?? group.orders[0].id, "ready")}
-                            className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-[#f5f1ea]"
+                            className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-[#f5f1ea] disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            Marquer prêt
+                            {changingOrderId === (group.orders.find((order) => order.status === "preparing")?.id ?? group.orders[0].id) ? "..." : "Marquer prêt"}
                           </button>
                         ) : null}
                         {group.orders.some((order) => order.status === "ready") ? (
                           <button
                             type="button"
+                            disabled={Boolean(changingOrderId)}
                             onClick={() => void changeStatus(group.orders.find((order) => order.status === "ready")?.id ?? group.orders[0].id, "served")}
-                            className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-[#f5f1ea]"
+                            className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-[#f5f1ea] disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            Servi au serveur
+                            {changingOrderId === (group.orders.find((order) => order.status === "ready")?.id ?? group.orders[0].id) ? "..." : "Servi au serveur"}
                           </button>
                         ) : null}
                       </div>
