@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { encodePayloadCookieValue, type ClientGuestSession } from "@/lib/auth";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
+import { getOpenTableSessionForTable } from "@/lib/table-session-store";
 import { getTableById } from "@/lib/table-store";
 import { createId } from "@/lib/types";
 
@@ -23,6 +24,10 @@ export async function GET(request: NextRequest) {
     const table = await getTableById(tableId);
     if (!table || table.restaurantId !== restaurant.id) {
       return NextResponse.redirect(new URL(`/client?restaurantSlug=${encodeURIComponent(restaurantSlug)}&guest=invalid_table`, request.url));
+    }
+    const activeSession = await getOpenTableSessionForTable(restaurant.id, tableId).catch(() => null);
+    if (activeSession) {
+      return NextResponse.redirect(new URL(`/client?restaurantSlug=${encodeURIComponent(restaurantSlug)}&guest=table_busy`, request.url));
     }
   }
 

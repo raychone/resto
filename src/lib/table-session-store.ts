@@ -311,6 +311,18 @@ export async function listTableSessionsForRestaurant(restaurantId: string) {
   return sessions.filter((session) => session.restaurantId === restaurantId && !session.deletedAt);
 }
 
+export async function getOpenTableSessionForTable(restaurantId: string, tableId: string) {
+  const sessions = await listTableSessionsForRestaurant(restaurantId);
+  return (
+    sessions.find(
+      (session) =>
+        session.status === "open" &&
+        !session.deletedAt &&
+        session.tableId === tableId,
+    ) ?? null
+  );
+}
+
 export async function getActiveTableSessionForRestaurant(restaurantId: string) {
   const sessions = await listTableSessionsForRestaurant(restaurantId);
   return sessions.find((session) => session.status === "open") ?? null;
@@ -320,8 +332,10 @@ export async function getOrCreateTableSessionForCustomer(
   restaurantId: string,
   customer: Customer,
   tableId?: string | null,
+  options?: { allowJoinExistingTableSession?: boolean },
 ) {
   return withFileLock(tableSessionsLockFile, async () => {
+    const allowJoinExistingTableSession = options?.allowJoinExistingTableSession === true;
     if (hasSupabaseConfig()) {
       const supabase = getSupabaseAdminClient();
       if (supabase) {
@@ -364,7 +378,7 @@ export async function getOrCreateTableSessionForCustomer(
           return customerSession;
         }
 
-        if (tableId) {
+        if (tableId && allowJoinExistingTableSession) {
           const selectedSession = sessions.find(
             (session) =>
               session.restaurantId === restaurantId &&
@@ -411,8 +425,7 @@ export async function getOrCreateTableSessionForCustomer(
           }
         }
 
-        const tables = await listTablesForRestaurant(restaurantId);
-        const fallbackTableId = tableId ?? tables[0]?.id ?? null;
+        const fallbackTableId = tableId ?? null;
         const session = normalizeTableSession({
           id: createId("table-session"),
           restaurantId,
@@ -488,7 +501,7 @@ export async function getOrCreateTableSessionForCustomer(
       return customerSession;
     }
 
-    if (tableId) {
+    if (tableId && allowJoinExistingTableSession) {
       const selectedSession = sessions.find(
         (session) =>
           session.restaurantId === restaurantId &&
@@ -531,8 +544,7 @@ export async function getOrCreateTableSessionForCustomer(
       }
     }
 
-    const tables = await listTablesForRestaurant(restaurantId);
-    const fallbackTableId = tableId ?? tables[0]?.id ?? null;
+    const fallbackTableId = tableId ?? null;
 
     const session = normalizeTableSession({
       id: createId("table-session"),

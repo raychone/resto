@@ -19,6 +19,7 @@ import { summarizeTaxBreakdown } from "@/lib/tax";
 import { countTablesNeeded } from "@/lib/booking";
 import type {
   TableSession,
+  TableGroup,
   Locale,
   Order,
   OrderItem,
@@ -47,6 +48,7 @@ type Props = {
   initialPayments: Payment[];
   initialMessages: RestaurantMessage[];
   initialTableSessions: TableSession[];
+  initialTableGroups: TableGroup[];
   initialTableModalView?: "bon" | "payment" | "menu";
 };
 
@@ -252,6 +254,7 @@ export function StaffClient({
   initialPayments,
   initialMessages,
   initialTableSessions,
+  initialTableGroups,
   initialTableModalView = "bon",
 }: Props) {
   const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
@@ -260,6 +263,7 @@ export function StaffClient({
   const [payments, setPayments] = useState<Payment[]>(initialPayments);
   const [messages, setMessages] = useState<RestaurantMessage[]>(initialMessages);
   const [tableSessions, setTableSessions] = useState<TableSession[]>(initialTableSessions);
+  const [tableGroups, setTableGroups] = useState<TableGroup[]>(initialTableGroups);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [reservationFilter, setReservationFilter] = useState<
@@ -296,6 +300,12 @@ export function StaffClient({
   const [movingTable, setMovingTable] = useState(false);
   const [quickMoveSourceId, setQuickMoveSourceId] = useState<string | null>(null);
   const [quickMoveTargetId, setQuickMoveTargetId] = useState<string>("");
+  const [selectedTableGroupId, setSelectedTableGroupId] = useState<string | null>(initialTableGroups[0]?.id ?? null);
+  const [groupDraftName, setGroupDraftName] = useState("");
+  const [groupDraftNote, setGroupDraftNote] = useState("");
+  const [groupDraftPrimaryTableId, setGroupDraftPrimaryTableId] = useState("");
+  const [groupDraftTableIds, setGroupDraftTableIds] = useState<string[]>([]);
+  const [savingTableGroup, setSavingTableGroup] = useState(false);
   const [pendingScrollTarget, setPendingScrollTarget] = useState<string | null>(null);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const isFoodTheme = theme === "food";
@@ -318,12 +328,13 @@ export function StaffClient({
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [reservationResponse, tablesResponse, ordersResponse, messagesResponse, tableSessionsResponse] = await Promise.all([
+      const [reservationResponse, tablesResponse, ordersResponse, messagesResponse, tableSessionsResponse, tableGroupsResponse] = await Promise.all([
         fetch(`/api/restaurants/${restaurant.slug}/reservations`, { cache: "no-store" }),
         fetch(`/api/restaurants/${restaurant.slug}/tables`, { cache: "no-store" }),
         fetch(`/api/restaurants/${restaurant.slug}/orders`, { cache: "no-store" }),
         fetch(`/api/restaurants/${restaurant.slug}/messages`, { cache: "no-store" }),
         fetch(`/api/restaurants/${restaurant.slug}/table-sessions`, { cache: "no-store" }),
+        fetch(`/api/restaurants/${restaurant.slug}/table-groups`, { cache: "no-store" }),
       ]);
 
       if (reservationResponse.ok) {
@@ -374,6 +385,11 @@ export function StaffClient({
       if (tableSessionsResponse.ok) {
         const payload = (await tableSessionsResponse.json()) as { tableSessions: TableSession[] };
         setTableSessions(payload.tableSessions);
+      }
+
+      if (tableGroupsResponse.ok) {
+        const payload = (await tableGroupsResponse.json()) as { tableGroups: TableGroup[] };
+        setTableGroups(payload.tableGroups);
       }
     } catch {
       setNotice("Synchronisation temporairement indisponible.");
@@ -793,11 +809,90 @@ export function StaffClient({
   }, [activeTableSessions]);
 
   const quickMoveSourceTable = useMemo(() => currentTables.find((table) => table.id === quickMoveSourceId) ?? null, [currentTables, quickMoveSourceId]);
+  const selectedTableGroup = useMemo(() => tableGroups.find((group) => group.id === selectedTableGroupId) ?? null, [tableGroups, selectedTableGroupId]);
+  const groupedTableIds = useMemo(() => new Set(tableGroups.flatMap((group) => group.tableIds)), [tableGroups]);
+  const selectedTableGroupSummary = useMemo(() => {
+    if (!selectedTableGroup) return null;
+
+    const groupOrders = orders.filter(
+      (order) =>
+        !order.deletedAt &&
+        selectedTableGroup.tableIds.includes(order.tableId ?? "") &&
+        (order.source === "table" || order.source === "qr"),
+    );
+    const groupSessions = activeTableSessions.filter((session) => selectedTableGroup.tableSessionIds.includes(session.id));
+
+    const total = groupOrders.reduce((sum, order) => sum + orderTotal(order), 0);
+    const paid = groupOrders.reduce((sum, order) => sum + paidTotalForOrder(payments, order.id), 0);
+    const remaining = Math.max(0, total - paid);
+
+    const perTable = selectedTableGroup.tableIds.map((tableId) => {
+      const table = currentTables.find((entry) => entry.id === tableId);
+      const tableOrders = groupOrders.filter((order) => order.tableId === tableId);
+      const tableTotal = tableOrders.reduce((sum, order) => sum + orderTotal(order), 0);
+      const tablePaid = tableOrders.reduce((sum, order) => sum + paidTotalForOrder(payments, order.id), 0);
+      return {
+        tableId,
+        label: table?.name ?? tableId,
+        total: tableTotal,
+        paid: tablePaid,
+        remaining: Math.max(0, tableTotal - tablePaid),
+      };
+    });
+
+    const perParticipantMap = new Map<string, { name: string; settled: number; tables: Set<string> }>();
+    for (const session of groupSessions) {
+      for (const participant of session.participants) {
+        const key = participant.customerId || participant.id;
+        const current = perParticipantMap.get(key) ?? {
+          name: participant.name,
+          settled: 0,
+          tables: new Set<string>(),
+        };
+        current.settled += participant.settledAmount;
+        if (session.tableId) {
+          current.tables.add(session.tableId);
+        }
+        perParticipantMap.set(key, current);
+      }
+    }
+
+    const perParticipant = [...perParticipantMap.values()].map((entry) => ({
+      name: entry.name,
+      settled: entry.settled,
+      tables: [...entry.tables].map((tableId) => currentTables.find((table) => table.id === tableId)?.name ?? tableId),
+    }));
+
+    return {
+      total,
+      paid,
+      remaining,
+      perTable,
+      perParticipant,
+      orderCount: groupOrders.length,
+      sessionCount: groupSessions.length,
+    };
+  }, [activeTableSessions, currentTables, orders, payments, selectedTableGroup]);
 
   useEffect(() => {
     if (!quickMoveSourceId) return;
     setQuickMoveTargetId(quickMoveSourceId);
   }, [quickMoveSourceId]);
+
+  useEffect(() => {
+    if (!selectedTableGroup) {
+      setGroupDraftName("");
+      setGroupDraftNote("");
+      setGroupDraftPrimaryTableId("");
+      setGroupDraftTableIds([]);
+      return;
+    }
+
+    setGroupDraftName(selectedTableGroup.name);
+    setGroupDraftNote(selectedTableGroup.note);
+    setGroupDraftPrimaryTableId(selectedTableGroup.primaryTableId ?? "");
+    setGroupDraftTableIds(selectedTableGroup.tableIds);
+  }, [selectedTableGroup]);
 
   async function moveTableFlow(sourceTableId: string, nextTableId: string) {
     if (!sourceTableId || !nextTableId || sourceTableId === nextTableId) return false;
@@ -884,6 +979,77 @@ export function StaffClient({
   async function moveSelectedTableTo(nextTableId: string) {
     if (!selectedTableModal) return false;
     return moveTableFlow(selectedTableModal.id, nextTableId);
+  }
+
+  function toggleGroupDraftTable(tableId: string) {
+    setGroupDraftTableIds((current) => {
+      if (current.includes(tableId)) {
+        const next = current.filter((entry) => entry !== tableId);
+        if (groupDraftPrimaryTableId === tableId) {
+          setGroupDraftPrimaryTableId(next[0] ?? "");
+        }
+        return next;
+      }
+
+      const next = [...current, tableId];
+      if (!groupDraftPrimaryTableId) {
+        setGroupDraftPrimaryTableId(tableId);
+      }
+      return next;
+    });
+  }
+
+  function startNewTableGroup() {
+    setSelectedTableGroupId(null);
+    setGroupDraftName("");
+    setGroupDraftNote("");
+    setGroupDraftPrimaryTableId(selectedTableModalId ?? "");
+    setGroupDraftTableIds(selectedTableModalId ? [selectedTableModalId] : []);
+  }
+
+  async function saveTableGroup() {
+    if (groupDraftTableIds.length === 0) {
+      pushToast("Choisir au moins une table.", "error");
+      return;
+    }
+
+    setSavingTableGroup(true);
+    try {
+      const tableSessionIds = activeTableSessions
+        .filter((session) => session.tableId && groupDraftTableIds.includes(session.tableId))
+        .map((session) => session.id);
+
+      const payload = {
+        name: groupDraftName.trim() || "Groupe de tables",
+        primaryTableId: groupDraftPrimaryTableId || groupDraftTableIds[0] || null,
+        tableIds: groupDraftTableIds,
+        tableSessionIds,
+        note: groupDraftNote.trim(),
+      };
+
+      const response = await fetch(
+        selectedTableGroup
+          ? `/api/restaurants/${restaurant.slug}/table-groups/${selectedTableGroup.id}`
+          : `/api/restaurants/${restaurant.slug}/table-groups`,
+        {
+          method: selectedTableGroup ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!response.ok) {
+        pushToast("Impossible d’enregistrer le groupe.", "error");
+        return;
+      }
+
+      const result = (await response.json()) as { tableGroup: TableGroup };
+      setSelectedTableGroupId(result.tableGroup.id);
+      pushToast(selectedTableGroup ? "Groupe mis à jour." : "Groupe créé.");
+      await loadData();
+    } finally {
+      setSavingTableGroup(false);
+    }
   }
 
   function jumpTo(id: string) {
@@ -2506,6 +2672,212 @@ export function StaffClient({
                     </div>
                   </div>
                 ) : null}
+
+                <div className="mt-4 rounded-[1.5rem] border border-[#eadfce] bg-white/82 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)] sm:p-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Groupes de tables</p>
+                      <h3 className="mt-1 text-lg font-semibold text-[#24170f]">Relier plusieurs tables</h3>
+                      <p className="mt-1 text-sm text-[#6f5b4a]">
+                        Prépare un même groupe pour plusieurs tables. Le code d’accès servira ensuite au join client sur la même session.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={startNewTableGroup}
+                      className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-medium text-[#1f2b1f] shadow-[0_8px_18px_rgba(127,170,118,0.12)]"
+                    >
+                      Nouveau groupe
+                    </button>
+                  </div>
+
+                  <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+                    <div className="space-y-3">
+                      {tableGroups.length === 0 ? (
+                        <p className="rounded-[1.1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3 text-sm text-[#7f6c5a]">
+                          Aucun groupe de tables pour le moment.
+                        </p>
+                      ) : (
+                        tableGroups.map((group) => (
+                          <button
+                            key={group.id}
+                            type="button"
+                            onClick={() => setSelectedTableGroupId(group.id)}
+                            className={`w-full rounded-[1.2rem] border px-4 py-3 text-left transition ${
+                              selectedTableGroupId === group.id
+                                ? "border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f]"
+                                : "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold">{group.name}</p>
+                                <p className="mt-1 text-xs text-[#6f5b4a]">
+                                  {group.tableIds
+                                    .map((tableId) => currentTables.find((table) => table.id === tableId)?.name ?? tableId)
+                                    .join(" · ") || "Aucune table"}
+                                </p>
+                              </div>
+                              <span className="rounded-full border border-[#eadfce] bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#7f6c5a]">
+                                {group.accessCode}
+                              </span>
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="rounded-[1.25rem] border border-[#eadfce] bg-[#fffdf8] p-4">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <input
+                          value={groupDraftName}
+                          onChange={(event) => setGroupDraftName(event.target.value)}
+                          placeholder="Nom du groupe"
+                          className="rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-sm text-[#24170f] outline-none"
+                        />
+                        <select
+                          value={groupDraftPrimaryTableId}
+                          onChange={(event) => setGroupDraftPrimaryTableId(event.target.value)}
+                          className="rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-sm text-[#24170f] outline-none"
+                        >
+                          <option value="">Table principale</option>
+                          {groupDraftTableIds.map((tableId) => {
+                            const table = currentTables.find((entry) => entry.id === tableId);
+                            return table ? (
+                              <option key={table.id} value={table.id}>
+                                {table.name}
+                              </option>
+                            ) : null;
+                          })}
+                        </select>
+                      </div>
+
+                      <textarea
+                        value={groupDraftNote}
+                        onChange={(event) => setGroupDraftNote(event.target.value)}
+                        placeholder="Note interne sur le groupe"
+                        rows={3}
+                        className="mt-3 w-full rounded-[1.15rem] border border-[#eadfce] bg-white px-4 py-3 text-sm text-[#24170f] outline-none"
+                      />
+
+                      <div className="mt-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Tables liées</p>
+                          {selectedTableGroup ? (
+                            <span className="rounded-full border border-[#eadfce] bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#7f6c5a]">
+                              Code {selectedTableGroup.accessCode}
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                          {currentTables.map((table) => {
+                            const selected = groupDraftTableIds.includes(table.id);
+                            const usedByOtherGroup = groupedTableIds.has(table.id) && !(selectedTableGroup?.tableIds.includes(table.id) ?? false);
+                            return (
+                              <button
+                                key={table.id}
+                                type="button"
+                                onClick={() => toggleGroupDraftTable(table.id)}
+                                disabled={usedByOtherGroup}
+                                className={`rounded-[1rem] border px-3 py-3 text-left transition ${
+                                  selected
+                                    ? "border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] text-[#1f2b1f]"
+                                    : usedByOtherGroup
+                                      ? "border-[#eadfce] bg-[#f7f2ea] text-[#c0ad9c]"
+                                      : "border-[#eadfce] bg-white text-[#24170f] hover:bg-[#faf7f2]"
+                                }`}
+                              >
+                                <p className="text-sm font-semibold">{table.name}</p>
+                                <p className="mt-1 text-[11px] text-[#7f6c5a]">{table.seats} places</p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void saveTableGroup()}
+                          disabled={savingTableGroup || groupDraftTableIds.length === 0}
+                          className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-medium text-[#1f2b1f] shadow-[0_8px_18px_rgba(127,170,118,0.12)] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {savingTableGroup ? "Enregistrement..." : selectedTableGroup ? "Mettre à jour" : "Créer le groupe"}
+                        </button>
+                        {selectedTableGroup ? (
+                          <button
+                            type="button"
+                            onClick={startNewTableGroup}
+                            className="rounded-full border border-[#eadfce] bg-white px-4 py-2 text-sm font-medium text-[#24170f]"
+                          >
+                            Nouveau
+                          </button>
+                        ) : null}
+                      </div>
+
+                      {selectedTableGroupSummary ? (
+                        <div className="mt-4 rounded-[1.15rem] border border-[#eadfce] bg-white p-4">
+                          <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Synthèse du groupe</p>
+                          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                            <div className="rounded-[1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3">
+                              <p className="text-[11px] uppercase tracking-[0.24em] text-[#a38d7c]">Total groupe</p>
+                              <p className="mt-1 text-lg font-semibold text-[#24170f]">{formatMoney(selectedTableGroupSummary.total, restaurant.currency)}</p>
+                            </div>
+                            <div className="rounded-[1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3">
+                              <p className="text-[11px] uppercase tracking-[0.24em] text-[#a38d7c]">Déjà payé</p>
+                              <p className="mt-1 text-lg font-semibold text-[#24170f]">{formatMoney(selectedTableGroupSummary.paid, restaurant.currency)}</p>
+                            </div>
+                            <div className="rounded-[1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3">
+                              <p className="text-[11px] uppercase tracking-[0.24em] text-[#a38d7c]">Reste</p>
+                              <p className="mt-1 text-lg font-semibold text-[#24170f]">{formatMoney(selectedTableGroupSummary.remaining, restaurant.currency)}</p>
+                            </div>
+                          </div>
+                          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[0.24em] text-[#a38d7c]">Par table</p>
+                              <div className="mt-2 space-y-2">
+                                {selectedTableGroupSummary.perTable.map((entry) => (
+                                  <div key={entry.tableId} className="rounded-[1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3 text-sm text-[#24170f]">
+                                    <div className="flex items-center justify-between gap-3">
+                                      <p className="font-semibold">{entry.label}</p>
+                                      <p>{formatMoney(entry.total, restaurant.currency)}</p>
+                                    </div>
+                                    <div className="mt-1 flex items-center justify-between gap-3 text-xs text-[#6f5b4a]">
+                                      <span>Payé {formatMoney(entry.paid, restaurant.currency)}</span>
+                                      <span>Reste {formatMoney(entry.remaining, restaurant.currency)}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[0.24em] text-[#a38d7c]">Par personne</p>
+                              <div className="mt-2 space-y-2">
+                                {selectedTableGroupSummary.perParticipant.length === 0 ? (
+                                  <div className="rounded-[1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3 text-sm text-[#7f6c5a]">
+                                    Aucun participant lié au groupe pour le moment.
+                                  </div>
+                                ) : (
+                                  selectedTableGroupSummary.perParticipant.map((entry) => (
+                                    <div key={`${entry.name}-${entry.tables.join("-")}`} className="rounded-[1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3 text-sm text-[#24170f]">
+                                      <div className="flex items-center justify-between gap-3">
+                                        <p className="font-semibold">{entry.name}</p>
+                                        <p>{formatMoney(entry.settled, restaurant.currency)}</p>
+                                      </div>
+                                      <p className="mt-1 text-xs text-[#6f5b4a]">
+                                        Tables: {entry.tables.join(" · ") || "Aucune"}
+                                      </p>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
 
                 <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-5">
                   {currentTables.map((table) => {

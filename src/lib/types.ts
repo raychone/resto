@@ -489,6 +489,25 @@ export type Customer = {
   deletedAt?: string | null;
 };
 
+export type TableGroupStatus = "open" | "closed" | "archived";
+
+export type TableGroup = {
+  id: string;
+  restaurantId: string;
+  name: string;
+  status: TableGroupStatus;
+  hostCustomerId?: string | null;
+  primaryTableId?: string | null;
+  tableIds: string[];
+  tableSessionIds: string[];
+  accessCode: string;
+  note: string;
+  createdAt: string;
+  updatedAt: string;
+  closedAt?: string | null;
+  deletedAt?: string | null;
+};
+
 export type TableSessionStatus = "open" | "closed" | "archived";
 
 export type TableSessionParticipant = {

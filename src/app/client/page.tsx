@@ -14,9 +14,10 @@ import {
 } from "@/lib/customer-store";
 import { getRestaurantById, getRestaurantBySlug } from "@/lib/restaurant-store";
 import { listOrdersForRestaurant } from "@/lib/order-store";
-import { getOrCreateTableSessionForCustomer } from "@/lib/table-session-store";
+import { getOrCreateTableSessionForCustomer, listTableSessionsForRestaurant } from "@/lib/table-session-store";
+import { findOpenTableGroupForTableOrSession } from "@/lib/table-group-store";
 import { listTablesForRestaurant } from "@/lib/table-store";
-import { createId, type Customer, type Table, type TableSession, type User } from "@/lib/types";
+import { createId, type Customer, type Table, type TableGroup, type TableSession, type User } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +94,31 @@ function createFallbackTableSession(restaurantId: string, customer: Customer, ta
   };
 }
 
+function createFallbackTableGroup(
+  restaurantId: string,
+  primaryTableId: string | null,
+  tableSessionId: string | null,
+): TableGroup | null {
+  if (!primaryTableId || !tableSessionId) return null;
+  const now = new Date().toISOString();
+  return {
+    id: createId("table-group"),
+    restaurantId,
+    name: "Groupe de tables",
+    status: "open",
+    hostCustomerId: null,
+    primaryTableId,
+    tableIds: [primaryTableId],
+    tableSessionIds: [tableSessionId],
+    accessCode: "",
+    note: "",
+    createdAt: now,
+    updatedAt: now,
+    closedAt: null,
+    deletedAt: null,
+  };
+}
+
 export const metadata: Metadata = {
   title: "Client",
   description: "Compte client et futur loyalty.",
@@ -133,13 +159,38 @@ export default async function ClientPage({
           guestSession.id,
           guestSession.name,
         );
+        const guestSessions = await listTableSessionsForRestaurant(guestRestaurant.id).catch(() => []);
+        const effectiveGuestTableId = (() => {
+          const requestedId = guestSession.tableId ?? requestedTableId;
+          if (!requestedId) return null;
+          const occupied = guestSessions.find(
+            (session) =>
+              session.status === "open" &&
+              !session.deletedAt &&
+              session.tableId === requestedId &&
+              !session.participants.some((participant) => participant.customerId === customer.id),
+          );
+          return occupied ? null : requestedId;
+        })();
         const tableSession = await getOrCreateTableSessionForCustomer(
           guestRestaurant.id,
           customer,
-          guestSession.tableId ?? requestedTableId,
+          effectiveGuestTableId,
         );
         const tables = await listTablesForRestaurant(guestRestaurant.id);
         const orders = await listOrdersForRestaurant(guestRestaurant.id);
+        const occupiedTableIds = [...new Set(
+          guestSessions
+            .filter((session) => session.status === "open" && !session.deletedAt && session.id !== tableSession.id && session.tableId)
+            .map((session) => session.tableId as string),
+        )];
+        const tableGroup =
+          (await findOpenTableGroupForTableOrSession(
+            guestRestaurant.id,
+            tableSession.tableId,
+            tableSession.id,
+          ).catch(() => null)) ??
+          createFallbackTableGroup(guestRestaurant.id, tableSession.tableId, tableSession.id);
         const displayLogo = guestRestaurant.logoUrl || (guestRestaurant.slug === "bar-1" ? "/logoNoirBar.png" : "/logoFood.png");
         const activeOrder =
           (tableSession.orderId ? orders.find((order) => order.id === tableSession.orderId) : null) ??
@@ -194,6 +245,8 @@ export default async function ClientPage({
               orderFlowEnabled={guestRestaurant.features.orderFlowEnabled}
               theme={guestRestaurant.slug === "food-1" ? "food" : "dark"}
               guestSessionToken={guestSessionToken}
+              tableGroup={tableGroup}
+              occupiedTableIds={occupiedTableIds}
             />
           </main>
         );
@@ -241,7 +294,6 @@ export default async function ClientPage({
               <select
                 name="tableId"
                 defaultValue=""
-                required={requestedTables.length > 0}
                 className={isFoodDemo ? "rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"}
               >
                 <option value="">Choisis une table</option>
@@ -258,6 +310,9 @@ export default async function ClientPage({
             >
               Commander sans compte
             </button>
+            <p className={isFoodDemo ? "text-xs text-[#6f5b4a] sm:col-span-2" : "text-xs text-white/60 sm:col-span-2"}>
+              Si la table est déjà occupée, entre dans le portail puis rejoins la session avec le code d’accès du groupe.
+            </p>
           </form>
         </section>
 
@@ -336,10 +391,38 @@ export default async function ClientPage({
     const customer =
       (await getOrCreateCustomerForUser(clientUser, restaurant.id).catch(() => null)) ??
       createFallbackCustomer(clientUser, restaurant.id);
+    const existingSessions = await listTableSessionsForRestaurant(restaurant.id).catch(() => []);
+    const effectiveRequestedTableId = (() => {
+      if (!requestedTableId) return null;
+      const occupied = existingSessions.find(
+        (session) =>
+          session.status === "open" &&
+          !session.deletedAt &&
+          session.tableId === requestedTableId &&
+          !session.participants.some((participant) => participant.customerId === customer.id),
+      );
+      return occupied ? null : requestedTableId;
+    })();
     const tableSession =
-      (await getOrCreateTableSessionForCustomer(restaurant.id, customer, requestedTableId).catch(() => null)) ??
-      createFallbackTableSession(restaurant.id, customer, requestedTableId || (tables[0]?.id ?? null));
+      (await getOrCreateTableSessionForCustomer(
+        restaurant.id,
+        customer,
+        effectiveRequestedTableId,
+      ).catch(() => null)) ??
+      createFallbackTableSession(restaurant.id, customer, effectiveRequestedTableId);
     const orders = await listOrdersForRestaurant(restaurant.id).catch(() => []);
+    const occupiedTableIds = [...new Set(
+      existingSessions
+        .filter((session) => session.status === "open" && !session.deletedAt && session.id !== tableSession.id && session.tableId)
+        .map((session) => session.tableId as string),
+    )];
+    const tableGroup =
+      (await findOpenTableGroupForTableOrSession(
+        restaurant.id,
+        tableSession.tableId,
+        tableSession.id,
+      ).catch(() => null)) ??
+      createFallbackTableGroup(restaurant.id, tableSession.tableId, tableSession.id);
     const displayLogo = restaurant.logoUrl || (restaurant.slug === "bar-1" ? "/logoNoirBar.png" : "/logoFood.png");
     const activeOrder =
       (tableSession.orderId ? orders.find((order) => order.id === tableSession.orderId) : null) ??
@@ -379,6 +462,8 @@ export default async function ClientPage({
           focusCart={resolvedSearchParams?.focus === "cart"}
           orderFlowEnabled={restaurant.features.orderFlowEnabled}
           theme={restaurant.slug === "food-1" ? "food" : "dark"}
+          tableGroup={tableGroup}
+          occupiedTableIds={occupiedTableIds}
         />
       </main>
     );

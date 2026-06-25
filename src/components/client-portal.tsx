@@ -16,7 +16,7 @@ import { PublicMenuCategories } from "@/components/public-menu-categories";
 import { useRestaurantRealtime } from "@/components/use-restaurant-realtime";
 import { formatLoyaltyPoints, getLoyaltySummary } from "@/lib/loyalty";
 import { summarizeTaxBreakdown } from "@/lib/tax";
-import type { Customer, Order, Restaurant, Table, TableSession, User } from "@/lib/types";
+import type { Customer, Order, Restaurant, Table, TableGroup, TableSession, User } from "@/lib/types";
 
 type Props = {
   restaurant: Restaurant;
@@ -29,6 +29,8 @@ type Props = {
   orderFlowEnabled: boolean;
   theme?: "dark" | "food";
   guestSessionToken?: string | null;
+  tableGroup?: TableGroup | null;
+  occupiedTableIds?: string[];
 };
 
 type ClientTab = "menu" | "cart" | "tracking" | "split" | "profile";
@@ -78,6 +80,8 @@ export function ClientPortal({
   orderFlowEnabled,
   theme = "dark",
   guestSessionToken = null,
+  tableGroup = null,
+  occupiedTableIds = [],
 }: Props) {
   const isFoodTheme = theme === "food";
   const [isMounted, setIsMounted] = useState(false);
@@ -89,8 +93,12 @@ export function ClientPortal({
   const [clientNotice, setClientNotice] = useState<string | null>(null);
   const [liveOrder, setLiveOrder] = useState<Order | null>(activeOrder);
   const [liveTableSession, setLiveTableSession] = useState<TableSession>(tableSession);
+  const [liveTableGroup, setLiveTableGroup] = useState<TableGroup | null>(tableGroup);
   const [pendingTableId, setPendingTableId] = useState(tableSession.tableId ?? "");
   const [tableNotice, setTableNotice] = useState<string | null>(null);
+  const [joinAccessCode, setJoinAccessCode] = useState(tableGroup?.accessCode ?? "");
+  const [joiningGroup, setJoiningGroup] = useState(false);
+  const [joinNotice, setJoinNotice] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ClientTab>(focusCart ? "cart" : "menu");
   const cartSectionRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
@@ -126,6 +134,12 @@ export function ClientPortal({
 
   const selectedTableId = liveTableSession.tableId ?? "";
   const tableLocked = Boolean(selectedTableId);
+  const groupTableLabels = liveTableGroup
+    ? liveTableGroup.tableIds
+        .map((tableId) => tables.find((table) => table.id === tableId)?.name ?? tableId)
+        .join(", ")
+    : "";
+  const occupiedTableIdSet = useMemo(() => new Set(occupiedTableIds), [occupiedTableIds]);
 
   function jumpTo(id: string) {
     window.requestAnimationFrame(() => {
@@ -216,6 +230,11 @@ export function ClientPortal({
   useEffect(() => {
     setLiveTableSession(tableSession);
   }, [tableSession]);
+
+  useEffect(() => {
+    setLiveTableGroup(tableGroup);
+    setJoinAccessCode(tableGroup?.accessCode ?? "");
+  }, [tableGroup]);
 
   useEffect(() => {
     setPendingTableId(tableSession.tableId ?? "");
@@ -326,12 +345,20 @@ export function ClientPortal({
       setTableNotice("La table est verrouillée. Seul le staff peut déplacer la note vers une autre table.");
       return;
     }
+    if (occupiedTableIdSet.has(nextTableId)) {
+      setTableNotice("Cette table est déjà occupée. Utilise le code d’accès si tu rejoins une session existante.");
+      return;
+    }
     setPendingTableId(nextTableId);
     setTableNotice(null);
   }
 
   function confirmPendingTable() {
     if (tableLocked || !pendingTableId || pendingTableId === selectedTableId) {
+      return;
+    }
+    if (occupiedTableIdSet.has(pendingTableId)) {
+      setTableNotice("Cette table est déjà occupée. Rejoins la session avec le code d’accès du groupe.");
       return;
     }
 
@@ -345,6 +372,59 @@ export function ClientPortal({
       tables.find((table) => table.id === pendingTableId)?.name ?? "la table sélectionnée";
     setTableNotice(`Table prête à être confirmée: ${nextTableLabel}.`);
     router.replace(`/client?${params.toString()}`);
+  }
+
+  async function joinTableGroup() {
+    if (!joinAccessCode.trim()) {
+      setJoinNotice("Saisis le code d’accès du groupe.");
+      return;
+    }
+
+    setJoiningGroup(true);
+    setJoinNotice(null);
+    try {
+      const response = await fetch(withGuestToken(`/api/restaurants/${restaurant.slug}/table-groups/join`), {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          accessCode: joinAccessCode.trim().toUpperCase(),
+        }),
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        tableGroup?: TableGroup;
+        tableSession?: TableSession;
+      };
+
+      if (!response.ok || !payload.tableGroup || !payload.tableSession) {
+        setJoinNotice(payload.error || "Impossible de rejoindre la session de groupe.");
+        return;
+      }
+
+      setLiveTableGroup(payload.tableGroup);
+      setLiveTableSession(payload.tableSession);
+      setPendingTableId(payload.tableSession.tableId ?? "");
+      setTableNotice("Session de groupe rejointe. La table est désormais gérée via le code d’accès.");
+      setJoinNotice(`Groupe rejoint: ${payload.tableGroup.name}.`);
+
+      const params = new URLSearchParams();
+      params.set("restaurantSlug", restaurant.slug);
+      if (payload.tableSession.tableId) {
+        params.set("tableId", payload.tableSession.tableId);
+      }
+      if (focusCart || activeTab === "cart") {
+        params.set("focus", "cart");
+      }
+      router.replace(`/client?${params.toString()}`);
+    } catch {
+      setJoinNotice("Impossible de rejoindre la session de groupe.");
+    } finally {
+      setJoiningGroup(false);
+    }
   }
 
   async function submitCart() {
@@ -447,8 +527,8 @@ export function ClientPortal({
                 className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e] disabled:cursor-not-allowed disabled:bg-[#faf7f2] disabled:text-[#9a8574]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25 disabled:cursor-not-allowed disabled:opacity-60"}
               >
                 {tables.map((table) => (
-                  <option key={table.id} value={table.id}>
-                    {table.name} · {table.seats} places
+                  <option key={table.id} value={table.id} disabled={occupiedTableIdSet.has(table.id) && table.id !== selectedTableId}>
+                    {table.name} · {table.seats} places{occupiedTableIdSet.has(table.id) && table.id !== selectedTableId ? " · occupée" : ""}
                   </option>
                 ))}
               </select>
@@ -478,6 +558,42 @@ export function ClientPortal({
             ) : null}
           </div>
         ) : null}
+        <div className="mt-4 grid gap-2 sm:max-w-md">
+          <label className="grid gap-2">
+            <span className={isFoodTheme ? "text-xs font-semibold uppercase tracking-[0.28em] text-[#a38d7c]" : "text-xs font-semibold uppercase tracking-[0.28em] text-white/45"}>
+              Code d’accès groupe
+            </span>
+            <input
+              value={joinAccessCode}
+              onChange={(event) => setJoinAccessCode(event.target.value.toUpperCase())}
+              placeholder="Ex: TABLES"
+              className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"}
+            />
+          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void joinTableGroup()}
+              disabled={joiningGroup || !joinAccessCode.trim()}
+              className={isFoodTheme ? "rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-semibold text-[#1f2b1f] transition disabled:cursor-not-allowed disabled:opacity-45" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-45"}
+            >
+              {joiningGroup ? "Connexion..." : "Rejoindre le groupe"}
+            </button>
+          </div>
+          {joinNotice ? (
+            <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/65"}>{joinNotice}</p>
+          ) : null}
+          {liveTableGroup ? (
+            <div className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-[#faf7f2] p-3 text-sm text-[#6f5b4a]" : "rounded-2xl border border-white/10 bg-black/25 p-3 text-sm text-white/70"}>
+              <p className="font-medium text-inherit">
+                Groupe actif: {liveTableGroup.name}{liveTableGroup.accessCode ? ` · code ${liveTableGroup.accessCode}` : ""}
+              </p>
+              <p className="mt-1 text-inherit">
+                Tables liées: {groupTableLabels || "Aucune table liée."}
+              </p>
+            </div>
+          ) : null}
+        </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
