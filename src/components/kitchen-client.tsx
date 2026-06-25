@@ -131,6 +131,19 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
   );
 
   async function changeStatus(orderId: string, status: Order["status"]) {
+    const previousOrders = orders;
+    setOrders((current) =>
+      current.map((order) =>
+        order.id === orderId
+          ? {
+              ...order,
+              status,
+              updatedAt: new Date().toISOString(),
+            }
+          : order,
+      ),
+    );
+
     const response = await fetch(`/api/restaurants/${restaurant.slug}/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -138,6 +151,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
     });
 
     if (!response.ok) {
+      setOrders(previousOrders);
       setNotice("Impossible de modifier le statut.");
       return;
     }
@@ -151,7 +165,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
             ? "Bon servi à table."
             : "Statut mis à jour.",
     );
-    await loadData();
+    void loadData();
   }
 
   const groupedOrders = useMemo(() => {
@@ -252,7 +266,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
         {notice ? <p className="mt-3 text-sm text-white/65">{notice}</p> : null}
       </section>
 
-      <section className="mt-4 grid gap-3 sm:grid-cols-3">
+      <section translate="no" className="notranslate mt-4 grid gap-3 sm:grid-cols-3">
         <div className="rounded-[1.5rem] border border-amber-200 bg-amber-50 p-4 text-amber-950">
           <p className="text-[11px] uppercase tracking-[0.32em] text-amber-700">À prendre</p>
           <p className="mt-1 text-2xl font-semibold">{groupedOrders.waiting.length}</p>
@@ -270,7 +284,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
         </div>
       </section>
 
-      <nav className="sticky top-3 z-20 mt-4 rounded-[1.25rem] border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 backdrop-blur">
+      <nav translate="no" className="notranslate sticky top-3 z-20 mt-4 rounded-[1.25rem] border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 backdrop-blur">
         <div className="flex flex-wrap gap-2">
           {[
             { href: "#kitchen-summary", label: "Résumé" },
@@ -297,7 +311,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
           </p>
         </section>
       ) : (
-      <section id="kitchen-queue" className="mt-6 grid gap-4 xl:grid-cols-3">
+      <section translate="no" id="kitchen-queue" className="notranslate mt-6 grid gap-4 xl:grid-cols-3">
         {[
           { title: "À prendre", orders: groupedOrders.waiting, accent: "amber" },
           { title: "En préparation", orders: groupedOrders.preparing, accent: "sky" },
