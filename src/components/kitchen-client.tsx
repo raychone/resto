@@ -203,7 +203,10 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
   }, [visibleOrders]);
 
   return (
-    <main className={theme === "food" ? "food-theme mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6" : "internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6"}>
+    <main
+      translate="no"
+      className={`${theme === "food" ? "food-theme mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6" : "internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6"} notranslate`}
+    >
       <section className="rounded-[2rem] border border-white/10 bg-[#171717] p-4 text-[#f5f1ea] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>

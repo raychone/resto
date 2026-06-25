@@ -63,12 +63,19 @@ export async function GET(
         guestSession!.id,
         guestSession!.name,
       );
-  const tableSession = await getOrCreateTableSessionForCustomer(
-    restaurant.id,
-    customer,
-    guestSession?.tableId ?? null,
-  );
-  const currentOrder = tableSession.orderId ? await getOrderById(tableSession.orderId) : null;
+
+  let tableSession = null;
+  try {
+    tableSession = await getOrCreateTableSessionForCustomer(
+      restaurant.id,
+      customer,
+      guestSession?.tableId ?? null,
+    );
+  } catch {
+    tableSession = null;
+  }
+
+  const currentOrder = tableSession?.orderId ? await getOrderById(tableSession.orderId) : null;
   if (currentOrder) {
     return NextResponse.json({ order: currentOrder, tableSession });
   }
@@ -76,7 +83,10 @@ export async function GET(
   const restaurantOrders = await listOrdersForRestaurant(restaurant.id);
   const fallbackOrder =
     restaurantOrders
-      .filter((order) => order.tableSessionId === tableSession.id || order.tableId === tableSession.tableId)
+      .filter((order) => {
+        if (!tableSession) return false;
+        return order.tableSessionId === tableSession.id || order.tableId === tableSession.tableId;
+      })
       .sort(
         (left, right) =>
           new Date(right.updatedAt ?? right.createdAt).getTime() -
@@ -126,16 +136,34 @@ export async function POST(
         guestSession!.id,
         guestSession!.name,
       );
-  const tableSession = await getOrCreateTableSessionForCustomer(
-    restaurant.id,
-    customer,
-    body.tableId ?? guestSession?.tableId ?? null,
-  );
+
+  const requestedTableId = body.tableId ?? guestSession?.tableId ?? null;
+  const requestedTable = requestedTableId ? await getTableById(requestedTableId).catch(() => null) : null;
+  if (requestedTableId && (!requestedTable || requestedTable.restaurantId !== restaurant.id)) {
+    return NextResponse.json({ error: "Table not found" }, { status: 404 });
+  }
+
+  let tableSession = null;
+  try {
+    tableSession = await getOrCreateTableSessionForCustomer(
+      restaurant.id,
+      customer,
+      requestedTableId,
+    );
+  } catch {
+    tableSession = null;
+  }
+
+  const resolvedTableId = tableSession?.tableId ?? requestedTableId ?? null;
+  if (!resolvedTableId) {
+    return NextResponse.json({ error: "No table selected" }, { status: 400 });
+  }
+
   const order = await createOrder(
     {
       restaurantId: restaurant.id,
-      tableId: tableSession.tableId,
-      tableSessionId: tableSession.id,
+      tableId: resolvedTableId,
+      tableSessionId: tableSession?.id ?? null,
       staffUserId: null,
       source: "qr",
       status: "open",
@@ -146,8 +174,9 @@ export async function POST(
     },
     { allowDuplicateOpen: true },
   );
+
   const updatedTableSession =
-    (await updateTableSession(tableSession.id, { orderId: order.id })) ?? tableSession;
+    tableSession ? (await updateTableSession(tableSession.id, { orderId: order.id })) ?? tableSession : null;
 
   for (const item of items) {
     if (!item.menuItemId || !item.name || !Number.isFinite(item.price)) {
@@ -169,12 +198,15 @@ export async function POST(
     });
   }
 
-  const nextOrder = await updateOrder(order.id, {
-    note: body.note?.trim() || order.note,
-    tableSessionId: tableSession.id,
-    source: "qr",
-    status: "open",
-  });
+  const nextOrder =
+    (await updateOrder(order.id, {
+      note: body.note?.trim() || order.note,
+      tableSessionId: tableSession?.id ?? order.tableSessionId ?? null,
+      source: "qr",
+      status: "open",
+    })) ??
+    (await getOrderById(order.id)) ??
+    order;
 
   if (!nextOrder) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
@@ -189,7 +221,7 @@ export async function POST(
       action: "client_order_requested",
       targetType: "order",
       targetId: order.id,
-      details: `items=${items.length}${updatedTableSession.tableId ? ` · table=${updatedTableSession.tableId}` : ""}`,
+      details: `items=${items.length}${(updatedTableSession?.tableId ?? resolvedTableId) ? ` · table=${updatedTableSession?.tableId ?? resolvedTableId}` : ""}`,
     });
   } catch {
     // Audit must not block a real order submission.
@@ -198,8 +230,8 @@ export async function POST(
   const tableLabel =
     nextOrder.source === "takeaway"
       ? "À emporter"
-      : updatedTableSession.tableId
-        ? (await getTableById(updatedTableSession.tableId))?.name ?? "Table"
+      : updatedTableSession?.tableId ?? resolvedTableId
+        ? (await getTableById(updatedTableSession?.tableId ?? resolvedTableId))?.name ?? "Table"
         : "Table";
 
   try {
