@@ -146,7 +146,8 @@ export async function POST(
     },
     { allowDuplicateOpen: true },
   );
-  await updateTableSession(tableSession.id, { orderId: order.id });
+  const updatedTableSession =
+    (await updateTableSession(tableSession.id, { orderId: order.id })) ?? tableSession;
 
   for (const item of items) {
     if (!item.menuItemId || !item.name || !Number.isFinite(item.price)) {
@@ -179,30 +180,38 @@ export async function POST(
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
-  await recordAuditEntry({
-    restaurantSlug: restaurant.slug,
-    restaurantId: restaurant.id,
-    actorRole: "client",
-    actorName: clientUser?.name ?? guestSession?.name ?? customer.name,
-    action: "client_order_requested",
-    targetType: "order",
-    targetId: order.id,
-    details: `items=${items.length}${tableSession.tableId ? ` · table=${tableSession.tableId}` : ""}`,
-  });
+  try {
+    await recordAuditEntry({
+      restaurantSlug: restaurant.slug,
+      restaurantId: restaurant.id,
+      actorRole: "client",
+      actorName: clientUser?.name ?? guestSession?.name ?? customer.name,
+      action: "client_order_requested",
+      targetType: "order",
+      targetId: order.id,
+      details: `items=${items.length}${updatedTableSession.tableId ? ` · table=${updatedTableSession.tableId}` : ""}`,
+    });
+  } catch {
+    // Audit must not block a real order submission.
+  }
 
   const tableLabel =
     nextOrder.source === "takeaway"
       ? "À emporter"
-      : tableSession.tableId
-        ? (await getTableById(tableSession.tableId))?.name ?? "Table"
+      : updatedTableSession.tableId
+        ? (await getTableById(updatedTableSession.tableId))?.name ?? "Table"
         : "Table";
 
-  await dispatchOrderRequestNotification({
-    provider: restaurant.features.notificationProvider,
-    restaurant,
-    order: nextOrder,
-    tableLabel,
-  });
+  try {
+    await dispatchOrderRequestNotification({
+      provider: restaurant.features.notificationProvider,
+      restaurant,
+      order: nextOrder,
+      tableLabel,
+    });
+  } catch {
+    // Notification side effects must not block the customer order flow.
+  }
 
-  return NextResponse.json({ order: nextOrder, tableSession }, { status: 201 });
+  return NextResponse.json({ order: nextOrder, tableSession: updatedTableSession }, { status: 201 });
 }

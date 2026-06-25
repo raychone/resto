@@ -17,6 +17,14 @@ export const clientDashboardCookieName = "meniu_client_session";
 export const clientGuestSessionCookieName = "meniu_client_guest_session";
 export const ownerDashboardCookieName = "meniu_owner_session";
 
+function decodeCookieTransportValue(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 export function decodePayloadCookieValue<T>(value: string): T | null {
   if (!value.startsWith("payload:")) {
     return null;
@@ -112,12 +120,14 @@ async function getSessionUserFromRequest(
     return null;
   }
 
-  const payloadUser = decodePayloadCookieValue<User>(userId);
+  const decodedUserId = decodeCookieTransportValue(userId);
+
+  const payloadUser = decodePayloadCookieValue<User>(decodedUserId);
   if (payloadUser && isUserRole(payloadUser, role)) {
     return payloadUser;
   }
 
-  const user = await getUserById(userId);
+  const user = await getUserById(decodedUserId);
   if (!isUserRole(user, role)) {
     return null;
   }
@@ -249,5 +259,5 @@ export async function getClientGuestSessionFromRequest(request: Request): Promis
     return null;
   }
 
-  return decodePayloadCookieValue<ClientGuestSession>(rawValue);
+  return decodePayloadCookieValue<ClientGuestSession>(decodeCookieTransportValue(rawValue));
 }

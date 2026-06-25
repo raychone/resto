@@ -89,6 +89,8 @@ export function ClientPortal({
   const [clientNotice, setClientNotice] = useState<string | null>(null);
   const [liveOrder, setLiveOrder] = useState<Order | null>(activeOrder);
   const [liveTableSession, setLiveTableSession] = useState<TableSession>(tableSession);
+  const [pendingTableId, setPendingTableId] = useState(tableSession.tableId ?? "");
+  const [tableNotice, setTableNotice] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ClientTab>(focusCart ? "cart" : "menu");
   const cartSectionRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
@@ -215,6 +217,10 @@ export function ClientPortal({
   }, [tableSession]);
 
   useEffect(() => {
+    setPendingTableId(tableSession.tableId ?? "");
+  }, [tableSession.tableId]);
+
+  useEffect(() => {
     if (!focusCart || !cartSectionRef.current) return;
     setActiveTab("cart");
     cartSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -314,12 +320,24 @@ export function ClientPortal({
   });
 
   function changeTable(nextTableId: string) {
+    setPendingTableId(nextTableId);
+    setTableNotice(null);
+  }
+
+  function confirmPendingTable() {
+    if (!pendingTableId || pendingTableId === selectedTableId) {
+      return;
+    }
+
     const params = new URLSearchParams();
     params.set("restaurantSlug", restaurant.slug);
-    params.set("tableId", nextTableId);
+    params.set("tableId", pendingTableId);
     if (focusCart || activeTab === "cart") {
       params.set("focus", "cart");
     }
+    const nextTableLabel =
+      tables.find((table) => table.id === pendingTableId)?.name ?? "la table sélectionnée";
+    setTableNotice(`Table prête à être confirmée: ${nextTableLabel}.`);
     router.replace(`/client?${params.toString()}`);
   }
 
@@ -408,7 +426,7 @@ export function ClientPortal({
                 Table
               </span>
               <select
-                value={selectedTableId}
+                value={pendingTableId}
                 onChange={(event) => changeTable(event.target.value)}
                 className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"}
               >
@@ -419,6 +437,24 @@ export function ClientPortal({
                 ))}
               </select>
             </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={confirmPendingTable}
+                disabled={!pendingTableId || pendingTableId === selectedTableId}
+                className={isFoodTheme ? "rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-semibold text-[#1f2b1f] transition disabled:cursor-not-allowed disabled:opacity-45" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-45"}
+              >
+                Confirmer la table
+              </button>
+              {pendingTableId && pendingTableId !== selectedTableId ? (
+                <span className={isFoodTheme ? "text-xs text-[#6f5b4a]" : "text-xs text-white/60"}>
+                  Changement en attente de confirmation.
+                </span>
+              ) : null}
+            </div>
+            {tableNotice ? (
+              <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/65"}>{tableNotice}</p>
+            ) : null}
           </div>
         ) : null}
         <div className="mt-4 flex flex-wrap gap-2">

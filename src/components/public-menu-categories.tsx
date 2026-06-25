@@ -140,12 +140,13 @@ export function PublicMenuCategories({
     cartNoticeTimer.current = window.setTimeout(() => {
       setCartNotice(null);
       cartNoticeTimer.current = null;
-    }, 1800);
+    }, 2400);
   }
 
   async function handleAction() {
     if (!modalState || !orderFlowEnabled) return;
     await triggerItemAction(modalState.item, modalState.categoryName);
+    closeModal();
   }
 
   const closeModal = useCallback(() => {
