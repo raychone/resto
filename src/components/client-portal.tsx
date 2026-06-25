@@ -103,6 +103,8 @@ export function ClientPortal({
   const cartSectionRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const previousOrderStatusRef = useRef<Order["status"] | null>(activeOrder?.status ?? null);
+  const refreshInFlightRef = useRef(false);
+  const refreshQueuedRef = useRef(false);
   const loyalty = getLoyaltySummary(customer.lifetimePoints);
   const remainingToNextTier = loyalty.pointsToNext;
   const liveOrderItems = liveOrder?.items.filter((item) => !item.deletedAt) ?? [];
@@ -247,6 +249,12 @@ export function ClientPortal({
   }, [focusCart]);
 
   const refreshLiveOrder = useCallback(async () => {
+    if (refreshInFlightRef.current) {
+      refreshQueuedRef.current = true;
+      return;
+    }
+
+    refreshInFlightRef.current = true;
     try {
       const response = await fetch(withGuestToken(`/api/restaurants/${restaurant.slug}/client-orders`), {
         cache: "no-store",
@@ -266,7 +274,7 @@ export function ClientPortal({
       const previousStatus = previousOrderStatusRef.current;
       const nextStatus = nextOrder?.status ?? null;
 
-        if (nextStatus && nextStatus !== previousStatus) {
+      if (nextStatus && nextStatus !== previousStatus) {
         previousOrderStatusRef.current = nextStatus;
         setLiveOrder(nextOrder);
         if (nextStatus === "sent_to_kitchen") {
@@ -287,6 +295,12 @@ export function ClientPortal({
       }
     } catch {
       // silent polling fallback
+    } finally {
+      refreshInFlightRef.current = false;
+      if (refreshQueuedRef.current) {
+        refreshQueuedRef.current = false;
+        void refreshLiveOrder();
+      }
     }
   }, [guestSessionToken, restaurant.name, restaurant.slug]);
 
@@ -301,7 +315,9 @@ export function ClientPortal({
     const interval = supportsRealtime
       ? null
       : window.setInterval(() => {
-          void refreshLiveOrder();
+          if (!document.hidden) {
+            void refreshLiveOrder();
+          }
         }, 500);
 
     visibilityListener = () => {

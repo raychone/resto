@@ -41,39 +41,55 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
   const [notificationPermission, setNotificationPermission] = useState<string>("unsupported");
   const previousOrdersRef = useRef<Map<string, Order["status"]>>(new Map());
   const [initializedOrders, setInitializedOrders] = useState(false);
+  const refreshInFlightRef = useRef(false);
+  const refreshQueuedRef = useRef(false);
 
   const loadData = useCallback(async () => {
-    setLoading(true);
-    const response = await fetch(`/api/restaurants/${restaurant.slug}/orders`, { cache: "no-store" });
-    if (response.ok) {
-      const payload = (await response.json()) as { orders: Order[] };
-      if (initializedOrders) {
-        const previousOrders = previousOrdersRef.current;
-        const nextOrders = new Map(payload.orders.map((order) => [order.id, order.status] as const));
-        const newOrders = payload.orders.filter((order) => !previousOrders.has(order.id));
-        const readyOrders = payload.orders.filter((order) => previousOrders.get(order.id) !== order.status);
-
-        if (newOrders.some((order) => order.status === "sent_to_kitchen" || order.status === "preparing")) {
-          setNotice("Nouvelle commande en cuisine.");
-          sendBrowserNotification(
-            `${restaurant.name} — nouvelle commande`,
-            "Une nouvelle commande a été envoyée à la cuisine.",
-          );
-        }
-
-        if (readyOrders.some((order) => order.status === "ready")) {
-          setNotice("Commande prête pour le serveur.");
-          sendBrowserNotification(`${restaurant.name} — commande prête`, "Le serveur peut livrer la commande.");
-        }
-
-        previousOrdersRef.current = nextOrders;
-      } else {
-        previousOrdersRef.current = new Map(payload.orders.map((order) => [order.id, order.status] as const));
-        setInitializedOrders(true);
-      }
-      setOrders(payload.orders);
+    if (refreshInFlightRef.current) {
+      refreshQueuedRef.current = true;
+      return;
     }
-    setLoading(false);
+
+    refreshInFlightRef.current = true;
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/restaurants/${restaurant.slug}/orders`, { cache: "no-store" });
+      if (response.ok) {
+        const payload = (await response.json()) as { orders: Order[] };
+        if (initializedOrders) {
+          const previousOrders = previousOrdersRef.current;
+          const nextOrders = new Map(payload.orders.map((order) => [order.id, order.status] as const));
+          const newOrders = payload.orders.filter((order) => !previousOrders.has(order.id));
+          const readyOrders = payload.orders.filter((order) => previousOrders.get(order.id) !== order.status);
+
+          if (newOrders.some((order) => order.status === "sent_to_kitchen" || order.status === "preparing")) {
+            setNotice("Nouvelle commande en cuisine.");
+            sendBrowserNotification(
+              `${restaurant.name} — nouvelle commande`,
+              "Une nouvelle commande a été envoyée à la cuisine.",
+            );
+          }
+
+          if (readyOrders.some((order) => order.status === "ready")) {
+            setNotice("Commande prête pour le serveur.");
+            sendBrowserNotification(`${restaurant.name} — commande prête`, "Le serveur peut livrer la commande.");
+          }
+
+          previousOrdersRef.current = nextOrders;
+        } else {
+          previousOrdersRef.current = new Map(payload.orders.map((order) => [order.id, order.status] as const));
+          setInitializedOrders(true);
+        }
+        setOrders(payload.orders);
+      }
+    } finally {
+      refreshInFlightRef.current = false;
+      setLoading(false);
+      if (refreshQueuedRef.current) {
+        refreshQueuedRef.current = false;
+        void loadData();
+      }
+    }
   }, [initializedOrders, restaurant.name, restaurant.slug]);
 
   useEffect(() => {
@@ -96,13 +112,30 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
     const intervalId = supportsRealtime
       ? null
       : window.setInterval(() => {
-          void loadData();
+          if (!document.hidden) {
+            void loadData();
+          }
         }, 500);
+
+    const refreshOnFocus = () => {
+      void loadData();
+    };
+
+    const refreshOnVisibility = () => {
+      if (!document.hidden) {
+        void loadData();
+      }
+    };
+
+    window.addEventListener("focus", refreshOnFocus);
+    document.addEventListener("visibilitychange", refreshOnVisibility);
 
     return () => {
       if (intervalId) {
         window.clearInterval(intervalId);
       }
+      window.removeEventListener("focus", refreshOnFocus);
+      document.removeEventListener("visibilitychange", refreshOnVisibility);
     };
   }, [loadData, orderFlowEnabled]);
 

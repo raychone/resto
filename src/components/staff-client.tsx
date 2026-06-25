@@ -324,8 +324,16 @@ export function StaffClient({
   const [bookingPhoneCountry, setBookingPhoneCountry] = useState<PhoneCountryCode>("FR");
   const [bookingPickerMode, setBookingPickerMode] = useState<"date" | "time" | "country" | null>(null);
   const [bookingCountryQuery, setBookingCountryQuery] = useState("");
+  const refreshInFlightRef = useRef(false);
+  const refreshQueuedRef = useRef(false);
 
   const loadData = useCallback(async () => {
+    if (refreshInFlightRef.current) {
+      refreshQueuedRef.current = true;
+      return;
+    }
+
+    refreshInFlightRef.current = true;
     setLoading(true);
     try {
       const [reservationResponse, tablesResponse, ordersResponse, messagesResponse, tableSessionsResponse, tableGroupsResponse] = await Promise.all([
@@ -394,7 +402,12 @@ export function StaffClient({
     } catch {
       setNotice("Synchronisation temporairement indisponible.");
     } finally {
+      refreshInFlightRef.current = false;
       setLoading(false);
+      if (refreshQueuedRef.current) {
+        refreshQueuedRef.current = false;
+        void loadData();
+      }
     }
   }, [restaurant.name, restaurant.slug]);
 
@@ -418,7 +431,9 @@ export function StaffClient({
     const intervalId = supportsRealtime
       ? null
       : window.setInterval(() => {
-          void loadData();
+          if (!document.hidden) {
+            void loadData();
+          }
         }, 500);
 
     const refreshOnFocus = () => {
