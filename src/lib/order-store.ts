@@ -344,6 +344,66 @@ async function readPaymentsFile() {
   return normalized;
 }
 
+async function readOrdersForRestaurantFromSupabase(restaurantId: string) {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("restaurant_id", restaurantId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: true });
+
+  if (error || !Array.isArray(data)) {
+    return null;
+  }
+
+  return (data as OrderRow[]).map(orderRowToDomain);
+}
+
+async function readPaymentsForRestaurantFromSupabase(restaurantId: string) {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("payments")
+    .select("*")
+    .eq("restaurant_id", restaurantId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: true });
+
+  if (error || !Array.isArray(data)) {
+    return null;
+  }
+
+  return (data as PaymentRow[]).map(paymentRowToDomain);
+}
+
+async function readPaymentsForOrderFromSupabase(orderId: string) {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("payments")
+    .select("*")
+    .eq("order_id", orderId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: true });
+
+  if (error || !Array.isArray(data)) {
+    return null;
+  }
+
+  return (data as PaymentRow[]).map(paymentRowToDomain);
+}
+
 async function writeOrdersFile(orders: Order[]) {
   await fs.mkdir(dataDir, { recursive: true });
   await fs.writeFile(ordersFile, JSON.stringify(orders, null, 2), "utf8");
@@ -381,21 +441,58 @@ export async function listOrders() {
 }
 
 export async function listOrdersForRestaurant(restaurantId: string) {
+  if (hasSupabaseConfig()) {
+    const orders = await readOrdersForRestaurantFromSupabase(restaurantId);
+    if (orders) {
+      return orders;
+    }
+  }
+
   const orders = await listOrders();
   return orders.filter((order) => order.restaurantId === restaurantId && !order.deletedAt);
 }
 
 export async function getOrderById(orderId: string) {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("id", orderId)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (!error && data) {
+        return orderRowToDomain(data as OrderRow);
+      }
+    }
+  }
+
   const orders = await listOrders();
   return orders.find((order) => order.id === orderId && !order.deletedAt) ?? null;
 }
 
 export async function listPaymentsForRestaurant(restaurantId: string) {
+  if (hasSupabaseConfig()) {
+    const payments = await readPaymentsForRestaurantFromSupabase(restaurantId);
+    if (payments) {
+      return payments;
+    }
+  }
+
   const payments = await readPaymentsFile();
   return payments.filter((payment) => payment.restaurantId === restaurantId && !payment.deletedAt);
 }
 
 export async function listPaymentsForOrder(orderId: string) {
+  if (hasSupabaseConfig()) {
+    const payments = await readPaymentsForOrderFromSupabase(orderId);
+    if (payments) {
+      return payments;
+    }
+  }
+
   const payments = await readPaymentsFile();
   return payments.filter((payment) => payment.orderId === orderId && !payment.deletedAt);
 }
@@ -412,7 +509,7 @@ export async function createOrder(
     if (hasSupabaseConfig()) {
       const supabase = getSupabaseAdminClient();
       if (supabase) {
-        const orders = await listOrders();
+        const orders = await listOrdersForRestaurant(input.restaurantId);
         if (!options?.allowDuplicateOpen) {
           const duplicateExisting = orders.find(
             (order) =>

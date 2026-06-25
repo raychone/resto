@@ -297,6 +297,47 @@ async function readTableSessionsFile() {
   return normalized;
 }
 
+async function readTableSessionsForRestaurantFromSupabase(restaurantId: string) {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("table_sessions")
+    .select("*")
+    .eq("restaurant_id", restaurantId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: true });
+
+  if (error || !Array.isArray(data)) {
+    return null;
+  }
+
+  return (data as TableSessionRow[]).map(tableSessionRowToDomain);
+}
+
+async function getTableSessionById(sessionId: string) {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("table_sessions")
+        .select("*")
+        .eq("id", sessionId)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (!error && data) {
+        return tableSessionRowToDomain(data as TableSessionRow);
+      }
+    }
+  }
+
+  const sessions = await listTableSessions();
+  return sessions.find((session) => session.id === sessionId && !session.deletedAt) ?? null;
+}
+
 async function writeTableSessionsFile(sessions: TableSession[]) {
   await fs.mkdir(dataDir, { recursive: true });
   await fs.writeFile(tableSessionsFile, JSON.stringify(sessions, null, 2), "utf8");
@@ -307,11 +348,38 @@ export async function listTableSessions() {
 }
 
 export async function listTableSessionsForRestaurant(restaurantId: string) {
+  if (hasSupabaseConfig()) {
+    const sessions = await readTableSessionsForRestaurantFromSupabase(restaurantId);
+    if (sessions) {
+      return sessions;
+    }
+  }
+
   const sessions = await listTableSessions();
   return sessions.filter((session) => session.restaurantId === restaurantId && !session.deletedAt);
 }
 
 export async function getOpenTableSessionForTable(restaurantId: string, tableId: string) {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("table_sessions")
+        .select("*")
+        .eq("restaurant_id", restaurantId)
+        .eq("table_id", tableId)
+        .eq("status", "open")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        return tableSessionRowToDomain(data as TableSessionRow);
+      }
+    }
+  }
+
   const sessions = await listTableSessionsForRestaurant(restaurantId);
   return (
     sessions.find(
@@ -324,6 +392,25 @@ export async function getOpenTableSessionForTable(restaurantId: string, tableId:
 }
 
 export async function getActiveTableSessionForRestaurant(restaurantId: string) {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("table_sessions")
+        .select("*")
+        .eq("restaurant_id", restaurantId)
+        .eq("status", "open")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (!error && data) {
+        return tableSessionRowToDomain(data as TableSessionRow);
+      }
+    }
+  }
+
   const sessions = await listTableSessionsForRestaurant(restaurantId);
   return sessions.find((session) => session.status === "open") ?? null;
 }
@@ -588,7 +675,7 @@ export async function getOrCreateTableSessionForCustomer(
 export async function updateTableSession(sessionId: string, patch: Partial<TableSession>) {
   return withFileLock(tableSessionsLockFile, async () => {
     if (hasSupabaseConfig()) {
-      const currentSession = (await listTableSessions()).find((session) => session.id === sessionId);
+      const currentSession = await getTableSessionById(sessionId);
       if (currentSession) {
         const supabase = getSupabaseAdminClient();
         if (supabase) {

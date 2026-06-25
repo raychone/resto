@@ -13,6 +13,15 @@ import {
 const dataDir = path.join(process.cwd(), "data");
 const dataFile = path.join(dataDir, "restaurants.json");
 const canPersistDataFiles = process.env.VERCEL !== "1" && !hasSupabaseConfig();
+const RESTAURANT_CACHE_TTL_MS = 3000;
+
+let restaurantsCache:
+  | {
+      value: Restaurant[];
+      expiresAt: number;
+    }
+  | null = null;
+let restaurantsCachePromise: Promise<Restaurant[]> | null = null;
 
 type RestaurantRow = {
   id: string;
@@ -2676,7 +2685,12 @@ async function ensureStore() {
   }
 }
 
-async function readRestaurantsFile() {
+function invalidateRestaurantsCache() {
+  restaurantsCache = null;
+  restaurantsCachePromise = null;
+}
+
+async function loadRestaurantsUncached() {
   if (hasSupabaseConfig()) {
     const supabase = getSupabaseAdminClient();
     if (supabase) {
@@ -2733,6 +2747,30 @@ async function readRestaurantsFile() {
   return ensureRequiredDemoRestaurants(normalized);
 }
 
+async function readRestaurantsFile() {
+  if (restaurantsCache && restaurantsCache.expiresAt > Date.now()) {
+    return restaurantsCache.value;
+  }
+
+  if (restaurantsCachePromise) {
+    return restaurantsCachePromise;
+  }
+
+  restaurantsCachePromise = loadRestaurantsUncached()
+    .then((restaurants) => {
+      restaurantsCache = {
+        value: restaurants,
+        expiresAt: Date.now() + RESTAURANT_CACHE_TTL_MS,
+      };
+      return restaurants;
+    })
+    .finally(() => {
+      restaurantsCachePromise = null;
+    });
+
+  return restaurantsCachePromise;
+}
+
 async function writeRestaurantsFile(restaurants: Restaurant[]) {
   await fs.mkdir(dataDir, { recursive: true });
   await fs.writeFile(dataFile, JSON.stringify(restaurants, null, 2), "utf8");
@@ -2783,6 +2821,7 @@ export async function saveRestaurant(input: Restaurant) {
       }
 
       const savedRestaurant = restaurantRowToDomain(data as RestaurantRow);
+      invalidateRestaurantsCache();
       publishRestaurantRealtimeEvent({
         type: "restaurants",
         restaurantId: savedRestaurant.id,
@@ -2804,6 +2843,7 @@ export async function saveRestaurant(input: Restaurant) {
   }
 
   await writeRestaurantsFile(restaurants);
+  invalidateRestaurantsCache();
   publishRestaurantRealtimeEvent({
     type: "restaurants",
     restaurantId: restaurant.id,
@@ -2837,6 +2877,7 @@ export async function updateRestaurant(slug: string, input: Restaurant) {
       }
 
       const nextRestaurant = restaurantRowToDomain(data as RestaurantRow);
+      invalidateRestaurantsCache();
       publishRestaurantRealtimeEvent({
         type: "restaurants",
         restaurantId: nextRestaurant.id,
@@ -2858,6 +2899,7 @@ export async function updateRestaurant(slug: string, input: Restaurant) {
   nextRestaurants.push(restaurant);
 
   await writeRestaurantsFile(nextRestaurants);
+  invalidateRestaurantsCache();
   publishRestaurantRealtimeEvent({
     type: "restaurants",
     restaurantId: restaurant.id,
@@ -2892,6 +2934,7 @@ export async function createRestaurant(input?: Partial<Restaurant>) {
       }
 
       const createdRestaurant = restaurantRowToDomain(data as RestaurantRow);
+      invalidateRestaurantsCache();
       publishRestaurantRealtimeEvent({
         type: "restaurants",
         restaurantId: createdRestaurant.id,
@@ -2906,6 +2949,7 @@ export async function createRestaurant(input?: Partial<Restaurant>) {
   const restaurants = await readRestaurantsFile();
   const nextRestaurants = [...restaurants, restaurant];
   await writeRestaurantsFile(nextRestaurants);
+  invalidateRestaurantsCache();
   publishRestaurantRealtimeEvent({
     type: "restaurants",
     restaurantId: restaurant.id,
@@ -2931,6 +2975,7 @@ export async function deleteRestaurant(slug: string) {
       }
 
       if (restaurant) {
+        invalidateRestaurantsCache();
         publishRestaurantRealtimeEvent({
           type: "restaurants",
           restaurantId: restaurant.id,
@@ -2946,6 +2991,7 @@ export async function deleteRestaurant(slug: string) {
   const restaurants = await readRestaurantsFile();
   const nextRestaurants = restaurants.filter((entry) => entry.slug !== slug);
   await writeRestaurantsFile(nextRestaurants);
+  invalidateRestaurantsCache();
   const restaurant = restaurants.find((entry) => entry.slug === slug);
   if (restaurant) {
     publishRestaurantRealtimeEvent({

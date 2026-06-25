@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { listRestaurants } from "@/lib/restaurant-store";
+import { getRestaurantById, listRestaurants } from "@/lib/restaurant-store";
 import { getSupabaseAdminClient, hasSupabaseConfig } from "@/lib/supabase-admin";
 import { createId, type Restaurant, type Table, type TableZone } from "@/lib/types";
 
@@ -268,11 +268,51 @@ export async function listTables() {
 }
 
 export async function listTablesForRestaurant(restaurantId: string) {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const restaurant = await getRestaurantById(restaurantId);
+      if (restaurant) {
+        const rows = await ensureRestaurantTablesInSupabase(supabase, restaurant);
+        if (rows.length > 0) {
+          return rows.map(tableRowToDomain);
+        }
+      }
+
+      const { data, error } = await supabase
+        .from("restaurant_tables")
+        .select("*")
+        .eq("restaurant_id", restaurantId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (!error && Array.isArray(data)) {
+        return (data as TableRow[]).map(tableRowToDomain);
+      }
+    }
+  }
+
   const tables = await listTables();
   return tables.filter((table) => table.restaurantId === restaurantId && !table.deletedAt);
 }
 
 export async function getTableById(tableId: string) {
+  if (hasSupabaseConfig()) {
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("restaurant_tables")
+        .select("*")
+        .eq("id", tableId)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (!error && data) {
+        return tableRowToDomain(data as TableRow);
+      }
+    }
+  }
+
   const tables = await listTables();
   return tables.find((table) => table.id === tableId && !table.deletedAt) ?? null;
 }
