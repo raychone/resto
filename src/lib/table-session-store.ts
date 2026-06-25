@@ -344,24 +344,6 @@ export async function getOrCreateTableSessionForCustomer(
 
         if (customerSession) {
           const normalized = await normalizeTableSessionForRestaurant(customerSession);
-          const desiredTableId = tableId?.trim() || null;
-          if (desiredTableId && normalized.tableId !== desiredTableId) {
-            const nextSession = normalizeTableSession({
-              ...normalized,
-              tableId: desiredTableId,
-              updatedAt: new Date().toISOString(),
-            });
-            const { data, error } = await supabase
-              .from("table_sessions")
-              .update(tableSessionDomainToRow(nextSession))
-              .eq("id", nextSession.id)
-              .select("*")
-              .single();
-
-            if (!error && data) {
-              return tableSessionRowToDomain(data as TableSessionRow);
-            }
-          }
 
           if (
             normalized.tableId !== customerSession.tableId ||
@@ -488,23 +470,6 @@ export async function getOrCreateTableSessionForCustomer(
 
     if (customerSession) {
       const normalized = await normalizeTableSessionForRestaurant(customerSession);
-      const desiredTableId = tableId?.trim() || null;
-      if (desiredTableId && normalized.tableId !== desiredTableId) {
-        const customerIndex = sessions.findIndex((session) => session.id === customerSession.id);
-        const nextSession = normalizeTableSession({
-          ...normalized,
-          tableId: desiredTableId,
-          updatedAt: new Date().toISOString(),
-        });
-        if (customerIndex !== -1) {
-          const nextSessions = [...sessions];
-          nextSessions[customerIndex] = nextSession;
-          if (canPersistDataFiles) {
-            await writeTableSessionsFile(nextSessions);
-          }
-        }
-        return nextSession;
-      }
       if (
         normalized.tableId !== customerSession.tableId ||
         JSON.stringify(normalized.participants) !== JSON.stringify(customerSession.participants)

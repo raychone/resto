@@ -125,6 +125,7 @@ export function ClientPortal({
     : "";
 
   const selectedTableId = liveTableSession.tableId ?? "";
+  const tableLocked = Boolean(selectedTableId);
 
   function jumpTo(id: string) {
     window.requestAnimationFrame(() => {
@@ -320,12 +321,16 @@ export function ClientPortal({
   });
 
   function changeTable(nextTableId: string) {
+    if (tableLocked) {
+      setTableNotice("La table est verrouillée. Seul le staff peut déplacer la note vers une autre table.");
+      return;
+    }
     setPendingTableId(nextTableId);
     setTableNotice(null);
   }
 
   function confirmPendingTable() {
-    if (!pendingTableId || pendingTableId === selectedTableId) {
+    if (tableLocked || !pendingTableId || pendingTableId === selectedTableId) {
       return;
     }
 
@@ -435,7 +440,8 @@ export function ClientPortal({
               <select
                 value={pendingTableId}
                 onChange={(event) => changeTable(event.target.value)}
-                className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"}
+                disabled={tableLocked}
+                className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e] disabled:cursor-not-allowed disabled:bg-[#faf7f2] disabled:text-[#9a8574]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25 disabled:cursor-not-allowed disabled:opacity-60"}
               >
                 {tables.map((table) => (
                   <option key={table.id} value={table.id}>
@@ -448,7 +454,7 @@ export function ClientPortal({
               <button
                 type="button"
                 onClick={confirmPendingTable}
-                disabled={!pendingTableId || pendingTableId === selectedTableId}
+                disabled={tableLocked || !pendingTableId || pendingTableId === selectedTableId}
                 className={isFoodTheme ? "rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-semibold text-[#1f2b1f] transition disabled:cursor-not-allowed disabled:opacity-45" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-45"}
               >
                 Confirmer la table
@@ -459,6 +465,11 @@ export function ClientPortal({
                 </span>
               ) : null}
             </div>
+            {tableLocked ? (
+              <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/65"}>
+                Table confirmée. Si le client change de place, le staff doit déplacer la note sur la nouvelle table.
+              </p>
+            ) : null}
             {tableNotice ? (
               <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/65"}>{tableNotice}</p>
             ) : null}
