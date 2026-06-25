@@ -300,6 +300,9 @@ export function ClientPortal({
       if (payload.tableSession) {
         setLiveTableSession(payload.tableSession);
       }
+      if (liveTableGroup?.id) {
+        void refreshGroupSummary(liveTableGroup.id);
+      }
       const previousStatus = previousOrderStatusRef.current;
       const nextStatus = nextOrder?.status ?? null;
 
@@ -331,7 +334,7 @@ export function ClientPortal({
         void refreshLiveOrder();
       }
     }
-  }, [guestSessionToken, restaurant.name, restaurant.slug]);
+  }, [guestSessionToken, liveTableGroup?.id, refreshGroupSummary, restaurant.name, restaurant.slug]);
 
   useEffect(() => {
     if (!orderFlowEnabled) return;
@@ -1185,14 +1188,18 @@ export function ClientPortal({
                       ) : (
                         groupSummary.perParticipant.map((entry) => (
                           <div
-                            key={`${entry.name}-${entry.tables.join("-")}`}
+                            key={entry.key}
                             className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3"
                           >
                             <div className="flex items-center justify-between gap-3">
                               <p className="font-medium text-white">{entry.name}</p>
                               <p className="text-sm font-semibold text-white">
-                                {formatMoney(entry.settled, restaurant.currency)}
+                                {formatMoney(entry.total, restaurant.currency)}
                               </p>
+                            </div>
+                            <div className="mt-1 flex items-center justify-between gap-3 text-xs text-white/55">
+                              <span>Payé {formatMoney(entry.paid, restaurant.currency)}</span>
+                              <span>Reste {formatMoney(entry.remaining, restaurant.currency)}</span>
                             </div>
                             <p className="mt-1 text-xs text-white/55">
                               Tables: {entry.tables.join(" · ") || "Aucune"}

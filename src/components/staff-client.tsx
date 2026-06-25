@@ -307,6 +307,10 @@ export function StaffClient({
   const [groupDraftPrimaryTableId, setGroupDraftPrimaryTableId] = useState("");
   const [groupDraftTableIds, setGroupDraftTableIds] = useState<string[]>([]);
   const [savingTableGroup, setSavingTableGroup] = useState(false);
+  const [groupPaymentMethod, setGroupPaymentMethod] = useState<PaymentMethod>("cash");
+  const [groupPaymentAmount, setGroupPaymentAmount] = useState("");
+  const [groupPaymentParticipantKey, setGroupPaymentParticipantKey] = useState<string>("__all__");
+  const [payingTableGroup, setPayingTableGroup] = useState(false);
   const [pendingScrollTarget, setPendingScrollTarget] = useState<string | null>(null);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const isFoodTheme = theme === "food";
@@ -1050,6 +1054,59 @@ export function StaffClient({
       await loadData();
     } finally {
       setSavingTableGroup(false);
+    }
+  }
+
+  async function paySelectedTableGroup() {
+    if (!selectedTableGroup || !selectedTableGroupSummary) {
+      pushToast("Aucun groupe sélectionné.", "error");
+      return;
+    }
+
+    const amount = Number(groupPaymentAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      pushToast("Saisir un montant valide.", "error");
+      return;
+    }
+
+    setPayingTableGroup(true);
+    try {
+      const response = await fetch(
+        `/api/restaurants/${restaurant.slug}/table-groups/${selectedTableGroup.id}/payments`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount,
+            method: groupPaymentMethod,
+            participantKey: groupPaymentParticipantKey === "__all__" ? null : groupPaymentParticipantKey,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+        setNotice(payload.error ?? "Impossible d'encaisser le groupe.");
+        pushToast(payload.error ?? "Impossible d'encaisser le groupe.", "error");
+        return;
+      }
+
+      const payload = (await response.json()) as {
+        allocatedAmount: number;
+        unallocatedAmount: number;
+        ticketUrl?: string;
+      };
+      setNotice(
+        payload.unallocatedAmount > 0
+          ? `Groupe encaissé: ${formatMoney(payload.allocatedAmount, restaurant.currency)} · reste saisi ${formatMoney(payload.unallocatedAmount, restaurant.currency)} non affecté.`
+          : `Groupe encaissé: ${formatMoney(payload.allocatedAmount, restaurant.currency)}.`,
+      );
+      pushToast(`Paiement groupe enregistré.`);
+      setGroupPaymentAmount("");
+      setGroupPaymentParticipantKey("__all__");
+      await loadData();
+    } finally {
+      setPayingTableGroup(false);
     }
   }
 
@@ -2860,10 +2917,14 @@ export function StaffClient({
                                   </div>
                                 ) : (
                                   selectedTableGroupSummary.perParticipant.map((entry) => (
-                                    <div key={`${entry.name}-${entry.tables.join("-")}`} className="rounded-[1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3 text-sm text-[#24170f]">
+                                    <div key={entry.key} className="rounded-[1rem] border border-[#eadfce] bg-[#fffdf8] px-3 py-3 text-sm text-[#24170f]">
                                       <div className="flex items-center justify-between gap-3">
                                         <p className="font-semibold">{entry.name}</p>
-                                        <p>{formatMoney(entry.settled, restaurant.currency)}</p>
+                                        <p>{formatMoney(entry.total, restaurant.currency)}</p>
+                                      </div>
+                                      <div className="mt-1 flex items-center justify-between gap-3 text-xs text-[#6f5b4a]">
+                                        <span>Payé {formatMoney(entry.paid, restaurant.currency)}</span>
+                                        <span>Reste {formatMoney(entry.remaining, restaurant.currency)}</span>
                                       </div>
                                       <p className="mt-1 text-xs text-[#6f5b4a]">
                                         Tables: {entry.tables.join(" · ") || "Aucune"}
@@ -2872,6 +2933,76 @@ export function StaffClient({
                                   ))
                                 )}
                               </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 rounded-[1rem] border border-[#eadfce] bg-[#fffdf8] p-4">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <p className="text-[11px] uppercase tracking-[0.24em] text-[#a38d7c]">Règlement groupe</p>
+                                <p className="mt-1 text-sm text-[#6f5b4a]">
+                                  Encaissement global ou pour une personne précise du groupe.
+                                </p>
+                              </div>
+                              <a
+                                href={`/group-ticket/${encodeURIComponent(restaurant.slug)}/${encodeURIComponent(selectedTableGroup?.id ?? selectedTableGroupId ?? "")}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs font-medium text-[#24170f]"
+                              >
+                                Ticket groupe
+                              </a>
+                            </div>
+                            <div className="mt-3 grid gap-2 md:grid-cols-[1fr_1fr_1fr_auto]">
+                              <label className="rounded-[1rem] border border-[#eadfce] bg-white px-3 py-3">
+                                <span className="block text-[11px] uppercase tracking-[0.24em] text-[#a38d7c]">Personne</span>
+                                <select
+                                  value={groupPaymentParticipantKey}
+                                  onChange={(event) => setGroupPaymentParticipantKey(event.target.value)}
+                                  className="mt-2 w-full bg-transparent text-sm text-[#24170f] outline-none"
+                                >
+                                  <option value="__all__">Tout le groupe</option>
+                                  {selectedTableGroupSummary.perParticipant.map((entry) => (
+                                    <option key={entry.key} value={entry.key}>
+                                      {entry.name} · reste {formatMoney(entry.remaining, restaurant.currency)}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                              <label className="rounded-[1rem] border border-[#eadfce] bg-white px-3 py-3">
+                                <span className="block text-[11px] uppercase tracking-[0.24em] text-[#a38d7c]">Méthode</span>
+                                <select
+                                  value={groupPaymentMethod}
+                                  onChange={(event) => setGroupPaymentMethod(event.target.value as PaymentMethod)}
+                                  className="mt-2 w-full bg-transparent text-sm text-[#24170f] outline-none"
+                                >
+                                  <option value="cash">Cash</option>
+                                  <option value="card">Carte</option>
+                                  <option value="external">Externe</option>
+                                  <option value="other">Autre</option>
+                                </select>
+                              </label>
+                              <label className="rounded-[1rem] border border-[#eadfce] bg-white px-3 py-3">
+                                <span className="block text-[11px] uppercase tracking-[0.24em] text-[#a38d7c]">Montant</span>
+                                <input
+                                  type="number"
+                                  inputMode="decimal"
+                                  min="0"
+                                  step="0.01"
+                                  value={groupPaymentAmount}
+                                  onChange={(event) => setGroupPaymentAmount(event.target.value)}
+                                  placeholder={selectedTableGroupSummary.remaining.toFixed(2)}
+                                  className="mt-2 w-full bg-transparent text-sm text-[#24170f] outline-none"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => void paySelectedTableGroup()}
+                                disabled={payingTableGroup || selectedTableGroupSummary.remaining <= 0}
+                                className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_8px_18px_rgba(127,170,118,0.12)] disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                {payingTableGroup ? "Encaissement..." : "Encaisser le groupe"}
+                              </button>
                             </div>
                           </div>
                         </div>
