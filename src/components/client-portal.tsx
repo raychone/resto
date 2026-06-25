@@ -360,7 +360,14 @@ export function ClientPortal({
     });
 
     if (!response.ok) {
-      setCartNotice("Impossible d'envoyer la commande.");
+      let errorMessage = "Impossible d'envoyer la commande.";
+      try {
+        const payload = (await response.json()) as { error?: string };
+        if (payload?.error) {
+          errorMessage = `${errorMessage} (${payload.error})`;
+        }
+      } catch {}
+      setCartNotice(errorMessage);
       setSendingCart(false);
       return;
     }

@@ -92,67 +92,79 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 
   if (body.status === "ready" && next.status === "ready") {
-    const table = next.tableId ? await getTableById(next.tableId) : null;
-    const tableLabel =
-      next.source === "takeaway"
-        ? "À emporter"
-        : table?.name || (next.tableId ? `Table ${next.tableId.slice(-4)}` : "Table");
-    const notification = await dispatchOrderReadyNotification({
-      provider: restaurant.features.notificationProvider,
-      restaurant,
-      order: next,
-      tableLabel,
-    });
+    try {
+      const table = next.tableId ? await getTableById(next.tableId) : null;
+      const tableLabel =
+        next.source === "takeaway"
+          ? "À emporter"
+          : table?.name || (next.tableId ? `Table ${next.tableId.slice(-4)}` : "Table");
+      const notification = await dispatchOrderReadyNotification({
+        provider: restaurant.features.notificationProvider,
+        restaurant,
+        order: next,
+        tableLabel,
+      });
 
-    await recordAuditEntry({
-      restaurantSlug: restaurant.slug,
-      restaurantId: restaurant.id,
-      actorRole: "manager",
-      actorName: "System",
-      action: "order_ready_notification",
-      targetType: "order",
-      targetId: orderId,
-      details: `provider=${notification.provider}; sent=${notification.sent ? "yes" : "no"}`,
-    });
+      await recordAuditEntry({
+        restaurantSlug: restaurant.slug,
+        restaurantId: restaurant.id,
+        actorRole: "manager",
+        actorName: "System",
+        action: "order_ready_notification",
+        targetType: "order",
+        targetId: orderId,
+        details: `provider=${notification.provider}; sent=${notification.sent ? "yes" : "no"}`,
+      });
+    } catch {
+      // Notification/audit side-effects must not block kitchen flow.
+    }
   }
 
   if (body.status === "served" && next.status === "served") {
-    const table = next.tableId ? await getTableById(next.tableId) : null;
-    const tableLabel =
-      next.source === "takeaway"
-        ? "À emporter"
-        : table?.name || (next.tableId ? `Table ${next.tableId.slice(-4)}` : "Table");
-    const notification = await dispatchOrderServedNotification({
-      provider: restaurant.features.notificationProvider,
-      restaurant,
-      order: next,
-      tableLabel,
-    });
+    try {
+      const table = next.tableId ? await getTableById(next.tableId) : null;
+      const tableLabel =
+        next.source === "takeaway"
+          ? "À emporter"
+          : table?.name || (next.tableId ? `Table ${next.tableId.slice(-4)}` : "Table");
+      const notification = await dispatchOrderServedNotification({
+        provider: restaurant.features.notificationProvider,
+        restaurant,
+        order: next,
+        tableLabel,
+      });
 
-    await recordAuditEntry({
-      restaurantSlug: restaurant.slug,
-      restaurantId: restaurant.id,
-      actorRole: "manager",
-      actorName: "System",
-      action: "order_served_notification",
-      targetType: "order",
-      targetId: orderId,
-      details: `provider=${notification.provider}; sent=${notification.sent ? "yes" : "no"}`,
-    });
+      await recordAuditEntry({
+        restaurantSlug: restaurant.slug,
+        restaurantId: restaurant.id,
+        actorRole: "manager",
+        actorName: "System",
+        action: "order_served_notification",
+        targetType: "order",
+        targetId: orderId,
+        details: `provider=${notification.provider}; sent=${notification.sent ? "yes" : "no"}`,
+      });
+    } catch {
+      // Notification/audit side-effects must not block kitchen flow.
+    }
   }
 
   const actor = await resolveAuditActor(request, restaurant.id);
   if (actor) {
-    await recordAuditEntry({
-      restaurantSlug: restaurant.slug,
-      restaurantId: restaurant.id,
-      actorRole: actor.role,
-      actorName: actor.name,
-      action: "order_status_changed",
-      targetType: "order",
-      targetId: orderId,
-      details: `status=${body.status ?? existing.status}`,
-    });
+    try {
+      await recordAuditEntry({
+        restaurantSlug: restaurant.slug,
+        restaurantId: restaurant.id,
+        actorRole: actor.role,
+        actorName: actor.name,
+        action: "order_status_changed",
+        targetType: "order",
+        targetId: orderId,
+        details: `status=${body.status ?? existing.status}`,
+      });
+    } catch {
+      // Audit must not block operational status updates.
+    }
   }
 
   return NextResponse.json({ order: next });
