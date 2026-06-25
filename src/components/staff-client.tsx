@@ -46,6 +46,7 @@ type Props = {
   initialOrders: Order[];
   initialPayments: Payment[];
   initialMessages: RestaurantMessage[];
+  initialTableSessions: TableSession[];
   initialTableModalView?: "bon" | "payment" | "menu";
 };
 
@@ -250,6 +251,7 @@ export function StaffClient({
   initialOrders,
   initialPayments,
   initialMessages,
+  initialTableSessions,
   initialTableModalView = "bon",
 }: Props) {
   const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
@@ -257,6 +259,7 @@ export function StaffClient({
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [payments, setPayments] = useState<Payment[]>(initialPayments);
   const [messages, setMessages] = useState<RestaurantMessage[]>(initialMessages);
+  const [tableSessions, setTableSessions] = useState<TableSession[]>(initialTableSessions);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [reservationFilter, setReservationFilter] = useState<
@@ -289,6 +292,10 @@ export function StaffClient({
   const [selectedTableModalView, setSelectedTableModalView] = useState<"bon" | "payment" | "menu">(
     initialTableModalView,
   );
+  const [tableMoveTargetId, setTableMoveTargetId] = useState<string>("");
+  const [movingTable, setMovingTable] = useState(false);
+  const [quickMoveSourceId, setQuickMoveSourceId] = useState<string | null>(null);
+  const [quickMoveTargetId, setQuickMoveTargetId] = useState<string>("");
   const [pendingScrollTarget, setPendingScrollTarget] = useState<string | null>(null);
   const [burgerOpen, setBurgerOpen] = useState(false);
   const isFoodTheme = theme === "food";
@@ -311,11 +318,12 @@ export function StaffClient({
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [reservationResponse, tablesResponse, ordersResponse, messagesResponse] = await Promise.all([
+      const [reservationResponse, tablesResponse, ordersResponse, messagesResponse, tableSessionsResponse] = await Promise.all([
         fetch(`/api/restaurants/${restaurant.slug}/reservations`, { cache: "no-store" }),
         fetch(`/api/restaurants/${restaurant.slug}/tables`, { cache: "no-store" }),
         fetch(`/api/restaurants/${restaurant.slug}/orders`, { cache: "no-store" }),
         fetch(`/api/restaurants/${restaurant.slug}/messages`, { cache: "no-store" }),
+        fetch(`/api/restaurants/${restaurant.slug}/table-sessions`, { cache: "no-store" }),
       ]);
 
       if (reservationResponse.ok) {
@@ -361,6 +369,11 @@ export function StaffClient({
       if (messagesResponse.ok) {
         const payload = (await messagesResponse.json()) as { messages: RestaurantMessage[] };
         setMessages(payload.messages);
+      }
+
+      if (tableSessionsResponse.ok) {
+        const payload = (await tableSessionsResponse.json()) as { tableSessions: TableSession[] };
+        setTableSessions(payload.tableSessions);
       }
     } catch {
       setNotice("Synchronisation temporairement indisponible.");
@@ -767,11 +780,111 @@ export function StaffClient({
     }
   }, [currentTables, selectedTableModalId]);
 
+  const activeTableSessions = useMemo(() => tableSessions.filter((session) => session.status === "open" && !session.deletedAt), [tableSessions]);
+
+  const activeSessionByTableId = useMemo(() => {
+    const map = new Map<string, TableSession>();
+    for (const session of activeTableSessions) {
+      if (session.tableId && !map.has(session.tableId)) {
+        map.set(session.tableId, session);
+      }
+    }
+    return map;
+  }, [activeTableSessions]);
+
+  const quickMoveSourceTable = useMemo(() => currentTables.find((table) => table.id === quickMoveSourceId) ?? null, [currentTables, quickMoveSourceId]);
+
   useEffect(() => {
-    if (!selectedTableModalId) return;
-    if (selectedTarget === selectedTableModalId) return;
-    setSelectedTarget(selectedTableModalId);
-  }, [selectedTableModalId, selectedTarget]);
+    if (!quickMoveSourceId) return;
+    setQuickMoveTargetId(quickMoveSourceId);
+  }, [quickMoveSourceId]);
+
+  async function moveTableFlow(sourceTableId: string, nextTableId: string) {
+    if (!sourceTableId || !nextTableId || sourceTableId === nextTableId) return false;
+
+    const sourceTable = currentTables.find((table) => table.id === sourceTableId);
+    const targetTable = currentTables.find((table) => table.id === nextTableId);
+    const sourceSession = activeSessionByTableId.get(sourceTableId) ?? (splitDraft?.tableId === sourceTableId ? splitDraft : null) ?? (tableSession?.tableId === sourceTableId ? tableSession : null);
+    const ordersToMove = orders.filter((order) =>
+      isActiveOrder(order) &&
+      (order.source === "table" || order.source === "qr") &&
+      order.tableId === sourceTableId &&
+      order.status !== "paid" &&
+      order.status !== "cancelled" &&
+      order.status !== "archived",
+    );
+
+    if (!targetTable) {
+      setNotice("Table cible introuvable.");
+      pushToast("Table cible introuvable.", "error");
+      return false;
+    }
+
+    if (!sourceSession && ordersToMove.length === 0) {
+      setNotice("Aucune session active à déplacer pour cette table.");
+      pushToast("Aucune session active à déplacer.", "error");
+      return false;
+    }
+
+    setMovingTable(true);
+    try {
+      if (sourceSession) {
+        const sessionResponse = await fetch(`/api/restaurants/${restaurant.slug}/table-sessions/${sourceSession.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tableId: nextTableId }),
+        });
+
+        if (!sessionResponse.ok) {
+          setNotice("Impossible de déplacer la table.");
+          pushToast("Impossible de déplacer la table.", "error");
+          return false;
+        }
+
+        const sessionPayload = (await sessionResponse.json()) as { tableSession: TableSession };
+        setSplitDraft(sessionPayload.tableSession);
+      }
+
+      for (const order of ordersToMove) {
+        const orderResponse = await fetch(`/api/restaurants/${restaurant.slug}/orders/${order.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tableId: nextTableId }),
+        });
+        if (!orderResponse.ok) {
+          setNotice("La session a été déplacée, mais un bon n’a pas pu être transféré.");
+          pushToast("Un bon n’a pas pu être déplacé.", "error");
+          await loadData();
+          return false;
+        }
+      }
+
+      if (selectedTableModalId === sourceTableId) {
+        setSelectedTableModalId(nextTableId);
+        setSelectedTarget(nextTableId);
+        setSelectedTableModalView("bon");
+        setTableMoveTargetId(nextTableId);
+      }
+
+      if (selectedTarget === sourceTableId) {
+        setSelectedTarget(nextTableId);
+      }
+
+      setQuickMoveSourceId(null);
+      setQuickMoveTargetId("");
+      setNotice(`Table déplacée de ${sourceTable?.name ?? "la table"} vers ${targetTable.name}.`);
+      pushToast(`Table déplacée vers ${targetTable.name}.`);
+      await loadData();
+      return true;
+    } finally {
+      setMovingTable(false);
+    }
+  }
+
+  async function moveSelectedTableTo(nextTableId: string) {
+    if (!selectedTableModal) return false;
+    return moveTableFlow(selectedTableModal.id, nextTableId);
+  }
 
   function jumpTo(id: string) {
     window.requestAnimationFrame(() => {
@@ -2355,6 +2468,45 @@ export function StaffClient({
                   </div>
                 </div>
 
+                {quickMoveSourceTable ? (
+                  <div className="mt-4 rounded-[1.35rem] border border-[#eadfce] bg-white/80 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Déplacement rapide</p>
+                        <p className="mt-1 text-sm text-[#24170f]">Déplacer <span className="font-semibold">{quickMoveSourceTable.name}</span> vers une autre table sans ouvrir le bon.</p>
+                      </div>
+                      <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-auto">
+                        <select
+                          value={quickMoveTargetId}
+                          onChange={(event) => setQuickMoveTargetId(event.target.value)}
+                          className="min-w-[210px] rounded-full border border-[#eadfce] bg-white px-4 py-3 text-sm text-[#24170f] outline-none transition focus:border-[#9fbe9c] focus:ring-2 focus:ring-[#d8ecd3]"
+                        >
+                          {currentTables.map((table) => (
+                            <option key={table.id} value={table.id}>
+                              {table.name}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => void moveTableFlow(quickMoveSourceTable.id, quickMoveTargetId)}
+                          disabled={movingTable || !quickMoveTargetId || quickMoveTargetId === quickMoveSourceTable.id}
+                          className="rounded-full border border-[#eadfce] bg-white px-4 py-3 text-sm font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2] disabled:cursor-not-allowed disabled:opacity-55"
+                        >
+                          {movingTable ? "Déplacement..." : "Déplacer maintenant"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setQuickMoveSourceId(null); setQuickMoveTargetId(""); }}
+                          className="rounded-full border border-[#eadfce] bg-white px-4 py-3 text-sm font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2]"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
                 <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-5">
                   {currentTables.map((table) => {
                     const openOrder = orders.find((order) => {
@@ -2437,6 +2589,20 @@ export function StaffClient({
                               {pendingClientOrdersByTable[table.id]}
                             </span>
                           ) : null}
+                        </div>
+                        <div className="mt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              setQuickMoveSourceId(table.id);
+                              setQuickMoveTargetId(table.id);
+                            }}
+                            className="rounded-full border border-[#eadfce] bg-white px-2.5 py-1.5 text-[10px] font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2]"
+                          >
+                            Déplacer
+                          </button>
                         </div>
                       </a>
                     );
@@ -2673,6 +2839,36 @@ export function StaffClient({
                                     En cuisine
                                   </button>
                                 ) : null}
+                              </div>
+
+                              <div className="mt-4 rounded-[1.35rem] border border-[#eadfce] bg-white/80 p-3 shadow-[0_8px_18px_rgba(124,77,44,0.05)]">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                                  <div>
+                                    <p className="text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]">Déplacer la table</p>
+                                    <p className="mt-1 text-xs text-[#6f5b4a]">Déplace la session, le bon et la consommation active vers une autre table.</p>
+                                  </div>
+                                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                                    <select
+                                      value={tableMoveTargetId}
+                                      onChange={(event) => setTableMoveTargetId(event.target.value)}
+                                      className="min-w-[210px] rounded-full border border-[#eadfce] bg-white px-4 py-3 text-sm text-[#24170f] outline-none transition focus:border-[#9fbe9c] focus:ring-2 focus:ring-[#d8ecd3]"
+                                    >
+                                      {currentTables.map((table) => (
+                                        <option key={table.id} value={table.id}>
+                                          {table.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <button
+                                      type="button"
+                                      onClick={() => void moveSelectedTableTo(tableMoveTargetId)}
+                                      disabled={movingTable || !tableMoveTargetId || tableMoveTargetId === selectedTableModal.id}
+                                      className="rounded-full border border-[#eadfce] bg-white px-4 py-3 text-sm font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2] disabled:cursor-not-allowed disabled:opacity-55"
+                                    >
+                                      {movingTable ? "Déplacement..." : "Déplacer la table"}
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
 
                               {selectedTableModalOpenOrder ? (

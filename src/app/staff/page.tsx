@@ -7,7 +7,7 @@ import { listMessages, listReservations } from "@/lib/engagement-store";
 import { listOrdersForRestaurant, listPaymentsForRestaurant } from "@/lib/order-store";
 import { getRestaurantById, getRestaurantBySlug } from "@/lib/restaurant-store";
 import { getStaffSessionUser, isStaffAuthenticated } from "@/lib/auth";
-import { getActiveTableSessionForRestaurant } from "@/lib/table-session-store";
+import { getActiveTableSessionForRestaurant, listTableSessionsForRestaurant } from "@/lib/table-session-store";
 import { listTablesForRestaurant } from "@/lib/table-store";
 
 export const dynamic = "force-dynamic";
@@ -80,12 +80,13 @@ export default async function StaffPage({ searchParams }: Props) {
     );
   }
   const tableSession = await getActiveTableSessionForRestaurant(restaurant.id);
-  const [initialReservations, initialTables, initialOrders, initialPayments, initialMessages] = await Promise.all([
+  const [initialReservations, initialTables, initialOrders, initialPayments, initialMessages, initialTableSessions] = await Promise.all([
     listReservations(),
     listTablesForRestaurant(restaurant.id),
     listOrdersForRestaurant(restaurant.id),
     listPaymentsForRestaurant(restaurant.id),
     listMessages(),
+    listTableSessionsForRestaurant(restaurant.id),
   ]);
 
   return (
@@ -124,6 +125,7 @@ export default async function StaffPage({ searchParams }: Props) {
         initialOrders={initialOrders}
         initialPayments={initialPayments}
         initialMessages={initialMessages.filter((message) => message.restaurantId === restaurant.id)}
+        initialTableSessions={initialTableSessions}
         theme={restaurant.slug === "food-1" ? "food" : "dark"}
       />
     </main>
