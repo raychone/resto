@@ -15,6 +15,7 @@ import {
 import { PublicMenuCategories } from "@/components/public-menu-categories";
 import { useRestaurantRealtime } from "@/components/use-restaurant-realtime";
 import { formatLoyaltyPoints, getLoyaltySummary } from "@/lib/loyalty";
+import type { TableGroupSummary } from "@/lib/table-group-summary";
 import { summarizeTaxBreakdown } from "@/lib/tax";
 import type { Customer, Order, Restaurant, Table, TableGroup, TableSession, User } from "@/lib/types";
 
@@ -98,6 +99,7 @@ export function ClientPortal({
   const [joinAccessCode, setJoinAccessCode] = useState(tableGroup?.accessCode ?? "");
   const [joiningGroup, setJoiningGroup] = useState(false);
   const [joinNotice, setJoinNotice] = useState<string | null>(null);
+  const [groupSummary, setGroupSummary] = useState<TableGroupSummary | null>(null);
   const [activeTab, setActiveTab] = useState<ClientTab>(focusCart ? "cart" : "menu");
   const [serviceAdvancedOpen, setServiceAdvancedOpen] = useState(false);
   const cartSectionRef = useRef<HTMLDivElement | null>(null);
@@ -240,9 +242,34 @@ export function ClientPortal({
     setJoinAccessCode(tableGroup?.accessCode ?? "");
   }, [tableGroup]);
 
+  const refreshGroupSummary = useCallback(async (groupId: string) => {
+    try {
+      const response = await fetch(
+        withGuestToken(`/api/restaurants/${restaurant.slug}/table-groups/${groupId}/summary`),
+        {
+          cache: "no-store",
+          credentials: "include",
+        },
+      );
+      if (!response.ok) return;
+      const payload = (await response.json()) as { summary?: TableGroupSummary | null };
+      setGroupSummary(payload.summary ?? null);
+    } catch {
+      // ignore summary refresh failure
+    }
+  }, [guestSessionToken, restaurant.slug]);
+
   useEffect(() => {
     setPendingTableId(tableSession.tableId ?? "");
   }, [tableSession.tableId]);
+
+  useEffect(() => {
+    if (!liveTableGroup?.id) {
+      setGroupSummary(null);
+      return;
+    }
+    void refreshGroupSummary(liveTableGroup.id);
+  }, [liveTableGroup?.id, refreshGroupSummary]);
 
   useEffect(() => {
     if (!focusCart || !cartSectionRef.current) return;
@@ -430,6 +457,7 @@ export function ClientPortal({
       setPendingTableId(payload.tableSession.tableId ?? "");
       setTableNotice("Session de groupe rejointe. La table est désormais gérée via le code d’accès.");
       setJoinNotice(`Groupe rejoint: ${payload.tableGroup.name}.`);
+      void refreshGroupSummary(payload.tableGroup.id);
 
       const params = new URLSearchParams();
       params.set("restaurantSlug", restaurant.slug);
@@ -1092,6 +1120,91 @@ export function ClientPortal({
                 </p>
               </div>
             </div>
+
+            {liveTableGroup && groupSummary ? (
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">Groupe</p>
+                    <h3 className="mt-1 text-xl font-semibold">{liveTableGroup.name}</h3>
+                  </div>
+                  <span className="rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white">
+                    {groupTableLabels || "Aucune table liée"}
+                  </span>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">Total groupe</p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {formatMoney(groupSummary.total, restaurant.currency)}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">Déjà payé</p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {formatMoney(groupSummary.paid, restaurant.currency)}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">Reste</p>
+                    <p className="mt-1 text-lg font-semibold">
+                      {formatMoney(groupSummary.remaining, restaurant.currency)}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">Par table</p>
+                    <div className="mt-2 space-y-2">
+                      {groupSummary.perTable.map((entry) => (
+                        <div
+                          key={entry.tableId}
+                          className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="font-medium text-white">{entry.label}</p>
+                            <p className="text-sm font-semibold text-white">
+                              {formatMoney(entry.total, restaurant.currency)}
+                            </p>
+                          </div>
+                          <div className="mt-1 flex items-center justify-between gap-3 text-xs text-white/55">
+                            <span>Payé {formatMoney(entry.paid, restaurant.currency)}</span>
+                            <span>Reste {formatMoney(entry.remaining, restaurant.currency)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">Par personne</p>
+                    <div className="mt-2 space-y-2">
+                      {groupSummary.perParticipant.length === 0 ? (
+                        <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white/55">
+                          Aucun participant enregistré dans le groupe pour le moment.
+                        </div>
+                      ) : (
+                        groupSummary.perParticipant.map((entry) => (
+                          <div
+                            key={`${entry.name}-${entry.tables.join("-")}`}
+                            className="rounded-2xl border border-white/10 bg-black/20 px-3 py-3"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="font-medium text-white">{entry.name}</p>
+                              <p className="text-sm font-semibold text-white">
+                                {formatMoney(entry.settled, restaurant.currency)}
+                              </p>
+                            </div>
+                            <p className="mt-1 text-xs text-white/55">
+                              Tables: {entry.tables.join(" · ") || "Aucune"}
+                            </p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
               <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">Mes articles</p>

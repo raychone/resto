@@ -14,6 +14,7 @@ import {
 } from "@/lib/browser-notifications";
 import { PublicMenuCategories } from "@/components/public-menu-categories";
 import { useRestaurantRealtime } from "@/components/use-restaurant-realtime";
+import { buildTableGroupSummary } from "@/lib/table-group-summary";
 import { createId } from "@/lib/types";
 import { summarizeTaxBreakdown } from "@/lib/tax";
 import { countTablesNeeded } from "@/lib/booking";
@@ -865,65 +866,13 @@ export function StaffClient({
   const groupedTableIds = useMemo(() => new Set(tableGroups.flatMap((group) => group.tableIds)), [tableGroups]);
   const selectedTableGroupSummary = useMemo(() => {
     if (!selectedTableGroup) return null;
-
-    const groupOrders = orders.filter(
-      (order) =>
-        !order.deletedAt &&
-        selectedTableGroup.tableIds.includes(order.tableId ?? "") &&
-        (order.source === "table" || order.source === "qr"),
-    );
-    const groupSessions = activeTableSessions.filter((session) => selectedTableGroup.tableSessionIds.includes(session.id));
-
-    const total = groupOrders.reduce((sum, order) => sum + orderTotal(order), 0);
-    const paid = groupOrders.reduce((sum, order) => sum + paidTotalForOrder(payments, order.id), 0);
-    const remaining = Math.max(0, total - paid);
-
-    const perTable = selectedTableGroup.tableIds.map((tableId) => {
-      const table = currentTables.find((entry) => entry.id === tableId);
-      const tableOrders = groupOrders.filter((order) => order.tableId === tableId);
-      const tableTotal = tableOrders.reduce((sum, order) => sum + orderTotal(order), 0);
-      const tablePaid = tableOrders.reduce((sum, order) => sum + paidTotalForOrder(payments, order.id), 0);
-      return {
-        tableId,
-        label: table?.name ?? tableId,
-        total: tableTotal,
-        paid: tablePaid,
-        remaining: Math.max(0, tableTotal - tablePaid),
-      };
+    return buildTableGroupSummary({
+      tableGroup: selectedTableGroup,
+      orders,
+      payments,
+      tableSessions: activeTableSessions,
+      tables: currentTables,
     });
-
-    const perParticipantMap = new Map<string, { name: string; settled: number; tables: Set<string> }>();
-    for (const session of groupSessions) {
-      for (const participant of session.participants) {
-        const key = participant.customerId || participant.id;
-        const current = perParticipantMap.get(key) ?? {
-          name: participant.name,
-          settled: 0,
-          tables: new Set<string>(),
-        };
-        current.settled += participant.settledAmount;
-        if (session.tableId) {
-          current.tables.add(session.tableId);
-        }
-        perParticipantMap.set(key, current);
-      }
-    }
-
-    const perParticipant = [...perParticipantMap.values()].map((entry) => ({
-      name: entry.name,
-      settled: entry.settled,
-      tables: [...entry.tables].map((tableId) => currentTables.find((table) => table.id === tableId)?.name ?? tableId),
-    }));
-
-    return {
-      total,
-      paid,
-      remaining,
-      perTable,
-      perParticipant,
-      orderCount: groupOrders.length,
-      sessionCount: groupSessions.length,
-    };
   }, [activeTableSessions, currentTables, orders, payments, selectedTableGroup]);
 
   useEffect(() => {
