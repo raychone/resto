@@ -276,6 +276,7 @@ export function StaffClient({
   const [paymentAmount, setPaymentAmount] = useState("");
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const toastTimer = useRef<number | null>(null);
+  const [isOnline, setIsOnline] = useState(true);
   const [notificationPermission, setNotificationPermission] = useState<string>("unsupported");
   const [optimisticReadWaiterCallTables, setOptimisticReadWaiterCallTables] = useState<Set<string>>(
     () => new Set(),
@@ -299,6 +300,9 @@ export function StaffClient({
   );
   const [tableMoveTargetId, setTableMoveTargetId] = useState<string>("");
   const [movingTable, setMovingTable] = useState(false);
+  const [changingOrderId, setChangingOrderId] = useState<string | null>(null);
+  const [savingOrderNoteId, setSavingOrderNoteId] = useState<string | null>(null);
+  const [closingOrderId, setClosingOrderId] = useState<string | null>(null);
   const [quickMoveSourceId, setQuickMoveSourceId] = useState<string | null>(null);
   const [quickMoveTargetId, setQuickMoveTargetId] = useState<string>("");
   const [selectedTableGroupId, setSelectedTableGroupId] = useState<string | null>(initialTableGroups[0]?.id ?? null);
@@ -331,6 +335,17 @@ export function StaffClient({
   const [bookingCountryQuery, setBookingCountryQuery] = useState("");
   const refreshInFlightRef = useRef(false);
   const refreshQueuedRef = useRef(false);
+
+  useEffect(() => {
+    setIsOnline(typeof navigator === "undefined" ? true : navigator.onLine);
+    const syncOnline = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", syncOnline);
+    window.addEventListener("offline", syncOnline);
+    return () => {
+      window.removeEventListener("online", syncOnline);
+      window.removeEventListener("offline", syncOnline);
+    };
+  }, []);
 
   const loadReservations = useCallback(async () => {
     const response = await fetch(`/api/restaurants/${restaurant.slug}/reservations`, { cache: "no-store" });
@@ -900,6 +915,11 @@ export function StaffClient({
   }, [selectedTableGroup]);
 
   async function moveTableFlow(sourceTableId: string, nextTableId: string) {
+    if (!isOnline) {
+      setNotice("Connexion indisponible.");
+      pushToast("Connexion indisponible.", "error");
+      return false;
+    }
     if (!sourceTableId || !nextTableId || sourceTableId === nextTableId) return false;
 
     const sourceTable = currentTables.find((table) => table.id === sourceTableId);
@@ -1013,6 +1033,10 @@ export function StaffClient({
   }
 
   async function saveTableGroup() {
+    if (!isOnline) {
+      pushToast("Connexion indisponible.", "error");
+      return;
+    }
     if (groupDraftTableIds.length === 0) {
       pushToast("Choisir au moins une table.", "error");
       return;
@@ -1058,6 +1082,11 @@ export function StaffClient({
   }
 
   async function paySelectedTableGroup() {
+    if (!isOnline) {
+      setNotice("Connexion indisponible.");
+      pushToast("Connexion indisponible.", "error");
+      return;
+    }
     if (!selectedTableGroup || !selectedTableGroupSummary) {
       pushToast("Aucun groupe sélectionné.", "error");
       return;
@@ -1581,140 +1610,184 @@ export function StaffClient({
 
   async function setCurrentOrderStatus(status: Order["status"]) {
     if (!currentOrder) return;
-
-    const response = await fetch(`/api/restaurants/${restaurant.slug}/orders/${currentOrder.id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status }),
-    });
-
-    if (!response.ok) {
-      setNotice("Impossible de modifier le bon.");
-      pushToast("Impossible de modifier le bon.", "error");
+    if (!isOnline) {
+      setNotice("Connexion indisponible.");
+      pushToast("Connexion indisponible.", "error");
       return;
     }
+    if (changingOrderId) return;
 
-    setNotice(
-      status === "sent_to_kitchen"
-        ? "Bon envoyé en cuisine."
-        : status === "archived"
-          ? "Bon archivé."
-          : status === "paid"
-            ? "Bon encaissé."
-            : "Bon mis à jour.",
-    );
-    pushToast(
-      status === "sent_to_kitchen"
-        ? "Bon envoyé en cuisine."
-        : status === "archived"
-          ? "Bon archivé."
-          : status === "paid"
-            ? "Bon encaissé."
-            : "Bon mis à jour.",
-    );
-    await loadData();
+    setChangingOrderId(currentOrder.id);
+    try {
+      const response = await fetch(`/api/restaurants/${restaurant.slug}/orders/${currentOrder.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        setNotice("Impossible de modifier le bon.");
+        pushToast("Impossible de modifier le bon.", "error");
+        return;
+      }
+
+      setNotice(
+        status === "sent_to_kitchen"
+          ? "Bon envoyé en cuisine."
+          : status === "archived"
+            ? "Bon archivé."
+            : status === "paid"
+              ? "Bon encaissé."
+              : "Bon mis à jour.",
+      );
+      pushToast(
+        status === "sent_to_kitchen"
+          ? "Bon envoyé en cuisine."
+          : status === "archived"
+            ? "Bon archivé."
+            : status === "paid"
+              ? "Bon encaissé."
+              : "Bon mis à jour.",
+      );
+      await loadData();
+    } finally {
+      setChangingOrderId(null);
+    }
   }
 
   async function updateOrderStatus(orderId: string, status: Order["status"]) {
-    const response = await fetch(`/api/restaurants/${restaurant.slug}/orders/${orderId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status }),
-    });
-
-    if (!response.ok) {
-      setNotice("Impossible de modifier le bon.");
-      pushToast("Impossible de modifier le bon.", "error");
+    if (!isOnline) {
+      setNotice("Connexion indisponible.");
+      pushToast("Connexion indisponible.", "error");
       return false;
     }
+    if (changingOrderId) return false;
+    setChangingOrderId(orderId);
+    try {
+      const response = await fetch(`/api/restaurants/${restaurant.slug}/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      });
 
-    await loadData();
-    return true;
+      if (!response.ok) {
+        setNotice("Impossible de modifier le bon.");
+        pushToast("Impossible de modifier le bon.", "error");
+        return false;
+      }
+
+      await loadData();
+      return true;
+    } finally {
+      setChangingOrderId(null);
+    }
   }
 
   async function saveOrderNote(orderId: string, note: string) {
-    const response = await fetch(`/api/restaurants/${restaurant.slug}/orders/${orderId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ note }),
-    });
-
-    if (!response.ok) {
-      setNotice("Impossible de modifier la note.");
-      pushToast("Impossible de modifier la note.", "error");
+    if (!isOnline) {
+      setNotice("Connexion indisponible.");
+      pushToast("Connexion indisponible.", "error");
       return false;
     }
+    if (savingOrderNoteId) return false;
+    setSavingOrderNoteId(orderId);
+    try {
+      const response = await fetch(`/api/restaurants/${restaurant.slug}/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ note }),
+      });
 
-    setNotice("Note du bon mise à jour.");
-    pushToast("Note du bon mise à jour.");
-    await loadData();
-    return true;
+      if (!response.ok) {
+        setNotice("Impossible de modifier la note.");
+        pushToast("Impossible de modifier la note.", "error");
+        return false;
+      }
+
+      setNotice("Note du bon mise à jour.");
+      pushToast("Note du bon mise à jour.");
+      await loadData();
+      return true;
+    } finally {
+      setSavingOrderNoteId(null);
+    }
   }
 
   async function closeOrderById(orderId: string, method: PaymentMethod) {
     const targetOrder = orders.find((order) => order.id === orderId) ?? null;
     if (!targetOrder) return;
+    if (!isOnline) {
+      setNotice("Connexion indisponible.");
+      pushToast("Connexion indisponible.", "error");
+      return;
+    }
+    if (closingOrderId) return;
 
     const targetOrderTotal = orderTotal(targetOrder);
     const targetPaidTotal = paidTotalForOrder(payments, targetOrder.id);
     const targetRemaining = Math.max(0, targetOrderTotal - targetPaidTotal);
     const paymentValue =
       Number(paymentAmount) > 0 ? Number(paymentAmount) : targetRemaining > 0 ? targetRemaining : targetOrderTotal;
-    const response = await fetch(
-      `/api/restaurants/${restaurant.slug}/orders/${targetOrder.id}/payments`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    setClosingOrderId(orderId);
+    try {
+      const response = await fetch(
+        `/api/restaurants/${restaurant.slug}/orders/${targetOrder.id}/payments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount: paymentValue,
+            method,
+            note: `Paiement ${method}`,
+          }),
         },
-        body: JSON.stringify({
-          amount: paymentValue,
-          method,
-          note: `Paiement ${method}`,
-        }),
-      },
-    );
+      );
 
-    if (!response.ok) {
-      setNotice("Impossible d'encaisser le bon.");
-      pushToast("Impossible d'encaisser le bon.", "error");
-      return;
-    }
+      if (!response.ok) {
+        setNotice("Impossible d'encaisser le bon.");
+        pushToast("Impossible d'encaisser le bon.", "error");
+        return;
+      }
 
-    const payload = (await response.json()) as {
-      summary?: {
-        targetLabel?: string;
-        methodLabel?: string;
-        amount?: number;
-        paidTotal?: number;
-        remaining?: number;
+      const payload = (await response.json()) as {
+        summary?: {
+          targetLabel?: string;
+          methodLabel?: string;
+          amount?: number;
+          paidTotal?: number;
+          remaining?: number;
+        };
       };
-    };
-    const label = payload.summary?.targetLabel ?? currentTargetLabel;
-    const amount =
-      payload.summary?.amount ??
-      paymentValue;
-    const methodLabel = payload.summary?.methodLabel ?? method;
-    const remaining = payload.summary?.remaining ?? 0;
+      const label = payload.summary?.targetLabel ?? currentTargetLabel;
+      const amount =
+        payload.summary?.amount ??
+        paymentValue;
+      const methodLabel = payload.summary?.methodLabel ?? method;
+      const remaining = payload.summary?.remaining ?? 0;
 
-    setNotice(
-      remaining > 0
-        ? `${label} encaissé partiellement — ${formatMoney(amount, restaurant.currency)} en ${methodLabel}, reste ${formatMoney(remaining, restaurant.currency)}.`
-        : `${label} encaissé — ${formatMoney(amount, restaurant.currency)} en ${methodLabel}.`,
-    );
-    pushToast(
-      remaining > 0
-        ? `${label} encaissé partiellement`
-        : `${label} encaissé`,
-    );
-    setPaymentAmount("");
-    await loadData();
+      setNotice(
+        remaining > 0
+          ? `${label} encaissé partiellement — ${formatMoney(amount, restaurant.currency)} en ${methodLabel}, reste ${formatMoney(remaining, restaurant.currency)}.`
+          : `${label} encaissé — ${formatMoney(amount, restaurant.currency)} en ${methodLabel}.`,
+      );
+      pushToast(
+        remaining > 0
+          ? `${label} encaissé partiellement`
+          : `${label} encaissé`,
+      );
+      setPaymentAmount("");
+      await loadData();
+    } finally {
+      setClosingOrderId(null);
+    }
   }
 
   const selectedOrderItems = useMemo(() => currentOrder?.items ?? [], [currentOrder]);
@@ -1829,6 +1902,11 @@ export function StaffClient({
 
   return (
     <main className={theme === "food" ? "food-theme mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28" : "internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28"}>
+      {!isOnline ? (
+        <div className="mb-3 rounded-[1.25rem] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Connexion hors ligne. Les actions de service, paiement et déplacement sont temporairement bloquées.
+        </div>
+      ) : null}
       <section className="rounded-[2rem] border border-black/8 bg-white/85 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -2857,7 +2935,7 @@ export function StaffClient({
                         <button
                           type="button"
                           onClick={() => void saveTableGroup()}
-                          disabled={savingTableGroup || groupDraftTableIds.length === 0}
+                          disabled={!isOnline || savingTableGroup || groupDraftTableIds.length === 0}
                           className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-medium text-[#1f2b1f] shadow-[0_8px_18px_rgba(127,170,118,0.12)] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {savingTableGroup ? "Enregistrement..." : selectedTableGroup ? "Mettre à jour" : "Créer le groupe"}
@@ -2998,7 +3076,7 @@ export function StaffClient({
                               <button
                                 type="button"
                                 onClick={() => void paySelectedTableGroup()}
-                                disabled={payingTableGroup || selectedTableGroupSummary.remaining <= 0}
+                                disabled={!isOnline || payingTableGroup || selectedTableGroupSummary.remaining <= 0}
                                 className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_8px_18px_rgba(127,170,118,0.12)] disabled:cursor-not-allowed disabled:opacity-60"
                               >
                                 {payingTableGroup ? "Encaissement..." : "Encaisser le groupe"}
@@ -3277,9 +3355,10 @@ export function StaffClient({
                                 <button
                                   type="button"
                                   onClick={() => void saveOrderNote(selectedTableModalOpenOrder.id, orderNote)}
+                                  disabled={!isOnline || savingOrderNoteId === selectedTableModalOpenOrder.id}
                                   className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-3 py-2 text-xs font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
                                 >
-                                  Sauver la note
+                                  {savingOrderNoteId === selectedTableModalOpenOrder.id ? "Sauvegarde..." : "Sauver la note"}
                                 </button>
                               </div>
                               <textarea
@@ -3338,9 +3417,10 @@ export function StaffClient({
                                   <button
                                     type="button"
                                     onClick={() => void updateOrderStatus(selectedTableModalOpenOrder.id, "sent_to_kitchen")}
+                                    disabled={!isOnline || changingOrderId === selectedTableModalOpenOrder.id}
                                     className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-3 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
                                   >
-                                    En cuisine
+                                    {changingOrderId === selectedTableModalOpenOrder.id ? "Envoi..." : "En cuisine"}
                                   </button>
                                 ) : null}
                               </div>
@@ -3366,7 +3446,7 @@ export function StaffClient({
                                     <button
                                       type="button"
                                       onClick={() => void moveSelectedTableTo(tableMoveTargetId)}
-                                      disabled={movingTable || !tableMoveTargetId || tableMoveTargetId === selectedTableModal.id}
+                                      disabled={!isOnline || movingTable || !tableMoveTargetId || tableMoveTargetId === selectedTableModal.id}
                                       className="rounded-full border border-[#eadfce] bg-white px-4 py-3 text-sm font-medium text-[#24170f] shadow-[0_6px_14px_rgba(124,77,44,0.04)] transition hover:bg-[#faf7f2] disabled:cursor-not-allowed disabled:opacity-55"
                                     >
                                       {movingTable ? "Déplacement..." : "Déplacer la table"}
@@ -3424,20 +3504,23 @@ export function StaffClient({
                                   <button
                                     type="button"
                                     onClick={() => void closeOrderById(selectedTableModalOpenOrder.id, paymentMethod)}
+                                    disabled={!isOnline || closingOrderId === selectedTableModalOpenOrder.id}
                                     className="rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-medium text-[#1f2b1f] shadow-[0_10px_24px_rgba(127,170,118,0.16)] transition hover:brightness-95"
                                   >
-                                    {Math.max(
-                                      0,
-                                      (selectedTableModalTaxSummary?.total ?? orderTotal(selectedTableModalOpenOrder)) -
-                                        paidTotalForOrder(payments, selectedTableModalOpenOrder.id) -
-                                        (Number(paymentAmount) > 0 ? Number(paymentAmount) : Math.max(
+                                    {closingOrderId === selectedTableModalOpenOrder.id
+                                      ? "Encaissement..."
+                                      : Math.max(
                                           0,
                                           (selectedTableModalTaxSummary?.total ?? orderTotal(selectedTableModalOpenOrder)) -
-                                            paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
-                                        )),
-                                    ) > 0
-                                      ? "Enregistrer paiement"
-                                      : "Encaisser et clôturer"}
+                                            paidTotalForOrder(payments, selectedTableModalOpenOrder.id) -
+                                            (Number(paymentAmount) > 0 ? Number(paymentAmount) : Math.max(
+                                              0,
+                                              (selectedTableModalTaxSummary?.total ?? orderTotal(selectedTableModalOpenOrder)) -
+                                                paidTotalForOrder(payments, selectedTableModalOpenOrder.id),
+                                            )),
+                                        ) > 0
+                                        ? "Enregistrer paiement"
+                                        : "Encaisser et clôturer"}
                                   </button>
                                 </div>
                               </div>

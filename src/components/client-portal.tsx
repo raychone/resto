@@ -102,6 +102,7 @@ export function ClientPortal({
   const [groupSummary, setGroupSummary] = useState<TableGroupSummary | null>(null);
   const [activeTab, setActiveTab] = useState<ClientTab>(focusCart ? "cart" : "menu");
   const [serviceAdvancedOpen, setServiceAdvancedOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
   const cartSectionRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const previousOrderStatusRef = useRef<Order["status"] | null>(activeOrder?.status ?? null);
@@ -231,6 +232,17 @@ export function ClientPortal({
 
   useEffect(() => {
     setIsMounted(true);
+    setIsOnline(typeof navigator === "undefined" ? true : navigator.onLine);
+  }, []);
+
+  useEffect(() => {
+    const syncOnline = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", syncOnline);
+    window.addEventListener("offline", syncOnline);
+    return () => {
+      window.removeEventListener("online", syncOnline);
+      window.removeEventListener("offline", syncOnline);
+    };
   }, []);
 
   useEffect(() => {
@@ -425,6 +437,10 @@ export function ClientPortal({
   }
 
   async function joinTableGroup() {
+    if (!isOnline) {
+      setJoinNotice("Connexion indisponible. Réessaie quand le réseau revient.");
+      return;
+    }
     if (!joinAccessCode.trim()) {
       setJoinNotice("Saisis le code d’accès du groupe.");
       return;
@@ -480,6 +496,10 @@ export function ClientPortal({
 
   async function submitCart() {
     if (!cartItems.length) return;
+    if (!isOnline) {
+      setCartNotice("Connexion indisponible. La commande n’a pas été envoyée.");
+      return;
+    }
 
     setSendingCart(true);
     setCartNotice(null);
@@ -525,6 +545,10 @@ export function ClientPortal({
   }
 
   async function callServer() {
+    if (!isOnline) {
+      setWaiterNotice("Connexion indisponible. Impossible d’appeler le serveur.");
+      return;
+    }
     setCallingWaiter(true);
     try {
       const response = await fetch(withGuestToken(`/api/restaurants/${restaurant.slug}/messages`), {
@@ -558,6 +582,11 @@ export function ClientPortal({
 
   return (
     <main className={theme === "food" ? "food-theme mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28" : "internal-dark mx-auto min-h-screen w-full max-w-[1440px] px-3 py-4 pb-32 sm:px-4 lg:px-6 lg:pb-28"}>
+      {!isOnline ? (
+        <div className={isFoodTheme ? "mb-3 rounded-[1.25rem] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" : "mb-3 rounded-[1.25rem] border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100"}>
+          Connexion hors ligne. Les actions de service et d’envoi sont temporairement bloquées.
+        </div>
+      ) : null}
       <section className={isFoodTheme ? "rounded-[2rem] border border-[#eadfce] bg-[#fffdf8] p-4 text-[#24170f] shadow-[0_20px_60px_rgba(124,77,44,0.08)]" : "rounded-[2rem] border border-white/10 bg-[#171717] p-4 text-[#f5f1ea] shadow-[0_20px_60px_rgba(0,0,0,0.35)]"}>
         <p className={isFoodTheme ? "text-[11px] uppercase tracking-[0.35em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.35em] text-white/40"}>Client</p>
         <h1 className="mt-1 text-4xl font-semibold">{clientUser.name}</h1>
@@ -581,7 +610,7 @@ export function ClientPortal({
           <button
             type="button"
             onClick={() => void callServer()}
-            disabled={callingWaiter}
+            disabled={callingWaiter || !isOnline}
             className={isFoodTheme ? "rounded-full border border-[#b8d6b2] bg-[#e7f6e1] px-4 py-2 text-sm font-medium text-[#1f2b1f] transition disabled:opacity-60" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-medium text-black transition disabled:opacity-60"}
           >
             {callingWaiter ? "Demande envoyée..." : "Appeler le serveur"}
@@ -776,7 +805,7 @@ export function ClientPortal({
                         <select
                           value={pendingTableId}
                           onChange={(event) => changeTable(event.target.value)}
-                          disabled={tableLocked}
+                          disabled={tableLocked || !isOnline}
                           className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-[#fffdf8] px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e] disabled:cursor-not-allowed disabled:bg-[#faf7f2] disabled:text-[#9a8574]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25 disabled:cursor-not-allowed disabled:opacity-60"}
                         >
                           {tables.map((table) => (
@@ -790,7 +819,7 @@ export function ClientPortal({
                         <button
                           type="button"
                           onClick={confirmPendingTable}
-                          disabled={tableLocked || !pendingTableId || pendingTableId === selectedTableId}
+                          disabled={!isOnline || tableLocked || !pendingTableId || pendingTableId === selectedTableId}
                           className={isFoodTheme ? "rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-semibold text-[#1f2b1f] transition disabled:cursor-not-allowed disabled:opacity-45" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-45"}
                         >
                           Confirmer la table
@@ -827,7 +856,7 @@ export function ClientPortal({
                       <button
                         type="button"
                         onClick={() => void joinTableGroup()}
-                        disabled={joiningGroup || !joinAccessCode.trim()}
+                        disabled={!isOnline || joiningGroup || !joinAccessCode.trim()}
                         className={isFoodTheme ? "rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-semibold text-[#1f2b1f] transition disabled:cursor-not-allowed disabled:opacity-45" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-45"}
                       >
                         {joiningGroup ? "Connexion..." : "Rejoindre le groupe"}
@@ -1027,7 +1056,7 @@ export function ClientPortal({
                 <button
                   type="button"
                   onClick={() => void submitCart()}
-                  disabled={sendingCart || cartItems.length === 0}
+                  disabled={!isOnline || sendingCart || cartItems.length === 0}
                   className="rounded-full bg-white px-4 py-2 text-sm font-medium text-black disabled:opacity-60"
                 >
                   {sendingCart ? "Envoi..." : "Confirmer la commande"}
