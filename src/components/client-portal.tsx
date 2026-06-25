@@ -231,6 +231,7 @@ export function ClientPortal({
     try {
       const response = await fetch(withGuestToken(`/api/restaurants/${restaurant.slug}/client-orders`), {
         cache: "no-store",
+        credentials: "include",
       });
       if (!response.ok) return;
 
@@ -354,6 +355,7 @@ export function ClientPortal({
 
     const response = await fetch(withGuestToken(`/api/restaurants/${restaurant.slug}/client-orders`), {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -396,6 +398,7 @@ export function ClientPortal({
     try {
       const response = await fetch(withGuestToken(`/api/restaurants/${restaurant.slug}/messages`), {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },

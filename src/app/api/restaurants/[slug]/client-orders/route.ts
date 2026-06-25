@@ -52,10 +52,6 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (clientUser && clientUser.restaurantId !== restaurant.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const customer = clientUser
     ? await getOrCreateCustomerForUser(clientUser, restaurant.id)
     : await getOrCreateAnonymousCustomerForRestaurant(
@@ -111,10 +107,6 @@ export async function POST(
   const tokenGuestSession = guestToken ? decodePayloadCookieValue<ClientGuestSession>(guestToken) : null;
   const guestSession = clientUser ? null : tokenGuestSession ?? (await getClientGuestSessionFromRequest(request));
   if (!clientUser && (!guestSession || guestSession.restaurantId !== restaurant.id)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (clientUser && clientUser.restaurantId !== restaurant.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
