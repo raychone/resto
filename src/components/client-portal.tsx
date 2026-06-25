@@ -44,10 +44,10 @@ function formatMoney(amount: number, currency: string) {
 function getOrderProgress(status?: Order["status"] | null) {
   const orderStatusRank: Record<string, number> = {
     open: 0,
-    sent_to_kitchen: 1,
-    preparing: 2,
-    ready: 3,
-    served: 4,
+    sent_to_kitchen: 2,
+    preparing: 3,
+    ready: 4,
+    served: 5,
     paid: 5,
     cancelled: -1,
     archived: -1,
@@ -55,11 +55,10 @@ function getOrderProgress(status?: Order["status"] | null) {
 
   const currentRank = status ? orderStatusRank[status] ?? 0 : 0;
   const steps = [
-    { key: "submitted", label: "Soumise", rank: 0 },
-    { key: "validated", label: "Validée", rank: 1 },
-    { key: "kitchen", label: "En cuisine", rank: 2 },
-    { key: "ready", label: "Prête", rank: 3 },
-    { key: "served", label: "Servie", rank: 4 },
+    { key: "picked_up", label: "Prise en charge", rank: 1 },
+    { key: "kitchen", label: "Arrivée en cuisine", rank: 2 },
+    { key: "preparing", label: "En préparation", rank: 3 },
+    { key: "ready", label: "Prête", rank: 4 },
   ] as const;
 
   return steps.map((step) => ({
@@ -100,6 +99,7 @@ export function ClientPortal({
   const [joiningGroup, setJoiningGroup] = useState(false);
   const [joinNotice, setJoinNotice] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ClientTab>(focusCart ? "cart" : "menu");
+  const [serviceAdvancedOpen, setServiceAdvancedOpen] = useState(false);
   const cartSectionRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const previousOrderStatusRef = useRef<Order["status"] | null>(activeOrder?.status ?? null);
@@ -160,35 +160,37 @@ export function ClientPortal({
 
   const activeOrderLabel =
     liveOrder?.status === "sent_to_kitchen"
-      ? "Commande validée par le serveur et envoyée en cuisine."
+      ? "La commande a été prise en charge et est arrivée en cuisine."
       : liveOrder?.status === "preparing"
         ? "La cuisine prépare la commande."
         : liveOrder?.status === "ready"
-          ? "Commande prête. Le serveur doit la livrer."
-      : liveOrder?.status === "served"
-            ? "Commande servie."
+          ? "La commande est prête à être servie."
+          : liveOrder?.status === "served"
+            ? "La commande a été servie."
             : liveOrder?.status === "paid"
-              ? "Commande réglée."
+              ? "La commande a été réglée."
               : liveOrder?.status === "cancelled"
-                ? "Commande annulée."
+                ? "La commande a été annulée."
                 : liveOrder
-                  ? "Commande en attente de validation du serveur."
+                  ? "La commande attend la prise en charge par le serveur."
                   : "";
   const orderProgress = getOrderProgress(liveOrder?.status ?? null);
   const currentStatusLabel =
     liveOrder?.status === "sent_to_kitchen"
-      ? "Validée"
+      ? "Arrivée en cuisine"
       : liveOrder?.status === "preparing"
-        ? "En cuisine"
+        ? "En préparation"
         : liveOrder?.status === "ready"
-          ? "Prête"
+          ? "Prête à servir"
           : liveOrder?.status === "served"
             ? "Servie"
             : liveOrder?.status === "paid"
-              ? "Payée"
+              ? "Réglée"
               : liveOrder?.status === "cancelled"
                 ? "Annulée"
-                : "Soumise";
+                : liveOrder
+                  ? "En attente du serveur"
+                  : "Aucune commande active";
   const cartTotal = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cartItems],
@@ -532,85 +534,17 @@ export function ClientPortal({
           Compte client connecté à {restaurant.name}. Ce portail sert de base pour le login client,
           le loyalty et le split de note.
         </p>
-        {tables.length > 0 ? (
-          <div className="mt-4 grid gap-2 sm:max-w-md">
-            <label className="grid gap-2">
-              <span className={isFoodTheme ? "text-xs font-semibold uppercase tracking-[0.28em] text-[#a38d7c]" : "text-xs font-semibold uppercase tracking-[0.28em] text-white/45"}>
-                Table
-              </span>
-              <select
-                value={pendingTableId}
-                onChange={(event) => changeTable(event.target.value)}
-                disabled={tableLocked}
-                className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e] disabled:cursor-not-allowed disabled:bg-[#faf7f2] disabled:text-[#9a8574]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25 disabled:cursor-not-allowed disabled:opacity-60"}
-              >
-                {tables.map((table) => (
-                  <option key={table.id} value={table.id} disabled={occupiedTableIdSet.has(table.id) && table.id !== selectedTableId}>
-                    {table.name} · {table.seats} places{occupiedTableIdSet.has(table.id) && table.id !== selectedTableId ? " · occupée" : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={confirmPendingTable}
-                disabled={tableLocked || !pendingTableId || pendingTableId === selectedTableId}
-                className={isFoodTheme ? "rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-semibold text-[#1f2b1f] transition disabled:cursor-not-allowed disabled:opacity-45" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-45"}
-              >
-                Confirmer la table
-              </button>
-              {pendingTableId && pendingTableId !== selectedTableId ? (
-                <span className={isFoodTheme ? "text-xs text-[#6f5b4a]" : "text-xs text-white/60"}>
-                  Changement en attente de confirmation.
-                </span>
-              ) : null}
-            </div>
-            {tableLocked ? (
-              <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/65"}>
-                Table confirmée. Si le client change de place, le staff doit déplacer la note sur la nouvelle table.
-              </p>
-            ) : null}
-            {tableNotice ? (
-              <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/65"}>{tableNotice}</p>
-            ) : null}
-          </div>
-        ) : null}
         <div className="mt-4 grid gap-2 sm:max-w-md">
-          <label className="grid gap-2">
-            <span className={isFoodTheme ? "text-xs font-semibold uppercase tracking-[0.28em] text-[#a38d7c]" : "text-xs font-semibold uppercase tracking-[0.28em] text-white/45"}>
-              Code d’accès groupe
-            </span>
-            <input
-              value={joinAccessCode}
-              onChange={(event) => setJoinAccessCode(event.target.value.toUpperCase())}
-              placeholder="Ex: TABLES"
-              className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-white px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"}
-            />
-          </label>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => void joinTableGroup()}
-              disabled={joiningGroup || !joinAccessCode.trim()}
-              className={isFoodTheme ? "rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-semibold text-[#1f2b1f] transition disabled:cursor-not-allowed disabled:opacity-45" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-45"}
-            >
-              {joiningGroup ? "Connexion..." : "Rejoindre le groupe"}
-            </button>
-          </div>
-          {joinNotice ? (
-            <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/65"}>{joinNotice}</p>
-          ) : null}
-          {liveTableGroup ? (
-            <div className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-[#faf7f2] p-3 text-sm text-[#6f5b4a]" : "rounded-2xl border border-white/10 bg-black/25 p-3 text-sm text-white/70"}>
-              <p className="font-medium text-inherit">
+          <div className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-[#faf7f2] p-3 text-sm text-[#6f5b4a]" : "rounded-2xl border border-white/10 bg-black/25 p-3 text-sm text-white/70"}>
+            <p className="font-medium text-inherit">
+              Table actuelle: {tableLabel}
+            </p>
+            {liveTableGroup ? (
+              <p className="mt-1 text-inherit">
                 Groupe actif: {liveTableGroup.name}{liveTableGroup.accessCode ? ` · code ${liveTableGroup.accessCode}` : ""}
               </p>
-              <p className="mt-1 text-inherit">
-                Tables liées: {groupTableLabels || "Aucune table liée."}
-              </p>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
@@ -734,50 +668,157 @@ export function ClientPortal({
             activeTab === "cart" || activeTab === "tracking" ? "" : "hidden"
           }`}
         >
-          {activeTab === "tracking" && liveOrder ? (
-            <div id="client-tracking" className="mb-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+          {activeTab === "tracking" ? (
+            <div
+              id="client-tracking"
+              className={isFoodTheme ? "mb-4 rounded-[1.5rem] border border-[#eadfce] bg-[#faf7f2] p-4 text-[#24170f]" : "mb-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4"}
+            >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.3em] text-white/40">Commande en cours</p>
+                  <p className={isFoodTheme ? "text-[11px] uppercase tracking-[0.3em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.3em] text-white/40"}>Service</p>
                   <h2 className="mt-1 text-xl font-semibold">Service</h2>
                 </div>
-                <span className="rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white">
-                  {liveOrder.status.toUpperCase()}
+                <span className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#24170f]" : "rounded-full border border-white/10 bg-black px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white"}>
+                  {currentStatusLabel}
                 </span>
               </div>
-              <p className="mt-3 text-sm text-white/65">{activeOrderLabel}</p>
-              <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-black/20 p-3">
+              <p className={isFoodTheme ? "mt-3 text-sm text-[#6f5b4a]" : "mt-3 text-sm text-white/65"}>
+                {liveOrder ? activeOrderLabel : "Le suivi du service apparaîtra ici dès qu'une commande sera envoyée."}
+              </p>
+              <div className={isFoodTheme ? "mt-4 rounded-[1.25rem] border border-[#eadfce] bg-white p-3" : "mt-4 rounded-[1.25rem] border border-white/10 bg-black/20 p-3"}>
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/35">Étape actuelle</p>
-                    <p className="mt-1 text-base font-semibold text-white">{currentStatusLabel}</p>
+                    <p className={isFoodTheme ? "text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.28em] text-white/35"}>Étape actuelle</p>
+                    <p className={isFoodTheme ? "mt-1 text-base font-semibold text-[#24170f]" : "mt-1 text-base font-semibold text-white"}>{currentStatusLabel}</p>
                   </div>
-                  <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white/80">
+                  <div className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-[#faf7f2] px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#6f5b4a]" : "rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white/80"}>
                     {tableLabel}
                   </div>
                 </div>
               </div>
-              <div className="mt-4 grid gap-2 sm:grid-cols-4">
+              {liveOrder ? (
+                <div className="mt-4 grid gap-2 sm:grid-cols-4">
                 {orderProgress.map((step) => (
                   <div
                     key={step.key}
                     className={`rounded-2xl border p-3 text-sm transition ${
-                      step.done
-                        ? step.active
-                          ? "border-white/20 bg-white text-black shadow-lg"
-                          : "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
-                        : "border-white/10 bg-black/20 text-white/50"
+                      isFoodTheme
+                        ? step.done
+                          ? step.active
+                            ? "border-[#d7ccb9] bg-white text-[#24170f] shadow-[0_12px_30px_rgba(124,77,44,0.08)]"
+                            : "border-[#b8d6b2] bg-[#e7f6e1] text-[#1f2b1f]"
+                          : "border-[#eadfce] bg-[#faf7f2] text-[#a38d7c]"
+                        : step.done
+                          ? step.active
+                            ? "border-white/20 bg-white text-black shadow-lg"
+                            : "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
+                          : "border-white/10 bg-black/20 text-white/50"
                     }`}
                   >
                     <p className="text-[11px] uppercase tracking-[0.28em] opacity-70">
                       {step.label}
                     </p>
                     <p className="mt-1 text-xs font-medium">
-                      {step.done ? (step.active ? "● En cours" : "✓ Actif") : "En attente"}
+                      {step.done ? (step.active ? "● En cours" : "✓ Terminé") : "En attente"}
                     </p>
                   </div>
                 ))}
               </div>
+              ) : null}
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => setServiceAdvancedOpen((current) => !current)}
+                  className={isFoodTheme ? "rounded-full border border-[#eadfce] bg-white px-4 py-2 text-sm font-semibold text-[#24170f]" : "rounded-full border border-white/10 bg-black px-4 py-2 text-sm font-semibold text-white"}
+                >
+                  {serviceAdvancedOpen ? "Masquer les options avancées" : "Options avancées"}
+                </button>
+              </div>
+              {serviceAdvancedOpen ? (
+                <div className={isFoodTheme ? "mt-4 grid gap-4 rounded-[1.5rem] border border-[#eadfce] bg-white p-4 text-[#24170f]" : "mt-4 grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-4 text-white"}>
+                  {tables.length > 0 ? (
+                    <div className="grid gap-2 sm:max-w-md">
+                      <label className="grid gap-2">
+                        <span className={isFoodTheme ? "text-xs font-semibold uppercase tracking-[0.28em] text-[#a38d7c]" : "text-xs font-semibold uppercase tracking-[0.28em] text-white/45"}>
+                          Table
+                        </span>
+                        <select
+                          value={pendingTableId}
+                          onChange={(event) => changeTable(event.target.value)}
+                          disabled={tableLocked}
+                          className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-[#fffdf8] px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e] disabled:cursor-not-allowed disabled:bg-[#faf7f2] disabled:text-[#9a8574]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25 disabled:cursor-not-allowed disabled:opacity-60"}
+                        >
+                          {tables.map((table) => (
+                            <option key={table.id} value={table.id} disabled={occupiedTableIdSet.has(table.id) && table.id !== selectedTableId}>
+                              {table.name} · {table.seats} places{occupiedTableIdSet.has(table.id) && table.id !== selectedTableId ? " · occupée" : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={confirmPendingTable}
+                          disabled={tableLocked || !pendingTableId || pendingTableId === selectedTableId}
+                          className={isFoodTheme ? "rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-semibold text-[#1f2b1f] transition disabled:cursor-not-allowed disabled:opacity-45" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-45"}
+                        >
+                          Confirmer la table
+                        </button>
+                        {pendingTableId && pendingTableId !== selectedTableId ? (
+                          <span className={isFoodTheme ? "text-xs text-[#6f5b4a]" : "text-xs text-white/60"}>
+                            Changement en attente de confirmation.
+                          </span>
+                        ) : null}
+                      </div>
+                      {tableLocked ? (
+                        <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/65"}>
+                          Table confirmée. Si le client change de place, le staff doit déplacer la note sur la nouvelle table.
+                        </p>
+                      ) : null}
+                      {tableNotice ? (
+                        <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/65"}>{tableNotice}</p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  <div className="grid gap-2 sm:max-w-md">
+                    <label className="grid gap-2">
+                      <span className={isFoodTheme ? "text-xs font-semibold uppercase tracking-[0.28em] text-[#a38d7c]" : "text-xs font-semibold uppercase tracking-[0.28em] text-white/45"}>
+                        Code d’accès groupe
+                      </span>
+                      <input
+                        value={joinAccessCode}
+                        onChange={(event) => setJoinAccessCode(event.target.value.toUpperCase())}
+                        placeholder="Ex: TABLES"
+                        className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-[#fffdf8] px-4 py-3 text-[#24170f] outline-none transition focus:border-[#c41e1e]" : "rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition focus:border-white/25"}
+                      />
+                    </label>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void joinTableGroup()}
+                        disabled={joiningGroup || !joinAccessCode.trim()}
+                        className={isFoodTheme ? "rounded-full border border-[#9fbe9c] bg-gradient-to-b from-[#eef8eb] to-[#d8ecd3] px-4 py-2 text-sm font-semibold text-[#1f2b1f] transition disabled:cursor-not-allowed disabled:opacity-45" : "rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-semibold text-black transition disabled:cursor-not-allowed disabled:opacity-45"}
+                      >
+                        {joiningGroup ? "Connexion..." : "Rejoindre le groupe"}
+                      </button>
+                    </div>
+                    {joinNotice ? (
+                      <p className={isFoodTheme ? "text-sm text-[#6f5b4a]" : "text-sm text-white/65"}>{joinNotice}</p>
+                    ) : null}
+                    {liveTableGroup ? (
+                      <div className={isFoodTheme ? "rounded-2xl border border-[#eadfce] bg-[#faf7f2] p-3 text-sm text-[#6f5b4a]" : "rounded-2xl border border-white/10 bg-black/25 p-3 text-sm text-white/70"}>
+                        <p className="font-medium text-inherit">
+                          Groupe actif: {liveTableGroup.name}{liveTableGroup.accessCode ? ` · code ${liveTableGroup.accessCode}` : ""}
+                        </p>
+                        <p className="mt-1 text-inherit">
+                          Tables liées: {groupTableLabels || "Aucune table liée."}
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+              {liveOrder ? (
               <div className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
@@ -856,21 +897,22 @@ export function ClientPortal({
                   </div>
                 ) : null}
               </div>
+              ) : null}
             </div>
           ) : null}
-          {activeTab === "tracking" && liveOrder ? (
+          {activeTab === "tracking" ? (
             <div className="mb-4 grid gap-2 sm:grid-cols-3">
-              <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3">
-                <p className="text-[11px] uppercase tracking-[0.28em] text-white/40">Table</p>
-                <p className="mt-1 text-lg font-semibold text-white">{tableLabel}</p>
+              <div className={isFoodTheme ? "rounded-[1.25rem] border border-[#eadfce] bg-[#faf7f2] p-3" : "rounded-[1.25rem] border border-white/10 bg-white/5 p-3"}>
+                <p className={isFoodTheme ? "text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.28em] text-white/40"}>Table</p>
+                <p className={isFoodTheme ? "mt-1 text-lg font-semibold text-[#24170f]" : "mt-1 text-lg font-semibold text-white"}>{tableLabel}</p>
               </div>
-              <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3">
-                <p className="text-[11px] uppercase tracking-[0.28em] text-white/40">Statut</p>
-                <p className="mt-1 text-base font-semibold text-white">{currentStatusLabel}</p>
+              <div className={isFoodTheme ? "rounded-[1.25rem] border border-[#eadfce] bg-[#faf7f2] p-3" : "rounded-[1.25rem] border border-white/10 bg-white/5 p-3"}>
+                <p className={isFoodTheme ? "text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.28em] text-white/40"}>Statut</p>
+                <p className={isFoodTheme ? "mt-1 text-base font-semibold text-[#24170f]" : "mt-1 text-base font-semibold text-white"}>{currentStatusLabel}</p>
               </div>
-              <div className="rounded-[1.25rem] border border-white/10 bg-white/5 p-3">
-                <p className="text-[11px] uppercase tracking-[0.28em] text-white/40">Reste</p>
-                <p className="mt-1 text-lg font-semibold text-white">
+              <div className={isFoodTheme ? "rounded-[1.25rem] border border-[#eadfce] bg-[#faf7f2] p-3" : "rounded-[1.25rem] border border-white/10 bg-white/5 p-3"}>
+                <p className={isFoodTheme ? "text-[11px] uppercase tracking-[0.28em] text-[#a38d7c]" : "text-[11px] uppercase tracking-[0.28em] text-white/40"}>Reste</p>
+                <p className={isFoodTheme ? "mt-1 text-lg font-semibold text-[#24170f]" : "mt-1 text-lg font-semibold text-white"}>
                   {formatMoney(liveRemaining, restaurant.currency)}
                 </p>
               </div>

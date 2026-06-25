@@ -53,7 +53,7 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
     refreshInFlightRef.current = true;
     setLoading(true);
     try {
-      const response = await fetch(`/api/restaurants/${restaurant.slug}/orders`, { cache: "no-store" });
+      const response = await fetch(`/api/restaurants/${restaurant.slug}/orders?scope=kitchen`, { cache: "no-store" });
       if (response.ok) {
         const payload = (await response.json()) as { orders: Order[] };
         if (initializedOrders) {

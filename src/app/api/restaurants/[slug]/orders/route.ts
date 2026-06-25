@@ -56,6 +56,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
+  const scope = request.nextUrl.searchParams.get("scope");
   const restaurant = await getRestaurantBySlug(slug);
   if (!restaurant) {
     return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
@@ -65,10 +66,12 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [orders, payments] = await Promise.all([
-    listOrdersForRestaurant(restaurant.id),
-    listPaymentsForRestaurant(restaurant.id),
-  ]);
+  const orders = await listOrdersForRestaurant(restaurant.id);
+  if (scope === "kitchen") {
+    return NextResponse.json({ orders });
+  }
+
+  const payments = await listPaymentsForRestaurant(restaurant.id);
 
   return NextResponse.json({ orders, payments });
 }
