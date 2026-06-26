@@ -192,7 +192,9 @@ export function KitchenClient({ restaurant, kitchenUserId, orderFlowEnabled, the
               ? "Bon servi au serveur."
               : "Statut mis à jour.",
       );
-      await loadOrders();
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 60);
     } catch {
       setNotice("Impossible de modifier le statut.");
     } finally {

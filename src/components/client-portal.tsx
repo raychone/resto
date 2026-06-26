@@ -513,7 +513,7 @@ export function ClientPortal({
       body: JSON.stringify({
         note: `Commande client ${clientUser.name}`,
         items: cartItems,
-        tableId: liveTableSession.tableId,
+        tableId: selectedTableId || pendingTableId || liveTableSession.tableId || null,
       }),
     });
 

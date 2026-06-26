@@ -142,7 +142,14 @@ function normalizeOrder(order: Order): Order {
     closedAt: order.closedAt ?? null,
     archivedAt: order.archivedAt ?? null,
     note: order.note ?? "",
-    items: Array.isArray(order.items) ? order.items.map(normalizeOrderItem) : [],
+    items: Array.isArray(order.items)
+      ? order.items.map((item) =>
+          normalizeOrderItem({
+            ...item,
+            orderId: item.orderId?.trim() || order.id,
+          }),
+        )
+      : [],
     createdAt: order.createdAt ?? now,
     updatedAt: now,
     deletedAt: order.deletedAt ?? null,

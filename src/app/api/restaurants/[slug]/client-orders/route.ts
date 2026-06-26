@@ -13,7 +13,6 @@ import {
 import { dispatchOrderRequestNotification } from "@/lib/notification-service";
 import { getRestaurantBySlug } from "@/lib/restaurant-store";
 import {
-  addOrderItem,
   createOrder,
   getOrderById,
   listOrdersForRestaurant,
@@ -22,6 +21,7 @@ import {
 import { getTableById } from "@/lib/table-store";
 import { getOrCreateTableSessionForCustomer, updateTableSession } from "@/lib/table-session-store";
 import { inferTaxCategory, taxRateForCategory } from "@/lib/tax";
+import type { OrderItem } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -146,10 +146,44 @@ export async function POST(
     tableSession = null;
   }
 
-  const resolvedTableId = tableSession?.tableId ?? requestedTableId ?? null;
+  if (tableSession && requestedTableId && tableSession.tableId !== requestedTableId) {
+    try {
+      tableSession =
+        (await updateTableSession(tableSession.id, {
+          tableId: requestedTableId,
+        })) ?? tableSession;
+    } catch {
+      // Keep the session we have and continue with the requested table.
+    }
+  }
+
+  const resolvedTableId = requestedTableId ?? tableSession?.tableId ?? null;
   if (!resolvedTableId) {
     return NextResponse.json({ error: "No table selected" }, { status: 400 });
   }
+
+  const normalizedItems: OrderItem[] = items
+    .filter((item) => item.menuItemId && item.name && Number.isFinite(item.price))
+    .map((item) => {
+      const quantity =
+        Number.isFinite(item.quantity) && (item.quantity ?? 0) > 0 ? Math.floor(item.quantity ?? 1) : 1;
+      const taxCategory = inferTaxCategory(item.categoryName ?? null, item.name ?? null);
+      return {
+        id: "",
+        orderId: "",
+        menuItemId: item.menuItemId!,
+        nameSnapshot: item.name!,
+        priceSnapshot: Number(item.price),
+        quantity,
+        note: item.note ?? "",
+        assignedClientId: customer.id,
+        assignedClientName: customer.name,
+        taxCategory,
+        taxRate: taxRateForCategory(taxCategory),
+        createdAt: new Date().toISOString(),
+        deletedAt: null,
+      };
+    });
 
   const order = await createOrder(
     {
@@ -163,32 +197,13 @@ export async function POST(
       closedAt: null,
       archivedAt: null,
       note: body.note?.trim() || "Commande client",
+      items: normalizedItems,
     },
     { allowDuplicateOpen: true },
   );
 
   const updatedTableSession =
     tableSession ? (await updateTableSession(tableSession.id, { orderId: order.id })) ?? tableSession : null;
-
-  for (const item of items) {
-    if (!item.menuItemId || !item.name || !Number.isFinite(item.price)) {
-      continue;
-    }
-
-    const quantity = Number.isFinite(item.quantity) && (item.quantity ?? 0) > 0 ? Math.floor(item.quantity ?? 1) : 1;
-
-    await addOrderItem(order.id, {
-      menuItemId: item.menuItemId,
-      nameSnapshot: item.name,
-      priceSnapshot: Number(item.price),
-      quantity,
-      note: item.note ?? "",
-      assignedClientId: customer.id,
-      assignedClientName: customer.name,
-      taxCategory: inferTaxCategory(item.categoryName ?? null, item.name ?? null),
-      taxRate: taxRateForCategory(inferTaxCategory(item.categoryName ?? null, item.name ?? null)),
-    });
-  }
 
   const nextOrder =
     (await updateOrder(order.id, {
